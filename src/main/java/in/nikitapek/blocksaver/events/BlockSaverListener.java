@@ -4,6 +4,7 @@ import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.SupplimentaryTypes;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.bukkit.Effect;
 import org.bukkit.Material;
@@ -14,6 +15,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import com.amshulman.typesafety.TypeSafeMap;
@@ -25,6 +28,10 @@ public class BlockSaverListener implements Listener {
     private TypeSafeMap<Block, Byte> reinforcedBlocks;
     private final byte breakCount = 3;
     //private TypeSafeSet<Block> reinforcedBlocks;
+
+    private final Effect blockBreakFailEffect = Effect.EXTINGUISH;
+    private final Effect reinforcedBlockDamageEffect = Effect.POTION_BREAK;
+    private final Sound blockReinforceSound = Sound.ENDERDRAGON_DEATH;
 
     public BlockSaverListener(BlockSaverConfigurationContext configurationContext) {
         this.configurationContext = configurationContext;
@@ -45,10 +52,11 @@ public class BlockSaverListener implements Listener {
 
         // Plays a sound effect to whether or not the players attempt to de-enforce the block was successful.
         if (!event.getPlayer().getItemInHand().getType().equals(Material.DIAMOND_PICKAXE)) {
-            event.getPlayer().playEffect(event.getBlock().getLocation(), Effect.EXTINGUISH, 0);
+            event.getPlayer().getWorld().playEffect(event.getBlock().getLocation(), blockBreakFailEffect, 0);
             return;
         } else {
-            event.getPlayer().playEffect(event.getBlock().getLocation(), Effect.POTION_BREAK, 0);
+            // TODO: Make the particles appear without the sound (through ProtocolLib).
+            event.getPlayer().getWorld().playEffect(event.getBlock().getLocation(), reinforcedBlockDamageEffect, 0);
         }
 
         if (reinforcedBlocks.get(event.getBlock()) > 1) {
@@ -74,7 +82,7 @@ public class BlockSaverListener implements Listener {
         //if (reinforcedBlocks.containsKey(event.getClickedBlock()))
         //    return;
 
-        event.getPlayer().playSound(event.getClickedBlock().getLocation(), Sound.BURP, 1.0f, 0);
+        event.getPlayer().getWorld().playSound(event.getClickedBlock().getLocation(), blockReinforceSound, 1.0f, 50f);
 
         if (event.getPlayer().getItemInHand().getAmount() > 1) {
             event.getPlayer().getItemInHand().setAmount(event.getPlayer().getItemInHand().getAmount() - 1);
@@ -89,5 +97,54 @@ public class BlockSaverListener implements Listener {
         //reinforcedBlocks.add(event.getClickedBlock());
 
         event.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onBlockBurn(final BlockBurnEvent event) {
+        if (!configurationContext.reinforceableBlocks.contains(event.getBlock().getType()))
+            return;
+
+        if (!reinforcedBlocks.containsKey(event.getBlock()))
+            return;
+
+        event.setCancelled(true);
+
+        event.getBlock().getWorld().playEffect(event.getBlock().getLocation(), reinforcedBlockDamageEffect, 0);
+
+        if (reinforcedBlocks.get(event.getBlock()) > 1) {
+            // Can you just modify the get() value after retrieval or is this put() necessary?
+            reinforcedBlocks.put(event.getBlock(), (byte) (reinforcedBlocks.get(event.getBlock()) - 1));
+            return;
+        }
+
+        reinforcedBlocks.remove(event.getBlock());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onBlockExplode(final EntityExplodeEvent event) {
+        if (event.blockList().isEmpty())
+            return;
+
+        for (Iterator<Block> iter = event.blockList().iterator(); iter.hasNext();) {
+            Block block = iter.next();
+
+            if (!configurationContext.reinforceableBlocks.contains(block.getType()))
+                continue;
+    
+            if (!reinforcedBlocks.containsKey(block))
+                continue;
+    
+            event.blockList().remove(block);
+    
+            block.getWorld().playEffect(block.getLocation(), reinforcedBlockDamageEffect, 0);
+    
+            if (reinforcedBlocks.get(block) > 1) {
+                // Can you just modify the get() value after retrieval or is this put() necessary?
+                reinforcedBlocks.put(block, (byte) (reinforcedBlocks.get(block) - 1));
+                return;
+            }
+    
+            reinforcedBlocks.remove(block);
+        }
     }
 }
