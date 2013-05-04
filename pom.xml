@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>in.nikitapek</groupId>
+	<artifactId>block-saver</artifactId>
+	<name>BlockSaver</name>
+	<description>A plugin to provide block reinforcement for the purposes of block protection.</description>
+	<version>${mbapi.version}.0</version>
+
+	<parent>
+		<groupId>com.amshulman</groupId>
+		<artifactId>bukkit-parent</artifactId>
+		<version>0.7</version>
+	</parent>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.bukkit</groupId>
+			<artifactId>bukkit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.amshulman</groupId>
+			<artifactId>mbapi</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>plugin.yml</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>plugin.yml</exclude>
+				</excludes>
+			</resource>
+		</resources>
+	</build>
+</project>
