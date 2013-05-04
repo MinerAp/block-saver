@@ -7,5 +7,6 @@
 #======== Settings ==========#
 
 reinforceableBlocks:
-  - GRASS
-  - WOOD
+  GRASS: 10
+  WOOD: 2
+  STONE: 5

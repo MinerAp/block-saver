@@ -1,19 +1,20 @@
 package in.nikitapek.blocksaver.util;
 
-import java.util.EnumSet;
+import java.util.EnumMap;
 import java.util.logging.Level;
 
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import com.amshulman.mbapi.MbapiPlugin;
 import com.amshulman.mbapi.util.ConfigurationContext;
-import com.amshulman.typesafety.TypeSafeSet;
-import com.amshulman.typesafety.impl.TypeSafeSetImpl;
+import com.amshulman.typesafety.TypeSafeMap;
+import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 
 public class BlockSaverConfigurationContext extends ConfigurationContext {
     
-    public final TypeSafeSet<Material> reinforceableBlocks = new TypeSafeSetImpl<Material>(EnumSet.noneOf(Material.class), SupplimentaryTypes.MATERIAL);
+    public final TypeSafeMap<Material, Byte> reinforceableBlocks = new TypeSafeMapImpl<Material, Byte>(new EnumMap<Material, Byte>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.BYTE);
 
     public BlockSaverConfigurationContext(MbapiPlugin plugin) {
         super(plugin);
@@ -22,13 +23,12 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
         FileConfiguration config = plugin.getConfig();
 
         try {
-            for (Object materialString : config.getList("reinforceableBlocks")) {
-                Material material = Material.getMaterial((String) materialString);
-
-                reinforceableBlocks.add((Material) material);
+            ConfigurationSection blockCoefficientMap = config.getConfigurationSection("reinforceableBlocks");
+            for (String materialName : blockCoefficientMap.getKeys(false)) {
+                reinforceableBlocks.put(Material.getMaterial(materialName), (byte) blockCoefficientMap.getInt(materialName));
             }
         } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to load configuration");
+            plugin.getLogger().log(Level.SEVERE, "Failed to load configuration.");
             e.printStackTrace();
         }
     }

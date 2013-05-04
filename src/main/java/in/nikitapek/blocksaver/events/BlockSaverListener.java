@@ -26,8 +26,6 @@ public class BlockSaverListener implements Listener {
 
     private final BlockSaverConfigurationContext configurationContext;
     private TypeSafeMap<Block, Byte> reinforcedBlocks;
-    private final byte breakCount = 3;
-    //private TypeSafeSet<Block> reinforcedBlocks;
 
     private final Effect blockBreakFailEffect = Effect.EXTINGUISH;
     private final Effect reinforcedBlockDamageEffect = Effect.POTION_BREAK;
@@ -41,7 +39,7 @@ public class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(final BlockBreakEvent event) {
-        if (!configurationContext.reinforceableBlocks.contains(event.getBlock().getType()))
+        if (!configurationContext.reinforceableBlocks.containsKey(event.getBlock().getType()))
             return;
 
         if (!reinforcedBlocks.containsKey(event.getBlock()))
@@ -76,11 +74,14 @@ public class BlockSaverListener implements Listener {
         if (!event.getAction().equals(Action.LEFT_CLICK_BLOCK))
             return;
 
-        if (!configurationContext.reinforceableBlocks.contains(event.getClickedBlock().getType()))
+        if (!configurationContext.reinforceableBlocks.containsKey(event.getClickedBlock().getType()))
             return;
-        
-        //if (reinforcedBlocks.containsKey(event.getClickedBlock()))
-        //    return;
+
+        byte materialCoefficient = configurationContext.reinforceableBlocks.get(event.getClickedBlock().getType());
+
+        // If the block is already maximum reinforced, we do not reinforce it further or use up the obsidian.
+        if (reinforcedBlocks.containsKey(event.getClickedBlock()) && reinforcedBlocks.get(event.getClickedBlock()) == materialCoefficient)
+            return;
 
         event.getPlayer().getWorld().playSound(event.getClickedBlock().getLocation(), blockReinforceSound, 1.0f, 50f);
 
@@ -90,18 +91,14 @@ public class BlockSaverListener implements Listener {
             event.getPlayer().getInventory().remove(event.getPlayer().getItemInHand());
         }
 
-        byte breakValue = breakCount;
-        breakValue += reinforcedBlocks.containsKey(event.getClickedBlock()) ? reinforcedBlocks.get(event.getClickedBlock()) : 0;
-        
-        reinforcedBlocks.put(event.getClickedBlock(), breakValue);
-        //reinforcedBlocks.add(event.getClickedBlock());
+        reinforcedBlocks.put(event.getClickedBlock(), materialCoefficient);
 
         event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBurn(final BlockBurnEvent event) {
-        if (!configurationContext.reinforceableBlocks.contains(event.getBlock().getType()))
+        if (!configurationContext.reinforceableBlocks.containsKey(event.getBlock().getType()))
             return;
 
         if (!reinforcedBlocks.containsKey(event.getBlock()))
@@ -128,24 +125,22 @@ public class BlockSaverListener implements Listener {
         for (Iterator<Block> iter = event.blockList().iterator(); iter.hasNext();) {
             Block block = iter.next();
 
-            if (!configurationContext.reinforceableBlocks.contains(block.getType()))
+            if (!configurationContext.reinforceableBlocks.containsKey(block.getType()))
                 continue;
-    
+
             if (!reinforcedBlocks.containsKey(block))
                 continue;
 
-            iter.remove();
-            //event.blockList().remove(block);
-    
             block.getWorld().playEffect(block.getLocation(), reinforcedBlockDamageEffect, 0);
+
+            iter.remove();
+            //if (reinforcedBlocks.get(block) > 1) {
+            //    // Can you just modify the get() value after retrieval or is this put() necessary?
+            //    reinforcedBlocks.put(block, (byte) (reinforcedBlocks.get(block) - 1));
+            //    continue;
+            //}
     
-            if (reinforcedBlocks.get(block) > 1) {
-                // Can you just modify the get() value after retrieval or is this put() necessary?
-                reinforcedBlocks.put(block, (byte) (reinforcedBlocks.get(block) - 1));
-                continue;
-            }
-    
-            reinforcedBlocks.remove(block);
+            //reinforcedBlocks.remove(block);
         }
     }
 }
