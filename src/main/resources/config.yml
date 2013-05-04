@@ -6,4 +6,5 @@
 
 #======== Settings ==========#
 
-## None at the moment
+reinforceableBlocks:
+  - GRASS

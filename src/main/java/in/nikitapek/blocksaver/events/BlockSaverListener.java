@@ -1,56 +1,84 @@
 package in.nikitapek.blocksaver.events;
 
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
+import in.nikitapek.blocksaver.util.SupplimentaryTypes;
 
-import java.text.DecimalFormat;
 import java.util.HashMap;
-import java.util.Random;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Effect;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.player.PlayerInteractEvent;
 
-import com.amshulman.mbapi.util.CoreTypes;
-import com.amshulman.mbapi.util.LocationUtil;
 import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 
 public class BlockSaverListener implements Listener {
 
-    private final TypeSafeMap<String, Long> cooldownTimes;
-    private final int cooldownMillis;
-    private final Random random;
+    private final BlockSaverConfigurationContext configurationContext;
+    private TypeSafeMap<Block, Byte> reinforcedBlocks;
+    private final byte breakCount = 3;
+    //private TypeSafeSet<Block> reinforcedBlocks;
 
     public BlockSaverListener(BlockSaverConfigurationContext configurationContext) {
-        cooldownTimes = new TypeSafeMapImpl<String, Long>(new HashMap<String, Long>(), CoreTypes.STRING, CoreTypes.LONG);
-
-        //cooldownMillis = configurationContext.pearlCooldownTime * 1000;
-        cooldownMillis = 0;
-        random = new Random();
+        this.configurationContext = configurationContext;
+        
+        reinforcedBlocks = new TypeSafeMapImpl<Block, Byte>(new HashMap<Block, Byte>(), SupplimentaryTypes.BLOCK, SupplimentaryTypes.BYTE);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockInteract(final BlockBreakEvent event) {
-        if (event.getPlayer().getItemInHand().getType().equals(Material.STONE_PICKAXE) && event.getBlock().getType().equals(Material.GRASS)) {
-            if (random.nextBoolean()) {
-                event.getPlayer().playEffect(event.getBlock().getLocation(), Effect.POTION_BREAK, 0);
-                event.setCancelled(true);
-            }
+    public void onBlockBreak(final BlockBreakEvent event) {
+        if (!configurationContext.reinforceableBlocks.contains(event.getBlock().getType()))
+            return;
+
+        if (!reinforcedBlocks.containsKey(event.getBlock()))
+            return;
+
+        // Cancel the event before the diamond pickaxe check because reinforced blocks should not be breakable without one.
+        event.setCancelled(true);
+
+        if (!event.getPlayer().getItemInHand().getType().equals(Material.DIAMOND_PICKAXE))
+            return;
+
+        event.getPlayer().playEffect(event.getBlock().getLocation(), Effect.POTION_BREAK, 0);
+        if (reinforcedBlocks.get(event.getBlock()) > 1) {
+            // Can you just modify the get() value after retrieval or is this put() necessary?
+            reinforcedBlocks.put(event.getBlock(), (byte) (reinforcedBlocks.get(event.getBlock()) - 1));
+            return;
         }
+
+        reinforcedBlocks.remove(event.getBlock());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onBlockInteract(final PlayerInteractEvent event) {
+        if (!event.getPlayer().getItemInHand().getType().equals(Material.OBSIDIAN))
+            return;
+
+        if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK))
+            return;
+
+        if (!configurationContext.reinforceableBlocks.contains(event.getClickedBlock().getType()))
+            return;
+        
+        //if (reinforcedBlocks.containsKey(event.getClickedBlock()))
+        //    return;
+
+        event.getPlayer().playSound(event.getClickedBlock().getLocation(), Sound.ANVIL_BREAK, 0, 0);
+        event.getPlayer().getItemInHand().setAmount(event.getPlayer().getItemInHand().getAmount() - 1);
+
+        byte breakValue = breakCount;
+        breakValue += reinforcedBlocks.containsKey(event.getClickedBlock()) ? reinforcedBlocks.get(event.getClickedBlock()) : 0;
+        
+        reinforcedBlocks.put(event.getClickedBlock(), breakValue);
+        //reinforcedBlocks.add(event.getClickedBlock());
+
+        event.setCancelled(true);
     }
 }
