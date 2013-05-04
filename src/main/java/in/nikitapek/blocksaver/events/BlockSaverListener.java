@@ -31,7 +31,7 @@ public class BlockSaverListener implements Listener {
 
     private final Effect blockBreakFailEffect = Effect.EXTINGUISH;
     private final Effect reinforcedBlockDamageEffect = Effect.POTION_BREAK;
-    private final Sound blockReinforceSound = Sound.ENDERDRAGON_DEATH;
+    private final Sound blockReinforceSound = Sound.BURP;
 
     public BlockSaverListener(BlockSaverConfigurationContext configurationContext) {
         this.configurationContext = configurationContext;
@@ -133,15 +133,16 @@ public class BlockSaverListener implements Listener {
     
             if (!reinforcedBlocks.containsKey(block))
                 continue;
-    
-            event.blockList().remove(block);
+
+            iter.remove();
+            //event.blockList().remove(block);
     
             block.getWorld().playEffect(block.getLocation(), reinforcedBlockDamageEffect, 0);
     
             if (reinforcedBlocks.get(block) > 1) {
                 // Can you just modify the get() value after retrieval or is this put() necessary?
                 reinforcedBlocks.put(block, (byte) (reinforcedBlocks.get(block) - 1));
-                return;
+                continue;
             }
     
             reinforcedBlocks.remove(block);
