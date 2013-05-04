@@ -43,10 +43,14 @@ public class BlockSaverListener implements Listener {
         // Cancel the event before the diamond pickaxe check because reinforced blocks should not be breakable without one.
         event.setCancelled(true);
 
-        if (!event.getPlayer().getItemInHand().getType().equals(Material.DIAMOND_PICKAXE))
+        // Plays a sound effect to whether or not the players attempt to de-enforce the block was successful.
+        if (!event.getPlayer().getItemInHand().getType().equals(Material.DIAMOND_PICKAXE)) {
+            event.getPlayer().playEffect(event.getBlock().getLocation(), Effect.EXTINGUISH, 0);
             return;
+        } else {
+            event.getPlayer().playEffect(event.getBlock().getLocation(), Effect.POTION_BREAK, 0);
+        }
 
-        event.getPlayer().playEffect(event.getBlock().getLocation(), Effect.POTION_BREAK, 0);
         if (reinforcedBlocks.get(event.getBlock()) > 1) {
             // Can you just modify the get() value after retrieval or is this put() necessary?
             reinforcedBlocks.put(event.getBlock(), (byte) (reinforcedBlocks.get(event.getBlock()) - 1));
@@ -61,7 +65,7 @@ public class BlockSaverListener implements Listener {
         if (!event.getPlayer().getItemInHand().getType().equals(Material.OBSIDIAN))
             return;
 
-        if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK))
+        if (!event.getAction().equals(Action.LEFT_CLICK_BLOCK))
             return;
 
         if (!configurationContext.reinforceableBlocks.contains(event.getClickedBlock().getType()))
@@ -70,8 +74,13 @@ public class BlockSaverListener implements Listener {
         //if (reinforcedBlocks.containsKey(event.getClickedBlock()))
         //    return;
 
-        event.getPlayer().playSound(event.getClickedBlock().getLocation(), Sound.ANVIL_BREAK, 0, 0);
-        event.getPlayer().getItemInHand().setAmount(event.getPlayer().getItemInHand().getAmount() - 1);
+        event.getPlayer().playSound(event.getClickedBlock().getLocation(), Sound.BURP, 1.0f, 0);
+
+        if (event.getPlayer().getItemInHand().getAmount() > 1) {
+            event.getPlayer().getItemInHand().setAmount(event.getPlayer().getItemInHand().getAmount() - 1);
+        } else {
+            event.getPlayer().getInventory().remove(event.getPlayer().getItemInHand());
+        }
 
         byte breakValue = breakCount;
         breakValue += reinforcedBlocks.containsKey(event.getClickedBlock()) ? reinforcedBlocks.get(event.getClickedBlock()) : 0;
