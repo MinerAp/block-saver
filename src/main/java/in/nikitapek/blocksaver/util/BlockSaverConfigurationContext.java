@@ -29,7 +29,8 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
             for (String materialName : blockCoefficientMap.getKeys(false)) {
                 reinforceableBlocks.put(Material.getMaterial(materialName), (byte) blockCoefficientMap.getInt(materialName));
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load configuration.");
             e.printStackTrace();
         }

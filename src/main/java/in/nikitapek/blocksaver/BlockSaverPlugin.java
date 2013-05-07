@@ -8,10 +8,8 @@ import com.amshulman.mbapi.MbapiPlugin;
 public class BlockSaverPlugin extends MbapiPlugin {
     @Override
     public void onEnable() {
-        // Initializes the configurationContext.
         BlockSaverConfigurationContext configurationContext = new BlockSaverConfigurationContext(this);
 
-        // Registers the event handler and the command executor.
         registerEventHandler(new BlockSaverListener(configurationContext));
 
         super.onEnable();
