@@ -1,5 +1,5 @@
 name: BlockSaver
-version: ${project.version}
-load: POSTWORLD
-author: Indiv0
 main: in.nikitapek.blocksaver.BlockSaverPlugin
+load: POSTWORLD
+version: ${project.version}
+author: Indiv0
