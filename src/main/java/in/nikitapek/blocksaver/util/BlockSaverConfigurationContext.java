@@ -13,7 +13,7 @@ import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 
 public class BlockSaverConfigurationContext extends ConfigurationContext {
-    
+
     public final TypeSafeMap<Material, Byte> reinforceableBlocks = new TypeSafeMapImpl<Material, Byte>(new EnumMap<Material, Byte>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.BYTE);
 
     public BlockSaverConfigurationContext(MbapiPlugin plugin) {
@@ -22,6 +22,8 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
         plugin.saveDefaultConfig();
         FileConfiguration config = plugin.getConfig();
 
+        // Attempts to read the configurationSection containing the keys and values storing the block reinforcement coefficients.
+        // If it is successful in reading them, it then stores them to the reinforceableBlocks map for use throughout the plugin.
         try {
             ConfigurationSection blockCoefficientMap = config.getConfigurationSection("reinforceableBlocks");
             for (String materialName : blockCoefficientMap.getKeys(false)) {

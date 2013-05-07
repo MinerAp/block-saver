@@ -33,7 +33,7 @@ public class BlockSaverListener implements Listener {
 
     public BlockSaverListener(BlockSaverConfigurationContext configurationContext) {
         this.configurationContext = configurationContext;
-        
+
         reinforcedBlocks = new TypeSafeMapImpl<Block, Byte>(new HashMap<Block, Byte>(), SupplimentaryTypes.BLOCK, SupplimentaryTypes.BYTE);
     }
 
@@ -139,7 +139,7 @@ public class BlockSaverListener implements Listener {
             //    reinforcedBlocks.put(block, (byte) (reinforcedBlocks.get(block) - 1));
             //    continue;
             //}
-    
+
             //reinforcedBlocks.remove(block);
         }
     }
