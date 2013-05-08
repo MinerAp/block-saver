@@ -134,13 +134,6 @@ public class BlockSaverListener implements Listener {
             block.getWorld().playEffect(block.getLocation(), reinforcedBlockDamageEffect, 0);
 
             iter.remove();
-            // if (reinforcedBlocks.get(block) > 1) {
-            // // Can you just modify the get() value after retrieval or is this put() necessary?
-            // reinforcedBlocks.put(block, (byte) (reinforcedBlocks.get(block) - 1));
-            // continue;
-            // }
-
-            // reinforcedBlocks.remove(block);
         }
     }
 }
