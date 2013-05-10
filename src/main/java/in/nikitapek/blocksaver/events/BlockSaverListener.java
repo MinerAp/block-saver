@@ -26,10 +26,10 @@ public class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(final BlockBreakEvent event) {
-        if (!configurationContext.reinforceableBlocks.containsKey(event.getBlock().getType()))
+        if (!configurationContext.isMaterialReinforceable(event.getBlock().getType()))
             return;
 
-        if (!configurationContext.reinforcedBlocks.containsKey(event.getBlock()))
+        if (configurationContext.infoManager.getReinforcementValue(event.getBlock().getLocation()) == -1)
             return;
 
         // Cancel the event before the diamond pickaxe check because reinforced blocks should not be breakable without one.
@@ -44,13 +44,7 @@ public class BlockSaverListener implements Listener {
             event.getPlayer().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.reinforcedBlockDamageEffect, 0);
         }
 
-        if (configurationContext.reinforcedBlocks.get(event.getBlock()) > 1) {
-            // Can you just modify the get() value after retrieval or is this put() necessary?
-            configurationContext.reinforcedBlocks.put(event.getBlock(), (byte) (configurationContext.reinforcedBlocks.get(event.getBlock()) - 1));
-            return;
-        }
-
-        configurationContext.reinforcedBlocks.remove(event.getBlock());
+        configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -61,13 +55,7 @@ public class BlockSaverListener implements Listener {
         if (!event.getAction().equals(Action.LEFT_CLICK_BLOCK))
             return;
 
-        if (!configurationContext.reinforceableBlocks.containsKey(event.getClickedBlock().getType()))
-            return;
-
-        byte materialCoefficient = configurationContext.reinforceableBlocks.get(event.getClickedBlock().getType());
-
-        // If the block is already maximum reinforced, we do not reinforce it further or use up the obsidian.
-        if (configurationContext.reinforcedBlocks.containsKey(event.getClickedBlock()) && configurationContext.reinforcedBlocks.get(event.getClickedBlock()) == materialCoefficient)
+        if (!configurationContext.attemptReinforcement(event.getClickedBlock()))
             return;
 
         event.getPlayer().getWorld().playSound(event.getClickedBlock().getLocation(), configurationContext.blockReinforceSound, 1.0f, 50f);
@@ -78,30 +66,22 @@ public class BlockSaverListener implements Listener {
             event.getPlayer().getInventory().remove(event.getPlayer().getItemInHand());
         }
 
-        configurationContext.reinforcedBlocks.put(event.getClickedBlock(), materialCoefficient);
-
         event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBurn(final BlockBurnEvent event) {
-        if (!configurationContext.reinforceableBlocks.containsKey(event.getBlock().getType()))
+        if (!configurationContext.isMaterialReinforceable(event.getBlock().getType()))
             return;
 
-        if (!configurationContext.reinforcedBlocks.containsKey(event.getBlock()))
+        if (configurationContext.infoManager.getReinforcementValue(event.getBlock().getLocation()) == -1)
             return;
 
         event.setCancelled(true);
 
         event.getBlock().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.reinforcedBlockDamageEffect, 0);
 
-        if (configurationContext.reinforcedBlocks.get(event.getBlock()) > 1) {
-            // Can you just modify the get() value after retrieval or is this put() necessary?
-            configurationContext.reinforcedBlocks.put(event.getBlock(), (byte) (configurationContext.reinforcedBlocks.get(event.getBlock()) - 1));
-            return;
-        }
-
-        configurationContext.reinforcedBlocks.remove(event.getBlock());
+        configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -112,10 +92,10 @@ public class BlockSaverListener implements Listener {
         for (Iterator<Block> iter = event.blockList().iterator(); iter.hasNext();) {
             Block block = iter.next();
 
-            if (!configurationContext.reinforceableBlocks.containsKey(block.getType()))
+            if (!configurationContext.isMaterialReinforceable(block.getType()))
                 continue;
 
-            if (!configurationContext.reinforcedBlocks.containsKey(block))
+            if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) == -1)
                 continue;
 
             block.getWorld().playEffect(block.getLocation(), configurationContext.reinforcedBlockDamageEffect, 0);
@@ -132,13 +112,14 @@ public class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
         for (Block block : event.getBlocks()) {
-            if (!configurationContext.reinforceableBlocks.containsKey(block.getType()));
-
-            if (!configurationContext.reinforcedBlocks.containsKey(block))
+            if (!configurationContext.isMaterialReinforceable(block.getType()))
                 continue;
 
-            configurationContext.reinforcedBlocks.put(block.getRelative(event.getDirection()), configurationContext.reinforcedBlocks.get(block));
-            configurationContext.reinforcedBlocks.remove(block);
+            if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) == -1)
+                continue;
+
+            configurationContext.infoManager.setReinforcement(block.getRelative(event.getDirection()).getLocation(), configurationContext.infoManager.getReinforcementValue(block.getLocation()));
+            configurationContext.infoManager.removeReinforcement(block.getLocation());
         }
     }
 
@@ -147,18 +128,10 @@ public class BlockSaverListener implements Listener {
         if (!event.isSticky())
             return;
 
-        if (event.getRetractLocation().getBlock() == null || !configurationContext.reinforceableBlocks.containsKey(event.getRetractLocation().getBlock().getType()) || !configurationContext.reinforcedBlocks.containsKey(event.getRetractLocation().getBlock()))
+        if (event.getRetractLocation().getBlock() == null || !configurationContext.isMaterialReinforceable(event.getRetractLocation().getBlock().getType()) || configurationContext.infoManager.getReinforcementValue(event.getRetractLocation().getBlock().getLocation()) == -1)
             return;
 
-        Block newBlock = event.getBlock().getRelative(event.getDirection());
-        byte prevVal = configurationContext.reinforcedBlocks.get(event.getRetractLocation().getBlock());
-
-        configurationContext.reinforcedBlocks.put(newBlock, prevVal);
-        configurationContext.reinforcedBlocks.remove(event.getRetractLocation().getBlock());
+        configurationContext.infoManager.setReinforcement(event.getRetractLocation().getBlock().getLocation(), configurationContext.infoManager.getReinforcementValue(event.getRetractLocation().getBlock().getLocation()));
+        configurationContext.infoManager.removeReinforcement(event.getRetractLocation().getBlock().getLocation());
     }
-
-    //@EventHandler(priority = EventPriority.HIGHEST)
-    //public void onBlockMove(final BlockMoveEvent event) {
-    //
-    //}
 }
