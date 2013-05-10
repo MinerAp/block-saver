@@ -1,9 +1,13 @@
 package in.nikitapek.blocksaver.util;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.logging.Level;
 
+import org.bukkit.Effect;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -13,11 +17,18 @@ import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 
 public class BlockSaverConfigurationContext extends ConfigurationContext {
+    public final TypeSafeMap<Material, Byte> reinforceableBlocks;
+    public final TypeSafeMap<Block, Byte> reinforcedBlocks;
 
-    public final TypeSafeMap<Material, Byte> reinforceableBlocks = new TypeSafeMapImpl<Material, Byte>(new EnumMap<Material, Byte>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.BYTE);
+    public final Effect blockBreakFailEffect = Effect.EXTINGUISH;
+    public final Effect reinforcedBlockDamageEffect = Effect.POTION_BREAK;
+    public final Sound blockReinforceSound = Sound.BURP;
 
     public BlockSaverConfigurationContext(MbapiPlugin plugin) {
         super(plugin);
+
+        reinforceableBlocks = new TypeSafeMapImpl<Material, Byte>(new EnumMap<Material, Byte>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.BYTE);
+        reinforcedBlocks = new TypeSafeMapImpl<Block, Byte>(new HashMap<Block, Byte>(), SupplimentaryTypes.BLOCK, SupplimentaryTypes.BYTE);
 
         plugin.saveDefaultConfig();
         FileConfiguration config = plugin.getConfig();
