@@ -16,6 +16,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPistonEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -136,4 +140,26 @@ public class BlockSaverListener implements Listener {
             iter.remove();
         }
     }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onBlockPhysics(final BlockPhysicsEvent event) {
+
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPistonExtend(final BlockPistonExtendEvent event) {
+        //for (Block block : event.getBlocks()) {
+        //    if (reinforcedBlocks)
+        //}
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPistonRetract(final BlockPistonRetractEvent event) {
+        //if (event.)
+    }
+
+    //@EventHandler(priority = EventPriority.HIGHEST)
+    //public void onBlockMove(final BlockMoveEvent event) {
+    //
+    //}
 }
