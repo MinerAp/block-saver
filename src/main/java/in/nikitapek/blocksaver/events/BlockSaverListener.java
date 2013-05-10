@@ -131,14 +131,30 @@ public class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
-        //for (Block block : event.getBlocks()) {
-        //    if (reinforcedBlocks)
-        //}
+        for (Block block : event.getBlocks()) {
+            if (!configurationContext.reinforceableBlocks.containsKey(block.getType()));
+
+            if (!configurationContext.reinforcedBlocks.containsKey(block))
+                continue;
+
+            configurationContext.reinforcedBlocks.put(block.getRelative(event.getDirection()), configurationContext.reinforcedBlocks.get(block));
+            configurationContext.reinforcedBlocks.remove(block);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPistonRetract(final BlockPistonRetractEvent event) {
-        //if (event.)
+        if (!event.isSticky())
+            return;
+
+        if (event.getRetractLocation().getBlock() == null || !configurationContext.reinforceableBlocks.containsKey(event.getRetractLocation().getBlock().getType()) || !configurationContext.reinforcedBlocks.containsKey(event.getRetractLocation().getBlock()))
+            return;
+
+        Block newBlock = event.getBlock().getRelative(event.getDirection());
+        byte prevVal = configurationContext.reinforcedBlocks.get(event.getRetractLocation().getBlock());
+
+        configurationContext.reinforcedBlocks.put(newBlock, prevVal);
+        configurationContext.reinforcedBlocks.remove(event.getRetractLocation().getBlock());
     }
 
     //@EventHandler(priority = EventPriority.HIGHEST)
