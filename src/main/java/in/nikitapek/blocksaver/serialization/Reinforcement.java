@@ -5,9 +5,9 @@ import org.bukkit.block.Block;
 
 public class Reinforcement implements Comparable<Reinforcement> {
     Location location;
-    byte value;
+    int value;
 
-    public Reinforcement(final Location location, final byte value) {
+    public Reinforcement(final Location location, final int value) {
         this.location = location;
         this.value = value;
     }
@@ -20,7 +20,7 @@ public class Reinforcement implements Comparable<Reinforcement> {
         return location;
     }
 
-    public byte getReinforcement() {
+    public int getReinforcement() {
         return value;
     }
 

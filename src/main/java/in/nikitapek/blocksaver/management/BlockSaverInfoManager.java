@@ -35,13 +35,9 @@ public class BlockSaverInfoManager extends InfoManager {
         return reinforcements;
     }
 
-    public byte getReinforcementValue(Location location) {
-        for (Reinforcement reinforcement : reinforcements) {
-            if (reinforcement.getLocation().equals(location))
-                return reinforcement.getReinforcement();
-        }
-
-        return -1;
+    public int getReinforcementValue(Location location) {
+        Reinforcement reinforcement = getReinforcement(location);
+        return (reinforcement == null) ? -1 : reinforcement.getReinforcement();
     }
 
     public Reinforcement getReinforcement(Location location) {
@@ -53,7 +49,7 @@ public class BlockSaverInfoManager extends InfoManager {
         return null;
     }
 
-    public void setReinforcement(Location location, byte value) {
+    public void setReinforcement(Location location, int value) {
         removeReinforcement(location);
 
         reinforcements.add(new Reinforcement(location, value));
@@ -62,7 +58,7 @@ public class BlockSaverInfoManager extends InfoManager {
     public void damageBlock(Location location) {
         if (getReinforcementValue(location) > 1) {
             // TODO: Ask Andy if you can just modify the get() value after retrieval or is this put() necessary?
-            setReinforcement(location, (byte) (getReinforcementValue(location) - 1));
+            setReinforcement(location, (getReinforcementValue(location) - 1));
             return;
         }
 

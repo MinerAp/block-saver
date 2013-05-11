@@ -18,7 +18,7 @@ public final class SupplimentaryTypes {
     public static final Type TREESET = new TypeToken<TreeSet>() {}.getType();
 
     public static final Type BLOCK = new TypeToken<Block>() {}.getType();
-    public static final Type BYTE = new TypeToken<Byte>() {}.getType();
+    public static final Type INTEGER = new TypeToken<Integer>() {}.getType();
     public static final Type MATERIAL = new TypeToken<Material>() {}.getType();
     public static final Type REINFORCEMENT = new TypeToken<Reinforcement>() {}.getType();
     public static final Type LOCATION = new TypeToken<Location>() {}.getType();

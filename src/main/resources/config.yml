@@ -21,10 +21,30 @@ blockReinforcementDamageEffect: POTION_BREAK
 # Default: ANVIL_USE
 blockReinforceSound: ANVIL_USE
 
+## Whether or not reinforcement value should accumulate indefinitely, as opposed to reaching the limits specified by the Reinforceable Blocks List.
+# (Note: if this is set to false, the values will be capped at those provided in the list. Setting this to true then reverting to false will not reset the values to their maximums)
+# Default: true
+accumulateReinforcementValues: true
+
+## Whether or not TNT can damage reinforced blocks.
+# (Note: one TNT blast will only decrement the reinforcement value by one)
+# Default: true
+tntDamagesReinforcedBlocks: true
+
+## Whether or not fire can damage reinforced blocks.
+# (Note: fire on reinforced blocks will probably burn indefinitely at the moment, unless put out by players)
+# Default: true
+fireDamagesReinforcedBlocks: true
+
+## Whether or not pistons can move reinforced blocks.
+# Default: true
+pistonsMoveReinforcedBlocks: true
+
 
 #======== Reinforceable Blocks List ========#
 
-## A list of all the blocks which can be reinforced by this plugin
+## A list of all the items which can be reinforced by this plugin, and the maximum "reinforcement value" the block can have.
+# (Note: Any value less than 1 is invalid)
 reinforceableBlocks:
   GRASS: 10
   WOOD: 2
@@ -32,9 +52,15 @@ reinforceableBlocks:
   SAND: 3
 
 
+#======== Reinforcement Item List ========#
 
-## All of the worlds in which Radio is enabled.
-worlds:
-  - world
-  - world_nether
-  - world_the_end
+## A list of all the items which can be used to reinforce blocks, and their corresponding reinforcement values.
+# Notes:
+#   Setting a value of -2 will mean the reinforcement will automatically be the maximum value the block can take.
+#   Any other value less than 1 is invalid.
+#   If "accumulateReinforcementValues" is set to true, any material set here with a reinforcement value of -2 will not reinforce blocks.
+reinforcementBlocks:
+  OBSIDIAN: -2
+  IRON_INGOT: 1
+  GOLD_INGOT: 3
+  DIAMOND: 10
