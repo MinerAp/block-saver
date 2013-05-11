@@ -1,10 +1,12 @@
 package in.nikitapek.blocksaver.events;
 
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
+
 import java.util.Iterator;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -16,6 +18,8 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.material.MaterialData;
+import org.bukkit.material.PistonBaseMaterial;
 
 public class BlockSaverListener implements Listener {
     private final BlockSaverConfigurationContext configurationContext;
@@ -161,7 +165,22 @@ public class BlockSaverListener implements Listener {
         if (!event.isSticky())
             return;
 
-        if (event.getRetractLocation().getBlock() == null || !configurationContext.isMaterialReinforceable(event.getRetractLocation().getBlock().getType()) || configurationContext.infoManager.getReinforcementValue(event.getRetractLocation().getBlock().getLocation()) == -1)
+        MaterialData data = event.getBlock().getState().getData();
+        BlockFace direction = null;
+
+        if (data instanceof PistonBaseMaterial) {
+            direction = ((PistonBaseMaterial) data).getFacing();
+        }
+
+        if (direction == null)
+            return;
+
+        Block block = event.getBlock().getRelative(direction, 2);
+
+        if (!configurationContext.isMaterialReinforceable(block.getType()))
+            return;
+
+        if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) == -1)
             return;
 
         if (!configurationContext.pistonsMoveReinforcedBlocks) {
@@ -169,7 +188,7 @@ public class BlockSaverListener implements Listener {
             return;
         }
 
-        configurationContext.infoManager.setReinforcement(event.getRetractLocation().getBlock().getLocation(), configurationContext.infoManager.getReinforcementValue(event.getRetractLocation().getBlock().getLocation()));
-        configurationContext.infoManager.removeReinforcement(event.getRetractLocation().getBlock().getLocation());
+        configurationContext.infoManager.setReinforcement(event.getBlock().getRelative(direction, 1).getLocation(), configurationContext.infoManager.getReinforcementValue(block.getLocation()));
+        configurationContext.infoManager.removeReinforcement(block.getLocation());
     }
 }
