@@ -24,6 +24,10 @@
 			<groupId>com.amshulman</groupId>
 			<artifactId>mbapi</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.comphenix.protocol</groupId>
+			<artifactId>ProtocolLib</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

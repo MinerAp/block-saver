@@ -26,10 +26,11 @@ public class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(final BlockBreakEvent event) {
-        if (!configurationContext.reinforceableBlocks.containsKey(event.getBlock().getType()))
+        if (!configurationContext.isMaterialReinforceable(event.getBlock().getType()))
             return;
 
-        if (!configurationContext.reinforcedBlocks.containsKey(event.getBlock()))
+        // If the block is not reinforced, this plugin does not stop the block break event.
+        if (configurationContext.infoManager.getReinforcementValue(event.getBlock().getLocation()) == -1)
             return;
 
         // Cancel the event before the diamond pickaxe check because reinforced blocks should not be breakable without one.
@@ -41,67 +42,64 @@ public class BlockSaverListener implements Listener {
             return;
         } else {
             // TODO: Make the particles appear without the sound (through ProtocolLib).
-            event.getPlayer().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.reinforcedBlockDamageEffect, 0);
+            event.getPlayer().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.blockReinforcementDamageEffect, 0);
         }
 
-        if (configurationContext.reinforcedBlocks.get(event.getBlock()) > 1) {
-            // Can you just modify the get() value after retrieval or is this put() necessary?
-            configurationContext.reinforcedBlocks.put(event.getBlock(), (byte) (configurationContext.reinforcedBlocks.get(event.getBlock()) - 1));
-            return;
-        }
-
-        configurationContext.reinforcedBlocks.remove(event.getBlock());
+        configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockInteract(final PlayerInteractEvent event) {
-        if (!event.getPlayer().getItemInHand().getType().equals(Material.OBSIDIAN))
-            return;
-
+        // If the player is not left-clicking, the event is of no relevance.
         if (!event.getAction().equals(Action.LEFT_CLICK_BLOCK))
             return;
 
-        if (!configurationContext.reinforceableBlocks.containsKey(event.getClickedBlock().getType()))
+        // If the block the player is holding cannot be used for reinforcement, the event is of no relevance.
+        if (!configurationContext.isReinforcingMaterial(event.getPlayer().getItemInHand().getType()))
             return;
 
-        byte materialCoefficient = configurationContext.reinforceableBlocks.get(event.getClickedBlock().getType());
-
-        // If the block is already maximum reinforced, we do not reinforce it further or use up the obsidian.
-        if (configurationContext.reinforcedBlocks.containsKey(event.getClickedBlock()) && configurationContext.reinforcedBlocks.get(event.getClickedBlock()) == materialCoefficient)
+        // An attempt is made to reinforce the block the player clicks, which, if not successful, exits the event.
+        if (!configurationContext.attemptReinforcement(event.getClickedBlock(), event.getPlayer().getItemInHand().getType()))
             return;
 
+        // A "reinforcement successful" (pitch-shifted +50) sound is played as a reinforceable block was reinforced with a reinforcement material.
         event.getPlayer().getWorld().playSound(event.getClickedBlock().getLocation(), configurationContext.blockReinforceSound, 1.0f, 50f);
 
+        // The amount of the reinforcement material in the player's hand is decreased.
         if (event.getPlayer().getItemInHand().getAmount() > 1) {
             event.getPlayer().getItemInHand().setAmount(event.getPlayer().getItemInHand().getAmount() - 1);
         } else {
             event.getPlayer().getInventory().remove(event.getPlayer().getItemInHand());
         }
 
-        configurationContext.reinforcedBlocks.put(event.getClickedBlock(), materialCoefficient);
-
+        // The event is then cancelled.
         event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBurn(final BlockBurnEvent event) {
-        if (!configurationContext.reinforceableBlocks.containsKey(event.getBlock().getType()))
+        // If the block is not reinforceable, there is no reason to process this event.
+        if (!configurationContext.isMaterialReinforceable(event.getBlock().getType()))
             return;
 
-        if (!configurationContext.reinforcedBlocks.containsKey(event.getBlock()))
+        // If the block is not reinforced, it is allowed to burn normally.
+        if (configurationContext.infoManager.getReinforcementValue(event.getBlock().getLocation()) == -1)
             return;
 
+        // If the block is reinforced, the burn event is cancelled for the block.
         event.setCancelled(true);
 
-        event.getBlock().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.reinforcedBlockDamageEffect, 0);
-
-        if (configurationContext.reinforcedBlocks.get(event.getBlock()) > 1) {
-            // Can you just modify the get() value after retrieval or is this put() necessary?
-            configurationContext.reinforcedBlocks.put(event.getBlock(), (byte) (configurationContext.reinforcedBlocks.get(event.getBlock()) - 1));
+        // If fire is not allowed to damage blocks, the block damage fail effect is played and the event is exited.
+        // Otherwise, the block successfully damaged event is played.
+        if (!configurationContext.fireDamagesReinforcedBlocks) {
+            event.getBlock().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.blockBreakFailEffect, 0);
             return;
+        } else {
+            event.getBlock().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.blockReinforcementDamageEffect, 0);
         }
 
-        configurationContext.reinforcedBlocks.remove(event.getBlock());
+        // The block reinforcement is then damaged.
+        configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -112,13 +110,23 @@ public class BlockSaverListener implements Listener {
         for (Iterator<Block> iter = event.blockList().iterator(); iter.hasNext();) {
             Block block = iter.next();
 
-            if (!configurationContext.reinforceableBlocks.containsKey(block.getType()))
+            // If the block is not reinforceable, it is of no relevance to this plugin.
+            if (!configurationContext.isMaterialReinforceable(block.getType()))
                 continue;
 
-            if (!configurationContext.reinforcedBlocks.containsKey(block))
+            // If the block is not reinforced, then it is also ignored.
+            if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) == -1)
                 continue;
 
-            block.getWorld().playEffect(block.getLocation(), configurationContext.reinforcedBlockDamageEffect, 0);
+            // If TNT damage is enabled for reinforced blocks, then the block is damaged and the successful damage effect is played.
+            // Otherwise, the damage failed is played. In both cases, the block is not destroyed by the blast.
+            if (configurationContext.tntDamagesReinforcedBlocks) {
+                block.getWorld().playEffect(block.getLocation(), configurationContext.blockReinforcementDamageEffect, 0);
+
+                configurationContext.infoManager.damageBlock(block.getLocation());
+            } else {
+                block.getWorld().playEffect(block.getLocation(), configurationContext.blockBreakFailEffect, 0);
+            }
 
             iter.remove();
         }
@@ -132,13 +140,19 @@ public class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
         for (Block block : event.getBlocks()) {
-            if (!configurationContext.reinforceableBlocks.containsKey(block.getType()));
-
-            if (!configurationContext.reinforcedBlocks.containsKey(block))
+            if (!configurationContext.isMaterialReinforceable(block.getType()))
                 continue;
 
-            configurationContext.reinforcedBlocks.put(block.getRelative(event.getDirection()), configurationContext.reinforcedBlocks.get(block));
-            configurationContext.reinforcedBlocks.remove(block);
+            if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) == -1)
+                continue;
+
+            if (!configurationContext.pistonsMoveReinforcedBlocks) {
+                event.setCancelled(true);
+                return;
+            }
+
+            configurationContext.infoManager.setReinforcement(block.getRelative(event.getDirection()).getLocation(), configurationContext.infoManager.getReinforcementValue(block.getLocation()));
+            configurationContext.infoManager.removeReinforcement(block.getLocation());
         }
     }
 
@@ -147,18 +161,15 @@ public class BlockSaverListener implements Listener {
         if (!event.isSticky())
             return;
 
-        if (event.getRetractLocation().getBlock() == null || !configurationContext.reinforceableBlocks.containsKey(event.getRetractLocation().getBlock().getType()) || !configurationContext.reinforcedBlocks.containsKey(event.getRetractLocation().getBlock()))
+        if (event.getRetractLocation().getBlock() == null || !configurationContext.isMaterialReinforceable(event.getRetractLocation().getBlock().getType()) || configurationContext.infoManager.getReinforcementValue(event.getRetractLocation().getBlock().getLocation()) == -1)
             return;
 
-        Block newBlock = event.getBlock().getRelative(event.getDirection());
-        byte prevVal = configurationContext.reinforcedBlocks.get(event.getRetractLocation().getBlock());
+        if (!configurationContext.pistonsMoveReinforcedBlocks) {
+            event.setCancelled(true);
+            return;
+        }
 
-        configurationContext.reinforcedBlocks.put(newBlock, prevVal);
-        configurationContext.reinforcedBlocks.remove(event.getRetractLocation().getBlock());
+        configurationContext.infoManager.setReinforcement(event.getRetractLocation().getBlock().getLocation(), configurationContext.infoManager.getReinforcementValue(event.getRetractLocation().getBlock().getLocation()));
+        configurationContext.infoManager.removeReinforcement(event.getRetractLocation().getBlock().getLocation());
     }
-
-    //@EventHandler(priority = EventPriority.HIGHEST)
-    //public void onBlockMove(final BlockMoveEvent event) {
-    //
-    //}
 }

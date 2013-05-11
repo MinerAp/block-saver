@@ -3,3 +3,4 @@ main: in.nikitapek.blocksaver.BlockSaverPlugin
 load: POSTWORLD
 version: ${project.version}
 author: Indiv0
+depend: [ProtocolLib]
