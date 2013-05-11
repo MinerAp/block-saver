@@ -50,6 +50,11 @@ reinforceableBlocks:
   WOOD: 2
   STONE: 5
   SAND: 3
+  SMOOTH_BRICK: 15
+  STEP: 3
+  DOUBLE_STEP: 6
+  GLASS: 1
+  THIN_GLASS: 1
 
 
 #======== Reinforcement Item List ========#
