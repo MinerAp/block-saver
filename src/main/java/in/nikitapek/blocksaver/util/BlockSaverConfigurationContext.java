@@ -2,6 +2,7 @@ package in.nikitapek.blocksaver.util;
 
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
+import in.nikitapek.blocksaver.serialization.ReinforcementTypeAdapter;
 
 import java.util.EnumMap;
 import java.util.logging.Level;
@@ -28,7 +29,7 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
     public final Sound blockReinforceSound = Sound.BURP;
 
     public BlockSaverConfigurationContext(MbapiPlugin plugin) {
-        super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplimentaryTypes.TREESET, SupplimentaryTypes.REINFORCEMENT));
+        super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplimentaryTypes.TREESET, SupplimentaryTypes.REINFORCEMENT), new ReinforcementTypeAdapter());
 
         infoManager = new BlockSaverInfoManager(this);
 

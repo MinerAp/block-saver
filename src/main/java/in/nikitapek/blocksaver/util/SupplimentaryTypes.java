@@ -5,6 +5,7 @@ import in.nikitapek.blocksaver.serialization.Reinforcement;
 import java.lang.reflect.Type;
 import java.util.TreeSet;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
@@ -20,4 +21,5 @@ public final class SupplimentaryTypes {
     public static final Type BYTE = new TypeToken<Byte>() {}.getType();
     public static final Type MATERIAL = new TypeToken<Material>() {}.getType();
     public static final Type REINFORCEMENT = new TypeToken<Reinforcement>() {}.getType();
+    public static final Type LOCATION = new TypeToken<Location>() {}.getType();
 }

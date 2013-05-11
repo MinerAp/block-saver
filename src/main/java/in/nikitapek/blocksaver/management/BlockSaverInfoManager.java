@@ -16,7 +16,6 @@ public class BlockSaverInfoManager extends InfoManager {
     public BlockSaverInfoManager(ConfigurationContext configurationContext) {
         super(configurationContext);
 
-        //reinforcedBlocks = new TypeSafeMapImpl<Block, Byte>(new HashMap<Block, Byte>(), SupplimentaryTypes.BLOCK, SupplimentaryTypes.BYTE);
         reinforcements = storageManager.getStorageSet("reinforcements", SupplimentaryTypes.REINFORCEMENT);
 
         reinforcements.load();
