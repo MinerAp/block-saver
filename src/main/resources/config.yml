@@ -6,8 +6,35 @@
 
 #======== Settings ==========#
 
+## The name of the effect to be played when a player fails to damage a reinforced block.
+# (Note: please use an effect contained within the Effect class)
+# Default: EXTINGUISH
+blockBreakFailEffect: EXTINGUISH
+
+## The name of the effect to be played when a player successfully damages a reinforced block.
+# (Note: please use an effect contained within the Effect class)
+# Default: POTION_BREAK
+blockReinforcementDamageEffect: POTION_BREAK
+
+## The name of the sound to be played when a player reinforces a block.
+# (Note: please use a sound contained within the Sound class)
+# Default: ANVIL_USE
+blockReinforceSound: ANVIL_USE
+
+
+#======== Reinforceable Blocks List ========#
+
+## A list of all the blocks which can be reinforced by this plugin
 reinforceableBlocks:
   GRASS: 10
   WOOD: 2
   STONE: 5
   SAND: 3
+
+
+
+## All of the worlds in which Radio is enabled.
+worlds:
+  - world
+  - world_nether
+  - world_the_end

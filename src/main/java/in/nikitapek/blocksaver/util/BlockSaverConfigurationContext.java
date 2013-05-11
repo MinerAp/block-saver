@@ -24,9 +24,9 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
 
     private final TypeSafeMap<Material, Byte> reinforceableBlocks;
 
-    public final Effect blockBreakFailEffect = Effect.EXTINGUISH;
-    public final Effect reinforcedBlockDamageEffect = Effect.POTION_BREAK;
-    public final Sound blockReinforceSound = Sound.BURP;
+    public Effect blockBreakFailEffect;
+    public Effect blockReinforcementDamageEffect;
+    public Sound blockReinforceSound;
 
     public BlockSaverConfigurationContext(MbapiPlugin plugin) {
         super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplimentaryTypes.TREESET, SupplimentaryTypes.REINFORCEMENT), new ReinforcementTypeAdapter());
@@ -37,6 +37,19 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
 
         plugin.saveDefaultConfig();
 
+        try {
+            // Note: setting the default values here might be unnecessary because if the config values fail to load and it defaults to these, they will never result in an exception.
+            blockBreakFailEffect = Effect.valueOf(plugin.getConfig().getString("blockBreakFailEffect", Effect.EXTINGUISH.toString()));
+            blockReinforcementDamageEffect = Effect.valueOf(plugin.getConfig().getString("blockReinforcementDamageEffect", Effect.POTION_BREAK.toString()));
+            blockReinforceSound = Sound.valueOf(plugin.getConfig().getString("blockReinforceSound", Sound.ANVIL_USE.toString()));
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to load one or more Effect values. Reverting to defaults.");
+
+            blockBreakFailEffect = Effect.EXTINGUISH;
+            blockReinforcementDamageEffect = Effect.POTION_BREAK;
+            blockReinforceSound = Sound.ANVIL_USE;
+        }
+
         // Attempts to read the configurationSection containing the keys and values storing the block reinforcement coefficients.
         // If it is successful in reading them, it then stores them to the reinforceableBlocks map for use throughout the plugin.
         try {
@@ -44,8 +57,7 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
             for (String materialName : blockCoefficientMap.getKeys(false)) {
                 reinforceableBlocks.put(Material.getMaterial(materialName), (byte) blockCoefficientMap.getInt(materialName));
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load configuration.");
             e.printStackTrace();
         }

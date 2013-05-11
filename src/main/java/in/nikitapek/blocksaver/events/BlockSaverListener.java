@@ -41,7 +41,7 @@ public class BlockSaverListener implements Listener {
             return;
         } else {
             // TODO: Make the particles appear without the sound (through ProtocolLib).
-            event.getPlayer().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.reinforcedBlockDamageEffect, 0);
+            event.getPlayer().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.blockReinforcementDamageEffect, 0);
         }
 
         configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
@@ -79,7 +79,7 @@ public class BlockSaverListener implements Listener {
 
         event.setCancelled(true);
 
-        event.getBlock().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.reinforcedBlockDamageEffect, 0);
+        event.getBlock().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.blockReinforcementDamageEffect, 0);
 
         configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
     }
@@ -98,7 +98,7 @@ public class BlockSaverListener implements Listener {
             if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) == -1)
                 continue;
 
-            block.getWorld().playEffect(block.getLocation(), configurationContext.reinforcedBlockDamageEffect, 0);
+            block.getWorld().playEffect(block.getLocation(), configurationContext.blockReinforcementDamageEffect, 0);
 
             iter.remove();
         }
