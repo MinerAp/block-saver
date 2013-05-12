@@ -20,7 +20,7 @@ public class Reinforcement implements Comparable<Reinforcement> {
         return location;
     }
 
-    public int getReinforcement() {
+    public int getReinforcementValue() {
         return value;
     }
 

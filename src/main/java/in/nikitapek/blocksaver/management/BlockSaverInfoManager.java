@@ -37,7 +37,7 @@ public class BlockSaverInfoManager extends InfoManager {
 
     public int getReinforcementValue(Location location) {
         Reinforcement reinforcement = getReinforcement(location);
-        return (reinforcement == null) ? -1 : reinforcement.getReinforcement();
+        return (reinforcement == null) ? -1 : reinforcement.getReinforcementValue();
     }
 
     public Reinforcement getReinforcement(Location location) {
@@ -65,8 +65,14 @@ public class BlockSaverInfoManager extends InfoManager {
         removeReinforcement(location);
     }
 
-    public void removeReinforcement(Location location) {
-        if (getReinforcement(location) != null)
-            reinforcements.remove(getReinforcement(location));
+    public int removeReinforcement(Location location) {
+        Reinforcement reinforcement = getReinforcement(location);
+
+        if (reinforcement == null)
+            return -1;
+
+        reinforcements.remove(reinforcement);
+
+        return reinforcement.getReinforcementValue();
     }
 }

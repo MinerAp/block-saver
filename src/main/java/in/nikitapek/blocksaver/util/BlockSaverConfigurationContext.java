@@ -8,6 +8,7 @@ import java.util.EnumMap;
 import java.util.logging.Level;
 
 import org.bukkit.Effect;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -158,5 +159,9 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
         }
 
         return true;
+    }
+
+    public boolean isReinforced(Location location) {
+        return infoManager.getReinforcementValue(location) == -1 ? false : true;
     }
 }

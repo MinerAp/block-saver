@@ -33,7 +33,7 @@ public class BlockSaverListener implements Listener {
     public void onBlockPlace(final BlockPlaceEvent event) {
         // If a block is being placed somewhere where there is already a reinforcement value, the reinforcement value is removed.
         // This is to prevent "reinforcement transfers" to blocks which could not normally obtain reinforcements.
-        if (configurationContext.infoManager.getReinforcementValue(event.getBlock().getLocation()) != -1)
+        if (!configurationContext.isReinforced(event.getBlock().getLocation()))
             return;
 
         configurationContext.infoManager.removeReinforcement(event.getBlock().getLocation());
@@ -42,14 +42,12 @@ public class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(final BlockBreakEvent event) {
         // If the block is not reinforced, this plugin does not stop the block break event.
-        if (configurationContext.infoManager.getReinforcementValue(event.getBlock().getLocation()) == -1)
+        if (!configurationContext.isReinforced(event.getBlock().getLocation()))
             return;
 
-        // Removes the reinforcement from the un-reinforceable block.
-        if (!configurationContext.isMaterialReinforceable(event.getBlock().getType())) {
-            configurationContext.infoManager.removeReinforcement(event.getBlock().getLocation());
-            return;
-        }
+        removeReinforcementIfInvalid(event.getBlock());
+
+        floorReinforcement(event.getBlock());
 
         // Cancel the event before the diamond pickaxe check because reinforced blocks should not be breakable without one.
         event.setCancelled(true);
@@ -97,14 +95,13 @@ public class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBurn(final BlockBurnEvent event) {
         // If the block is not reinforced, it is allowed to burn normally.
-        if (configurationContext.infoManager.getReinforcementValue(event.getBlock().getLocation()) == -1)
+        if (!configurationContext.isReinforced(event.getBlock().getLocation()))
             return;
 
-        // Removes the reinforcement from the un-reinforceable block.
-        if (!configurationContext.isMaterialReinforceable(event.getBlock().getType())) {
-            configurationContext.infoManager.removeReinforcement(event.getBlock().getLocation());
+        if (removeReinforcementIfInvalid(event.getBlock()))
             return;
-        }
+
+        floorReinforcement(event.getBlock());
 
         // If the block is reinforced, the burn event is cancelled for the block.
         event.setCancelled(true);
@@ -130,15 +127,13 @@ public class BlockSaverListener implements Listener {
         for (Iterator<Block> iter = event.blockList().iterator(); iter.hasNext();) {
             Block block = iter.next();
 
-            // If the block is not reinforced, then it is ignored.
-            if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) == -1)
+            if (!configurationContext.isReinforced(block.getLocation()))
                 continue;
 
-            // Removes the reinforcement from the un-reinforceable block.
-            if (!configurationContext.isMaterialReinforceable(block.getType())) {
-                configurationContext.infoManager.removeReinforcement(block.getLocation());
+            if (removeReinforcementIfInvalid(block))
                 continue;
-            }
+
+            floorReinforcement(block);
 
             // If TNT damage is enabled for reinforced blocks, then the block is damaged and the successful damage effect is played.
             // Otherwise, the damage failed is played. In both cases, the block is not destroyed by the blast.
@@ -162,22 +157,18 @@ public class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
         for (Block block : event.getBlocks()) {
-            if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) == -1)
+            if (!configurationContext.isReinforced(block.getLocation()))
                 continue;
 
-            // Removes the reinforcement from the un-reinforceable block.
-            if (!configurationContext.isMaterialReinforceable(block.getType())) {
-                configurationContext.infoManager.removeReinforcement(block.getLocation());
+            if (removeReinforcementIfInvalid(block))
                 continue;
-            }
 
             if (!configurationContext.pistonsMoveReinforcedBlocks) {
                 event.setCancelled(true);
                 return;
             }
 
-            configurationContext.infoManager.setReinforcement(block.getRelative(event.getDirection()).getLocation(), configurationContext.infoManager.getReinforcementValue(block.getLocation()));
-            configurationContext.infoManager.removeReinforcement(block.getLocation());
+            moveReinforcement(event.getBlock(), event.getDirection());
         }
     }
 
@@ -198,21 +189,42 @@ public class BlockSaverListener implements Listener {
 
         Block block = event.getBlock().getRelative(direction, 2);
 
-        if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) == -1)
+        if (!configurationContext.isReinforced(block.getLocation()))
             return;
 
-        // Removes the reinforcement from the un-reinforceable block.
-        if (!configurationContext.isMaterialReinforceable(block.getType())) {
-            configurationContext.infoManager.removeReinforcement(block.getLocation());
+        if (removeReinforcementIfInvalid(block))
             return;
-        }
 
         if (!configurationContext.pistonsMoveReinforcedBlocks) {
             event.setCancelled(true);
             return;
         }
 
-        configurationContext.infoManager.setReinforcement(event.getBlock().getRelative(direction, 1).getLocation(), configurationContext.infoManager.getReinforcementValue(block.getLocation()));
-        configurationContext.infoManager.removeReinforcement(block.getLocation());
+        moveReinforcement(block, direction);
+    }
+
+    private void moveReinforcement(Block block, BlockFace direction) {
+        configurationContext.infoManager.setReinforcement(block.getRelative(direction).getLocation(), configurationContext.infoManager.removeReinforcement(block.getLocation()));
+    }
+
+    private boolean removeReinforcementIfInvalid(Block block) {// Removes the reinforcement from the un-reinforceable block.
+        if (!configurationContext.isMaterialReinforceable(block.getType())) {
+            configurationContext.infoManager.removeReinforcement(block.getLocation());
+            return true;
+        }
+
+        return false;
+    }
+
+    private void floorReinforcement(Block block) {
+        // If blocks are allowed to accumulate RV, then there is no need to floor the RV.
+        if (configurationContext.accumulateReinforcementValues)
+            return;
+
+        // Checks to see if the maximum RV is less than the actual RV. If so, floors the RV.
+        int maximumReinforcement = configurationContext.getMaterialReinforcementCoefficient(block.getType());
+
+        if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) > maximumReinforcement)
+            configurationContext.infoManager.setReinforcement(block.getLocation(), maximumReinforcement);
     }
 }
