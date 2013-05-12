@@ -55,6 +55,7 @@ reinforceableBlocks:
   DOUBLE_STEP: 6
   GLASS: 1
   THIN_GLASS: 1
+  SANDSTONE: 4
 
 
 #======== Reinforcement Item List ========#
