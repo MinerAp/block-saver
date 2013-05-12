@@ -3,6 +3,7 @@ package in.nikitapek.blocksaver.events;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 
 import java.util.Iterator;
+import java.util.ListIterator;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -21,6 +22,7 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonBaseMaterial;
+import org.bukkit.material.PistonExtensionMaterial;
 
 public class BlockSaverListener implements Listener {
     private final BlockSaverConfigurationContext configurationContext;
@@ -62,6 +64,35 @@ public class BlockSaverListener implements Listener {
         }
 
         configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
+
+        // If a part of the piston was damaged, the rest should be damaged too.
+        if (event.getBlock().getType().equals(Material.PISTON_BASE) || event.getBlock().getType().equals(Material.PISTON_STICKY_BASE)) {
+            MaterialData data = event.getBlock().getState().getData();
+            BlockFace direction = null;
+
+            // Check the block it pushed directly
+            if (data instanceof PistonBaseMaterial) {
+                direction = ((PistonBaseMaterial) data).getFacing();
+            }
+
+            if (direction == null)
+                return;
+
+            configurationContext.infoManager.damageBlock(event.getBlock().getRelative(direction).getLocation());
+        } else if (event.getBlock().getType().equals(Material.PISTON_EXTENSION)) {
+            MaterialData data = event.getBlock().getState().getData();
+            BlockFace direction = null;
+
+            // Check the block it pushed directly
+            if (data instanceof PistonExtensionMaterial) {
+                direction = ((PistonExtensionMaterial) data).getFacing();
+            }
+
+            if (direction == null)
+                return;
+
+            configurationContext.infoManager.damageBlock(event.getBlock().getRelative(direction.getOppositeFace()).getLocation());
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -156,10 +187,16 @@ public class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
-        for (Block block : event.getBlocks()) {
+        ListIterator<Block> iter = event.getBlocks().listIterator(event.getBlocks().size());
+
+        while (iter.hasPrevious()) {
+            Block block = iter.previous();
+
+            // If the block is not reinforced, we move on to the next block.
             if (!configurationContext.isReinforced(block.getLocation()))
                 continue;
 
+            // We attempt to remove any invalid reinforcements from the block. If any are invalid, we move to the next block.
             if (removeReinforcementIfInvalid(block))
                 continue;
 
@@ -168,7 +205,23 @@ public class BlockSaverListener implements Listener {
                 return;
             }
 
-            moveReinforcement(event.getBlock(), event.getDirection());
+            // If the next block is reinforced and piston reinforced block movement is disabled, the event is cancelled.
+            if (configurationContext.isReinforced(block.getRelative(event.getDirection()).getLocation())) {
+                // Deletes the reinforcement from the block ahead if it is invalid.
+                removeReinforcementIfInvalid(block.getRelative(event.getDirection()));
+
+                if (!configurationContext.pistonsMoveReinforcedBlocks) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            moveReinforcement(block, event.getDirection());
+        }
+
+        // Handle the reinforcement on the piston itself.
+        if (configurationContext.isReinforced(event.getBlock().getLocation())) {
+            configurationContext.infoManager.setReinforcement(event.getBlock().getRelative(event.getDirection()).getLocation(), configurationContext.infoManager.getReinforcementValue(event.getBlock().getLocation()));
         }
     }
 
@@ -177,18 +230,8 @@ public class BlockSaverListener implements Listener {
         if (!event.isSticky())
             return;
 
-        MaterialData data = event.getBlock().getState().getData();
-        BlockFace direction = null;
-
-        if (data instanceof PistonBaseMaterial) {
-            direction = ((PistonBaseMaterial) data).getFacing();
-        }
-
-        if (direction == null)
-            return;
-
-        Block block = event.getBlock().getRelative(direction, 2);
-
+        Block block = event.getBlock().getRelative(event.getDirection(), 2);
+        
         if (!configurationContext.isReinforced(block.getLocation()))
             return;
 
@@ -200,14 +243,15 @@ public class BlockSaverListener implements Listener {
             return;
         }
 
-        moveReinforcement(block, direction);
+        configurationContext.infoManager.setReinforcement(block.getRelative(event.getDirection().getOppositeFace()).getLocation(), configurationContext.infoManager.removeReinforcement(block.getLocation()));
     }
-
+    
     private void moveReinforcement(Block block, BlockFace direction) {
         configurationContext.infoManager.setReinforcement(block.getRelative(direction).getLocation(), configurationContext.infoManager.removeReinforcement(block.getLocation()));
     }
 
-    private boolean removeReinforcementIfInvalid(Block block) {// Removes the reinforcement from the un-reinforceable block.
+    private boolean removeReinforcementIfInvalid(Block block) {
+        // Removes the reinforcement from the un-reinforceable block.
         if (!configurationContext.isMaterialReinforceable(block.getType())) {
             configurationContext.infoManager.removeReinforcement(block.getLocation());
             return true;
