@@ -56,6 +56,8 @@ reinforceableBlocks:
   GLASS: 1
   THIN_GLASS: 1
   ICE: 1
+  PISTON_BASE: 2
+  PISTON_STICKY_BASE: 2
 
 
 #======== Reinforcement Item List ========#
