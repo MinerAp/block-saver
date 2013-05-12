@@ -30,12 +30,15 @@ public class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(final BlockBreakEvent event) {
-        if (!configurationContext.isMaterialReinforceable(event.getBlock().getType()))
-            return;
-
         // If the block is not reinforced, this plugin does not stop the block break event.
         if (configurationContext.infoManager.getReinforcementValue(event.getBlock().getLocation()) == -1)
             return;
+
+        // Removes the reinforcement from the un-reinforceable block.
+        if (!configurationContext.isMaterialReinforceable(event.getBlock().getType())) {
+            configurationContext.infoManager.removeReinforcement(event.getBlock().getLocation());
+            return;
+        }
 
         // Cancel the event before the diamond pickaxe check because reinforced blocks should not be breakable without one.
         event.setCancelled(true);
@@ -82,13 +85,15 @@ public class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBurn(final BlockBurnEvent event) {
-        // If the block is not reinforceable, there is no reason to process this event.
-        if (!configurationContext.isMaterialReinforceable(event.getBlock().getType()))
-            return;
-
         // If the block is not reinforced, it is allowed to burn normally.
         if (configurationContext.infoManager.getReinforcementValue(event.getBlock().getLocation()) == -1)
             return;
+
+        // Removes the reinforcement from the un-reinforceable block.
+        if (!configurationContext.isMaterialReinforceable(event.getBlock().getType())) {
+            configurationContext.infoManager.removeReinforcement(event.getBlock().getLocation());
+            return;
+        }
 
         // If the block is reinforced, the burn event is cancelled for the block.
         event.setCancelled(true);
@@ -114,13 +119,15 @@ public class BlockSaverListener implements Listener {
         for (Iterator<Block> iter = event.blockList().iterator(); iter.hasNext();) {
             Block block = iter.next();
 
-            // If the block is not reinforceable, it is of no relevance to this plugin.
-            if (!configurationContext.isMaterialReinforceable(block.getType()))
-                continue;
-
-            // If the block is not reinforced, then it is also ignored.
+            // If the block is not reinforced, then it is ignored.
             if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) == -1)
                 continue;
+
+            // Removes the reinforcement from the un-reinforceable block.
+            if (!configurationContext.isMaterialReinforceable(block.getType())) {
+                configurationContext.infoManager.removeReinforcement(block.getLocation());
+                continue;
+            }
 
             // If TNT damage is enabled for reinforced blocks, then the block is damaged and the successful damage effect is played.
             // Otherwise, the damage failed is played. In both cases, the block is not destroyed by the blast.
@@ -144,11 +151,14 @@ public class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
         for (Block block : event.getBlocks()) {
-            if (!configurationContext.isMaterialReinforceable(block.getType()))
-                continue;
-
             if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) == -1)
                 continue;
+
+            // Removes the reinforcement from the un-reinforceable block.
+            if (!configurationContext.isMaterialReinforceable(block.getType())) {
+                configurationContext.infoManager.removeReinforcement(block.getLocation());
+                continue;
+            }
 
             if (!configurationContext.pistonsMoveReinforcedBlocks) {
                 event.setCancelled(true);
@@ -177,11 +187,14 @@ public class BlockSaverListener implements Listener {
 
         Block block = event.getBlock().getRelative(direction, 2);
 
-        if (!configurationContext.isMaterialReinforceable(block.getType()))
-            return;
-
         if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) == -1)
             return;
+
+        // Removes the reinforcement from the un-reinforceable block.
+        if (!configurationContext.isMaterialReinforceable(block.getType())) {
+            configurationContext.infoManager.removeReinforcement(block.getLocation());
+            return;
+        }
 
         if (!configurationContext.pistonsMoveReinforcedBlocks) {
             event.setCancelled(true);
