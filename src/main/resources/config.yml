@@ -46,11 +46,16 @@ pistonsMoveReinforcedBlocks: true
 ## A list of all the items which can be reinforced by this plugin, and the maximum "reinforcement value" the block can have.
 # (Note: Any value less than 1 is invalid)
 reinforceableBlocks:
-  GRASS: 10
+  GRASS: 4
+  LOG: 4
   WOOD: 2
+  WOOD_STEP: 1
+  WOOD_DOUBLE_STEP: 2
+  WOOD_STAIRS: 2
   STONE: 5
   SAND: 3
   SMOOTH_BRICK: 15
+  SMOOTH_STAIRS: 5
   STEP: 3
   DOUBLE_STEP: 6
   GLASS: 1
@@ -58,7 +63,16 @@ reinforceableBlocks:
   ICE: 1
   PISTON_BASE: 2
   PISTON_STICKY_BASE: 2
-
+  SANDSTONE: 5
+  SANDSTONE_STAIRS: 5
+  LAPIS_BLOCK: 6
+  GOLD_BLOCK: 6
+  IRON_BLOCK: 6
+  DIAMOND_BLOCK: 6
+  GLOWSTONE: 1
+  NETHER_BRICK: 15
+  NETHER_BRICK_STAIRS: 5
+  WOOL: 1
 
 #======== Reinforcement Item List ========#
 
