@@ -220,9 +220,8 @@ public class BlockSaverListener implements Listener {
         }
 
         // Handle the reinforcement on the piston itself.
-        if (configurationContext.isReinforced(event.getBlock().getLocation())) {
-            configurationContext.infoManager.setReinforcement(event.getBlock().getRelative(event.getDirection()).getLocation(), configurationContext.infoManager.getReinforcementValue(event.getBlock().getLocation()));
-        }
+        if (configurationContext.isReinforced(event.getBlock().getLocation()))
+            moveReinforcement(event.getBlock(), event.getDirection());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
