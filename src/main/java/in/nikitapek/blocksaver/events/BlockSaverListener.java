@@ -16,6 +16,7 @@ import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.material.MaterialData;
@@ -26,6 +27,16 @@ public class BlockSaverListener implements Listener {
 
     public BlockSaverListener(BlockSaverConfigurationContext configurationContext) {
         this.configurationContext = configurationContext;
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onBlockPlace(final BlockPlaceEvent event) {
+        // If a block is being placed somewhere where there is already a reinforcement value, the reinforcement value is removed.
+        // This is to prevent "reinforcement transfers" to blocks which could not normally obtain reinforcements.
+        if (configurationContext.infoManager.getReinforcementValue(event.getBlock().getLocation()) != -1)
+            return;
+
+        configurationContext.infoManager.removeReinforcement(event.getBlock().getLocation());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
