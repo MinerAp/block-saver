@@ -17,6 +17,8 @@ public class BlockSaverPlugin extends MbapiPlugin {
 
     @Override
     public void onLoad() {
+        super.onLoad();
+
         protocolManager = ProtocolLibrary.getProtocolManager();
     }
 
