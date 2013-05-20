@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -25,10 +24,6 @@ import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
-import org.bukkit.material.PistonBaseMaterial;
-import org.bukkit.material.PistonExtensionMaterial;
 
 public class BlockSaverListener implements Listener {
     private final BlockSaverConfigurationContext configurationContext;
@@ -82,35 +77,6 @@ public class BlockSaverListener implements Listener {
         }
 
         configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
-
-        // If a part of the piston was damaged, the rest should be damaged too.
-        if (event.getBlock().getType().equals(Material.PISTON_BASE) || event.getBlock().getType().equals(Material.PISTON_STICKY_BASE)) {
-            MaterialData data = event.getBlock().getState().getData();
-            BlockFace direction = null;
-
-            // Check the block it pushed directly
-            if (data instanceof PistonBaseMaterial) {
-                direction = ((PistonBaseMaterial) data).getFacing();
-            }
-
-            if (direction == null)
-                return;
-
-            configurationContext.infoManager.damageBlock(event.getBlock().getRelative(direction).getLocation());
-        } else if (event.getBlock().getType().equals(Material.PISTON_EXTENSION)) {
-            MaterialData data = event.getBlock().getState().getData();
-            BlockFace direction = null;
-
-            // Check the block it pushed directly
-            if (data instanceof PistonExtensionMaterial) {
-                direction = ((PistonExtensionMaterial) data).getFacing();
-            }
-
-            if (direction == null)
-                return;
-
-            configurationContext.infoManager.damageBlock(event.getBlock().getRelative(direction.getOppositeFace()).getLocation());
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
