@@ -88,6 +88,7 @@ reinforceableBlocks:
   WOOD_STEP: 1
   WOOL: 1
 
+
 #======== Reinforcement Item List ========#
 
 ## A list of all the items which can be used to reinforce blocks, and their corresponding reinforcement values.
@@ -100,3 +101,35 @@ reinforcementBlocks:
   IRON_INGOT: 1
   GOLD_INGOT: 3
   DIAMOND: 10
+
+
+#======== Tool Requirement List ========#
+
+## A list of tools which can break certain blocks when reinforced. Used to prevent un-advanced players from easily destroying reinforcements.
+toolRequirements:
+  DIAMOND_BLOCK: DIAMOND_PICKAXE
+  DOUBLE_STEP: DIAMOND_PICKAXE
+  GLASS: DIAMOND_PICKAXE
+  GLOWSTONE: DIAMOND_PICKAXE
+  GOLD_BLOCK: DIAMOND_PICKAXE
+  GRASS: DIAMOND_SPADE
+  ICE: DIAMOND_PICKAXE
+  IRON_BLOCK: DIAMOND_PICKAXE
+  LAPIS_BLOCK: DIAMOND_PICKAXE
+  LOG: DIAMOND_AXE
+  NETHER_BRICK: DIAMOND_PICKAXE
+  NETHER_BRICK_STAIRS: DIAMOND_PICKAXE
+  PISTON_BASE: DIAMOND_PICKAXE
+  PISTON_STICKY_BASE: DIAMOND_PICKAXE
+  SAND: DIAMOND_SPADE
+  SANDSTONE: DIAMOND_PICKAXE
+  SANDSTONE_STAIRS: DIAMOND_PICKAXE
+  SMOOTH_BRICK: DIAMOND_PICKAXE
+  SMOOTH_STAIRS: DIAMOND_PICKAXE
+  STEP: DIAMOND_PICKAXE
+  STONE: DIAMOND_PICKAXE
+  THIN_GLASS: DIAMOND_PICKAXE
+  WOOD: DIAMOND_AXE
+  WOOD_DOUBLE_STEP: DIAMOND_AXE
+  WOOD_STAIRS: DIAMOND_AXE
+  WOOD_STEP: DIAMOND_AXE

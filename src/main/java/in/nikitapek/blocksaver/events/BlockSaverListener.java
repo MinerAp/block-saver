@@ -68,18 +68,17 @@ public class BlockSaverListener implements Listener {
         // Cancel the event before the diamond pickaxe check because reinforced blocks should not be breakable without one.
         event.setCancelled(true);
 
-        // Plays a sound effect to whether or not the players attempt to de-enforce the block was successful.
-        if (!isBlockBrokenByTool(event.getBlock(), event.getPlayer().getItemInHand())) {
+        if (!configurationContext.canToolBreakBlock(event.getBlock().getType(), event.getPlayer().getItemInHand().getType())) {
             reinforcementFeedback(event.getBlock().getLocation(), Feedback.DAMAGE_FAIL);
             return;
+        }
+
+        if (configurationContext.useParticleEffects) {
+            List<Player> players = new ArrayList<Player>();
+            players.add(event.getPlayer());
+            ((BlockSaverPlugin) configurationContext.plugin).sendParticleEffect(players, event.getBlock().getLocation());
         } else {
-            if (configurationContext.useParticleEffects) {
-                List<Player> players = new ArrayList<Player>();
-                players.add(event.getPlayer());
-                ((BlockSaverPlugin) configurationContext.plugin).sendParticleEffect(players, event.getBlock().getLocation());
-            } else {
-                reinforcementFeedback(event.getBlock().getLocation(), Feedback.DAMAGE_SUCCESS);
-            }
+            reinforcementFeedback(event.getBlock().getLocation(), Feedback.DAMAGE_SUCCESS);
         }
 
         configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
@@ -117,7 +116,7 @@ public class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockInteract(final PlayerInteractEvent event) {
         // If the player is left-clicking, the event is tested to see if it is an attempt to damage a reinforced block.
-        if (!event.getAction().equals(Action.LEFT_CLICK_BLOCK)) 
+        if (!event.getAction().equals(Action.LEFT_CLICK_BLOCK))
             return;
 
         // If the block the player is holding cannot be used for reinforcement, the event is of no relevance.
@@ -128,12 +127,11 @@ public class BlockSaverListener implements Listener {
             if (!configurationContext.isReinforced(event.getClickedBlock().getLocation()))
                 return;
 
-            if (!isBlockBrokenByTool(event.getClickedBlock(), event.getPlayer().getItemInHand())) {
+            if (!configurationContext.canToolBreakBlock(event.getClickedBlock().getType(), event.getPlayer().getItemInHand().getType())) {
                 reinforcementFeedback(event.getClickedBlock().getLocation(), Feedback.HIT_FAIL);
                 event.setCancelled(true);
+                return;
             }
-
-            return;
         }
 
         // An attempt is made to reinforce the block the player clicks, which, if not successful, exits the event.
@@ -224,6 +222,17 @@ public class BlockSaverListener implements Listener {
         while (iter.hasPrevious()) {
             Block block = iter.previous();
 
+            // If the next block is reinforced and piston reinforced block movement is disabled, the event is cancelled.
+            if (configurationContext.isReinforced(block.getRelative(event.getDirection()).getLocation())) {
+                // Deletes the reinforcement from the block ahead if it is invalid.
+                removeReinforcementIfInvalid(block.getRelative(event.getDirection()));
+
+                if (!configurationContext.pistonsMoveReinforcedBlocks) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
             // If the block is not reinforced, we move on to the next block.
             if (!configurationContext.isReinforced(block.getLocation()))
                 continue;
@@ -235,17 +244,6 @@ public class BlockSaverListener implements Listener {
             if (!configurationContext.pistonsMoveReinforcedBlocks) {
                 event.setCancelled(true);
                 return;
-            }
-
-            // If the next block is reinforced and piston reinforced block movement is disabled, the event is cancelled.
-            if (configurationContext.isReinforced(block.getRelative(event.getDirection()).getLocation())) {
-                // Deletes the reinforcement from the block ahead if it is invalid.
-                removeReinforcementIfInvalid(block.getRelative(event.getDirection()));
-
-                if (!configurationContext.pistonsMoveReinforcedBlocks) {
-                    event.setCancelled(true);
-                    return;
-                }
             }
 
             moveReinforcement(block, event.getDirection());
@@ -262,7 +260,7 @@ public class BlockSaverListener implements Listener {
             return;
 
         Block block = event.getBlock().getRelative(event.getDirection(), 2);
-        
+
         if (!configurationContext.isReinforced(block.getLocation()))
             return;
 
@@ -276,7 +274,7 @@ public class BlockSaverListener implements Listener {
 
         configurationContext.infoManager.setReinforcement(block.getRelative(event.getDirection().getOppositeFace()).getLocation(), configurationContext.infoManager.removeReinforcement(block.getLocation()));
     }
-    
+
     private void moveReinforcement(Block block, BlockFace direction) {
         configurationContext.infoManager.setReinforcement(block.getRelative(direction).getLocation(), configurationContext.infoManager.removeReinforcement(block.getLocation()));
     }
@@ -323,9 +321,5 @@ public class BlockSaverListener implements Listener {
             default:
                 break;
         }
-    }
-
-    private boolean isBlockBrokenByTool(Block block, ItemStack tool) {
-        return !block.getDrops(tool).isEmpty();
     }
 }

@@ -4,8 +4,11 @@ import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.serialization.ReinforcementTypeAdapter;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.Map.Entry;
 import java.util.logging.Level;
+import java.util.List;
 
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -25,6 +28,7 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
 
     private final TypeSafeMap<Material, Integer> reinforceableBlocks;
     private final TypeSafeMap<Material, Integer> reinforcementBlocks;
+    public final TypeSafeMap<Material, List<Material>> toolRequirements;
 
     public Effect reinforcementDamageFailEffect;
     public Effect reinforcementDamageSuccessEffect;
@@ -45,6 +49,7 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
 
         reinforceableBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.INTEGER);
         reinforcementBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.INTEGER);
+        toolRequirements = new TypeSafeMapImpl<Material, List<Material>>(new EnumMap<Material, List<Material>>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.LIST);
 
         plugin.saveDefaultConfig();
 
@@ -98,6 +103,27 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
                     reinforcementBlocks.put(Material.getMaterial(materialName), value);
                 else
                     plugin.getLogger().log(Level.WARNING, materialName + "has an invalid reinforcement value.");
+            }
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to load reinforcement blocks list.");
+            e.printStackTrace();
+        }
+
+        try {
+            configSection = plugin.getConfig().getConfigurationSection("toolRequirements");
+            for (String materialName : configSection.getKeys(false)) {
+                String value = configSection.getString(materialName);
+                for (String split : value.split(",")) {
+                    List<Material> tools = new ArrayList<Material>();
+                    tools.add(Material.getMaterial(split));
+
+                    if (toolRequirements.containsKey(Material.getMaterial(materialName))) {
+                        tools.addAll(toolRequirements.get(Material.getMaterial(materialName)));
+                        toolRequirements.remove(Material.getMaterial(materialName));
+                    }
+
+                    toolRequirements.put(Material.getMaterial(materialName), tools);
+                }
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load reinforcement blocks list.");
@@ -171,5 +197,21 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
 
     public boolean isReinforced(Location location) {
         return infoManager.getReinforcementValue(location) == -1 ? false : true;
+    }
+
+    public boolean canToolBreakBlock(Material block, Material tool) {
+        if (!toolRequirements.containsKey(block))
+            return false;
+
+        for (Entry<Material, List<Material>> material : toolRequirements.entrySet()) {
+            if (!material.getKey().equals(block))
+                continue;
+
+            if (!material.getValue().contains(tool)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
