@@ -46,6 +46,15 @@ tntDamagesReinforcedBlocks: true
 # Default: true
 fireDamagesReinforcedBlocks: true
 
+## Whether or not fires burning on reinforced blocks should occaisionally extinguish, in order to allow these blocks to not be entirely ravaged by a fire.
+# Default: true
+extinguishReinforcementFire: true
+
+## If extinguishReinforcementFire is set to true, this value determines the likelyhood that a fire is to be extinguished.
+# Note: This must be a value in the range 0.0-1.0, with a 1.0 being a 100% chance of extinguishment.
+# Default: 0.8
+extinguishChance: 0.8
+
 ## Whether or not pistons can move reinforced blocks.
 # Default: true
 pistonsMoveReinforcedBlocks: true
@@ -54,7 +63,7 @@ pistonsMoveReinforcedBlocks: true
 # Default: true
 useParticleEffects: true
 
-## Whether or not blocks should be allowed to "fade" when reinforced (e.g. snow melting, ice melting)
+## Whether or not blocks should be allowed to "fade" when reinforced (e.g. snow melting, ice melting).
 # Default: true
 allowBlockFading: true
 

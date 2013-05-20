@@ -147,6 +147,22 @@ public class BlockSaverListener implements Listener {
 
         // The block reinforcement is then damaged.
         configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
+
+        if (!configurationContext.extinguishReinforcementFire)
+            return;
+
+        if (Math.random() > configurationContext.extinguishChance)
+            return;
+
+        for (BlockFace face : BlockFace.values())
+        {
+            Block relative = event.getBlock().getRelative(face);
+            if (relative.getType() == Material.FIRE)
+            {
+                relative.setType(Material.AIR);
+            }
+        }
+
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

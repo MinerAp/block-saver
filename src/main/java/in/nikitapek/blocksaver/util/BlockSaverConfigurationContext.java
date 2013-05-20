@@ -39,9 +39,12 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean accumulateReinforcementValues;
     public final boolean tntDamagesReinforcedBlocks;
     public final boolean fireDamagesReinforcedBlocks;
+    public final boolean extinguishReinforcementFire;
     public final boolean pistonsMoveReinforcedBlocks;
     public final boolean useParticleEffects;
     public final boolean allowBlockFading;
+
+    public final double extinguishChance;
 
     public BlockSaverConfigurationContext(MbapiPlugin plugin) {
         super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplimentaryTypes.TREESET, SupplimentaryTypes.REINFORCEMENT), new ReinforcementTypeAdapter());
@@ -74,9 +77,12 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
         accumulateReinforcementValues = plugin.getConfig().getBoolean("accumulateReinforcementValues", true);
         tntDamagesReinforcedBlocks = plugin.getConfig().getBoolean("tntDamagesReinforcedBlocks", true);
         fireDamagesReinforcedBlocks = plugin.getConfig().getBoolean("fireDamagesReinforcedBlocks", true);
+        extinguishReinforcementFire = plugin.getConfig().getBoolean("extinguishReinforcementFire", true);
         pistonsMoveReinforcedBlocks = plugin.getConfig().getBoolean("pistonsMoveReinforcedBlocks", true);
         useParticleEffects = plugin.getConfig().getBoolean("useParticleEffects", true);
         allowBlockFading = plugin.getConfig().getBoolean("allowBlockFading", true);
+
+        extinguishChance = plugin.getConfig().getDouble("extinguishChance", 0.8);
 
         ConfigurationSection configSection;
 
