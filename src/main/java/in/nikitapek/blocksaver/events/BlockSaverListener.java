@@ -1,14 +1,18 @@
 package in.nikitapek.blocksaver.events;
 
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
+import in.nikitapek.blocksaver.BlockSaverPlugin;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -69,8 +73,13 @@ public class BlockSaverListener implements Listener {
             reinforcementFeedback(event.getBlock().getLocation(), Feedback.DAMAGE_FAIL);
             return;
         } else {
-            // TODO: Make the particles appear without the sound (through ProtocolLib).
-            reinforcementFeedback(event.getBlock().getLocation(), Feedback.DAMAGE_SUCCESS);
+            if (configurationContext.useParticleEffects) {
+                List<Player> players = new ArrayList<Player>();
+                players.add(event.getPlayer());
+                ((BlockSaverPlugin) configurationContext.plugin).sendParticleEffect(players, event.getBlock().getLocation());
+            } else {
+                reinforcementFeedback(event.getBlock().getLocation(), Feedback.DAMAGE_SUCCESS);
+            }
         }
 
         configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
