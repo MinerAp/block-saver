@@ -77,7 +77,6 @@ allowReinforcementGracePeriod: true
 gracePeriodTime: 3
 
 ## Whether or not reinforcements should "heal" to their maximum reinforcement after a period of time.
-# Note: for this to work, accumulateReinforcementValues must be set to false.
 # Default: true
 allowReinforcementHealing: true
 

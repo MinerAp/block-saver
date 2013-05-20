@@ -11,6 +11,7 @@ public class Reinforcement implements Comparable<Reinforcement> {
     private long timeStamp;
     private boolean justCreated;
     private String creatorName;
+    private int lastMaximumValue;
 
     public Reinforcement(final Location location, final int value, final String creatorName) {
         this.location = location;
@@ -18,6 +19,7 @@ public class Reinforcement implements Comparable<Reinforcement> {
         updateTimeStamp();
         this.creatorName = creatorName;
         justCreated = true;
+        lastMaximumValue = value;
     }
 
     public Block getBlock() {
@@ -43,6 +45,10 @@ public class Reinforcement implements Comparable<Reinforcement> {
     public boolean isJustCreated() {
         return justCreated;
     }
+    
+    public int getLastMaximumValue() {
+        return lastMaximumValue;
+    }
 
     public void updateTimeStamp() {
         if ((System.currentTimeMillis() - timeStamp) >= (BlockSaverConfigurationContext.configurationContext.gracePeriodTime * 1000))
@@ -51,8 +57,13 @@ public class Reinforcement implements Comparable<Reinforcement> {
         timeStamp = System.currentTimeMillis();
     }
 
+    public void updateLastMaximumValue() {
+        lastMaximumValue = value;
+    }
+
     public void setReinforcementValue(int value) {
         this.value = value;
+        lastMaximumValue = Math.max(value, lastMaximumValue);
     }
 
     @Override

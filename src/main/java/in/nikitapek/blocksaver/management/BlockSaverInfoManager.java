@@ -89,11 +89,9 @@ public class BlockSaverInfoManager extends InfoManager {
             return;
 
         // Heals the block is the plugin is configured to do so and the required amount of time elapsed.
-        if (!configurationContext.accumulateReinforcementValues) {
-            if (configurationContext.allowReinforcementHealing)
-                if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (configurationContext.reinforcementHealingTime * 1000))
-                    reinforcement.setReinforcementValue(configurationContext.getMaterialReinforcementCoefficient(reinforcement.getBlock().getType()));
-        }
+        if (configurationContext.allowReinforcementHealing)
+            if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (configurationContext.reinforcementHealingTime * 1000))
+                reinforcement.setReinforcementValue(reinforcement.getLastMaximumValue());
 
         if (reinforcement.getReinforcementValue() <= 1 || !isFortified(reinforcement, playerName)) {
             removeReinforcement(location);
