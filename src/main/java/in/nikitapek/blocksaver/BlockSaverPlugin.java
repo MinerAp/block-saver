@@ -42,49 +42,43 @@ public class BlockSaverPlugin extends MbapiPlugin {
     }
 
     public void sendParticleEffect(List<Player> players, Location location) {
-        PacketContainer particle = ProtocolLibrary.getProtocolManager().createPacket(63);
-
-        String name = "portal";
+        PacketContainer particle = ProtocolLibrary.getProtocolManager().createPacket(61);
+        int data = 22;
 
         switch(infoManager.getReinforcementValue(location)) {
             case 1:
-                name = "flame";
+                data = 9;
                 break;
             case 2:
-                name = "lava";
+                data = 5;
                 break;
             case 3:
-                name = "spell";
+                data = 3;
                 break;
             case 4:
-                name = "fireworksSpark";
+                data = 4;
                 break;
             case 5:
-                name = "smoke";
+                data = 7;
                 break;
             case 6:
-                name = "witchMagic";
+                data = 0;
                 break;
             default:
                 break;
         }
 
-        particle.getStrings().
-            write(0, name);
         particle.getIntegers().
-            write(0, 30);
+            write(0, 2002).
+            write(1, data).
+            write(2, (int) location.getX()).
+            write(3, (int) location.getY()).
+            write(4, (int) location.getZ());
+        particle.getBooleans().
+            write(0, false);
 
         for (Player player : players)
             try {
-                particle.getFloat().
-                    write(0, ((float) location.getX())).
-                    write(1, ((float) location.getY())).
-                    write(2, ((float) location.getZ())).
-                    write(3, 0F).
-                    write(4, 0F).
-                    write(5, 0F).
-                    write(6, 0.6F);
-
                 ProtocolLibrary.getProtocolManager().sendServerPacket(player, particle);
             }
             catch (InvocationTargetException e) {
