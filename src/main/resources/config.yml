@@ -67,6 +67,25 @@ useParticleEffects: true
 # Default: true
 allowBlockFading: true
 
+## Whether or not the creator of the reinforcement should be given a grace period to remove the reinforcement if it is in an undesirable location.
+# Default: true
+allowReinforcementGracePeriod: true
+
+## The amount of time the grace period should last to remove a reinforcement, if allowReinforcementGracePeriod is set to true.
+# Note: must be a value greater than zero. The value is measured in seconds.
+# Default: 3
+gracePeriodTime: 3
+
+## Whether or not reinforcements should "heal" to their maximum reinforcement after a period of time.
+# Note: for this to work, accumulateReinforcementValues must be set to false.
+# Default: true
+allowReinforcementHealing: true
+
+## The amount of time before a block "heals" its reinforcement, if allowReinforcementHealing is set to true.
+# Note: must be a value greater than zero. The value is measured in seconds.
+# Default: 5
+reinforcementHealTime: 5
+
 
 #======== Reinforceable Blocks List ========#
 

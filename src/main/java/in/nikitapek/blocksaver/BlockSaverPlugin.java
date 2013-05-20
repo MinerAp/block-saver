@@ -46,6 +46,10 @@ public class BlockSaverPlugin extends MbapiPlugin {
         int data = 22;
 
         switch(infoManager.getReinforcementValue(location)) {
+            case -1:
+                // If the block is not reinforced, but has just been damaged as a reinforced block (presumably due to the grace period), then we play the "nearly broken" effect.
+                data = 9;
+                break;
             case 1:
                 data = 9;
                 break;

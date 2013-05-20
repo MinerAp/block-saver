@@ -1,5 +1,6 @@
 package in.nikitapek.blocksaver.events;
 
+import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.BlockSaverPlugin;
 
@@ -70,6 +71,8 @@ public class BlockSaverListener implements Listener {
             return;
         }
 
+        configurationContext.infoManager.damageBlock(event.getBlock().getLocation(), event.getPlayer().getName());
+
         if (configurationContext.useParticleEffects) {
             List<Player> players = new ArrayList<Player>();
             players.add(event.getPlayer());
@@ -77,8 +80,6 @@ public class BlockSaverListener implements Listener {
         } else {
             reinforcementFeedback(event.getBlock().getLocation(), Feedback.DAMAGE_SUCCESS);
         }
-
-        configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -103,19 +104,25 @@ public class BlockSaverListener implements Listener {
         }
 
         // An attempt is made to reinforce the block the player clicks, which, if not successful, exits the event.
-        if (!configurationContext.attemptReinforcement(event.getClickedBlock(), event.getPlayer().getItemInHand().getType())) {
+        if (!configurationContext.attemptReinforcement(event.getClickedBlock(), event.getPlayer().getItemInHand().getType(), event.getPlayer().getName())) {
             reinforcementFeedback(event.getClickedBlock().getLocation(), Feedback.REINFORCE_FAIL);
             return;
         }
-
-        // A "reinforcement successful" sound is played as a reinforceable block was reinforced with a reinforcement material.
-        reinforcementFeedback(event.getClickedBlock().getLocation(), Feedback.REINFORCE_SUCCESS);
 
         // The amount of the reinforcement material in the player's hand is decreased.
         if (event.getPlayer().getItemInHand().getAmount() > 1) {
             event.getPlayer().getItemInHand().setAmount(event.getPlayer().getItemInHand().getAmount() - 1);
         } else {
             event.getPlayer().getInventory().remove(event.getPlayer().getItemInHand());
+        }
+
+        // A "reinforcement successful" sound is played as a reinforceable block was reinforced with a reinforcement material.
+        if (configurationContext.useParticleEffects) {
+            List<Player> players = new ArrayList<Player>();
+            players.add(event.getPlayer());
+            ((BlockSaverPlugin) configurationContext.plugin).sendParticleEffect(players, event.getClickedBlock().getLocation());
+        } else {
+            reinforcementFeedback(event.getClickedBlock().getLocation(), Feedback.REINFORCE_SUCCESS);
         }
 
         // The event is then cancelled.
@@ -146,7 +153,7 @@ public class BlockSaverListener implements Listener {
         }
 
         // The block reinforcement is then damaged.
-        configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
+        configurationContext.infoManager.damageBlock(event.getBlock().getLocation(), null);
 
         if (!configurationContext.extinguishReinforcementFire)
             return;
@@ -185,7 +192,7 @@ public class BlockSaverListener implements Listener {
             // Otherwise, the damage failed is played. In both cases, the block is not destroyed by the blast.
             if (configurationContext.tntDamagesReinforcedBlocks) {
                 reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_SUCCESS);
-                configurationContext.infoManager.damageBlock(block.getLocation());
+                configurationContext.infoManager.damageBlock(block.getLocation(), null);
             } else {
                 reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_FAIL);
             }
@@ -256,7 +263,7 @@ public class BlockSaverListener implements Listener {
             return;
         }
 
-        configurationContext.infoManager.setReinforcement(block.getRelative(event.getDirection().getOppositeFace()).getLocation(), configurationContext.infoManager.removeReinforcement(block.getLocation()));
+        moveReinforcement(block, event.getDirection().getOppositeFace());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -276,7 +283,8 @@ public class BlockSaverListener implements Listener {
     }
 
     private void moveReinforcement(Block block, BlockFace direction) {
-        configurationContext.infoManager.setReinforcement(block.getRelative(direction).getLocation(), configurationContext.infoManager.removeReinforcement(block.getLocation()));
+        Reinforcement previousReinforcement = configurationContext.infoManager.getReinforcement(block.getLocation());
+        configurationContext.infoManager.setReinforcement(block.getRelative(direction).getLocation(), configurationContext.infoManager.removeReinforcement(block.getLocation()), previousReinforcement.getCreatorName());
     }
 
     private boolean removeReinforcementIfInvalid(Block block) {
@@ -297,8 +305,13 @@ public class BlockSaverListener implements Listener {
         // Checks to see if the maximum RV is less than the actual RV. If so, floors the RV.
         int maximumReinforcement = configurationContext.getMaterialReinforcementCoefficient(block.getType());
 
-        if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) > maximumReinforcement)
-            configurationContext.infoManager.setReinforcement(block.getLocation(), maximumReinforcement);
+        Reinforcement reinforcement = configurationContext.infoManager.getReinforcement(block.getLocation());
+
+        if (reinforcement == null)
+            return;
+
+        if (reinforcement.getReinforcementValue() > maximumReinforcement)
+            configurationContext.infoManager.setReinforcement(block.getLocation(), maximumReinforcement, reinforcement.getCreatorName());
     }
 
     private void reinforcementFeedback(Location location, Feedback feedback) {

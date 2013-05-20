@@ -7,6 +7,7 @@ import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonExtensionMaterial;
 
 import in.nikitapek.blocksaver.serialization.Reinforcement;
+import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.SupplimentaryTypes;
 
 import com.amshulman.mbapi.management.InfoManager;
@@ -16,9 +17,11 @@ import com.amshulman.typesafety.TypeSafeSet;
 
 public class BlockSaverInfoManager extends InfoManager {
     private final TypeSafeStorageSet<Reinforcement> reinforcements;
+    private final BlockSaverConfigurationContext configurationContext;
 
     public BlockSaverInfoManager(ConfigurationContext configurationContext) {
         super(configurationContext);
+        this.configurationContext = (BlockSaverConfigurationContext) configurationContext;
 
         reinforcements = storageManager.getStorageSet("reinforcements", SupplimentaryTypes.REINFORCEMENT);
 
@@ -67,25 +70,39 @@ public class BlockSaverInfoManager extends InfoManager {
         return null;
     }
 
-    public void setReinforcement(Location location, int value) {
-        removeReinforcement(location);
+    public void setReinforcement(Location location, int value, String playerName) {
+        Reinforcement reinforcement = getReinforcement(location);
+        
+        if (reinforcement == null) {
+            reinforcements.add(new Reinforcement(location, value, playerName));
+            return;
+        }
 
-        reinforcements.add(new Reinforcement(location, value));
+        reinforcement.setReinforcementValue(value);
+        reinforcement.updateTimeStamp();
     }
 
-    public void damageBlock(Location location) {
+    public void damageBlock(Location location, String playerName) {
         Reinforcement reinforcement = getReinforcement(location);
 
         if (reinforcement == null)
             return;
 
-        if (reinforcement.getReinforcementValue() > 1) {
-            // TODO: Ask Andy if you can just modify the get() value after retrieval or is this put() necessary?
-            setReinforcement(reinforcement.getLocation(), (reinforcement.getReinforcementValue() - 1));
+        // Heals the block is the plugin is configured to do so and the required amount of time elapsed.
+        if (!configurationContext.accumulateReinforcementValues) {
+            if (configurationContext.allowReinforcementHealing)
+                if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (configurationContext.reinforcementHealingTime * 1000))
+                    reinforcement.setReinforcementValue(configurationContext.getMaterialReinforcementCoefficient(reinforcement.getBlock().getType()));
+        }
+
+        if (reinforcement.getReinforcementValue() <= 1 || !isFortified(reinforcement, playerName)) {
+            removeReinforcement(location);
             return;
         }
 
-        removeReinforcement(location);
+        // TODO: Ask Andy if you can just modify the get() value after retrieval or is this put() necessary?
+        setReinforcement(reinforcement.getLocation(), (reinforcement.getReinforcementValue() - 1), reinforcement.getCreatorName());
+        return;
     }
 
     public int removeReinforcement(Location location) {
@@ -97,5 +114,21 @@ public class BlockSaverInfoManager extends InfoManager {
         reinforcements.remove(reinforcement);
 
         return reinforcement.getReinforcementValue();
+    }
+
+    public boolean isFortified(Reinforcement reinforcement, String playerName) {
+        if (!configurationContext.allowReinforcementGracePeriod)
+            return true;
+        
+        if (reinforcement == null || playerName == null)
+            return true;
+
+        if (!reinforcement.isJustCreated())
+            return true;
+
+        if (!reinforcement.getCreatorName().equals(playerName))
+            return true;
+
+        return (System.currentTimeMillis() - reinforcement.getTimeStamp() > (configurationContext.gracePeriodTime * 1000));    
     }
 }

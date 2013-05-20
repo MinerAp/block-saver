@@ -1,15 +1,23 @@
 package in.nikitapek.blocksaver.serialization;
 
+import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
+
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 
 public class Reinforcement implements Comparable<Reinforcement> {
-    Location location;
-    int value;
+    private Location location;
+    private int value;
+    private long timeStamp;
+    private boolean justCreated;
+    private String creatorName;
 
-    public Reinforcement(final Location location, final int value) {
+    public Reinforcement(final Location location, final int value, final String creatorName) {
         this.location = location;
         this.value = value;
+        updateTimeStamp();
+        this.creatorName = creatorName;
+        justCreated = true;
     }
 
     public Block getBlock() {
@@ -22,6 +30,29 @@ public class Reinforcement implements Comparable<Reinforcement> {
 
     public int getReinforcementValue() {
         return value;
+    }
+
+    public long getTimeStamp() {
+        return timeStamp;
+    }
+
+    public String getCreatorName() {
+        return creatorName;
+    }
+
+    public boolean isJustCreated() {
+        return justCreated;
+    }
+
+    public void updateTimeStamp() {
+        if ((System.currentTimeMillis() - timeStamp) >= (BlockSaverConfigurationContext.configurationContext.gracePeriodTime * 1000))
+            justCreated = false;
+
+        timeStamp = System.currentTimeMillis();
+    }
+
+    public void setReinforcementValue(int value) {
+        this.value = value;
     }
 
     @Override

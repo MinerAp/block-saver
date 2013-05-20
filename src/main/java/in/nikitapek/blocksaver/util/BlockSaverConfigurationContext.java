@@ -25,6 +25,8 @@ import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 
 public class BlockSaverConfigurationContext extends ConfigurationContext {
     public final BlockSaverInfoManager infoManager;
+    // TODO: Find a better way to access configuration values from the Reinforcement class to remove this atrocity.
+    public static BlockSaverConfigurationContext configurationContext;
 
     private final TypeSafeMap<Material, Integer> reinforceableBlocks;
     private final TypeSafeMap<Material, Integer> reinforcementBlocks;
@@ -43,11 +45,17 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean pistonsMoveReinforcedBlocks;
     public final boolean useParticleEffects;
     public final boolean allowBlockFading;
+    public final boolean allowReinforcementGracePeriod;
+    public final boolean allowReinforcementHealing;
 
     public final double extinguishChance;
 
+    public final int gracePeriodTime;
+    public final int reinforcementHealingTime;
+
     public BlockSaverConfigurationContext(MbapiPlugin plugin) {
         super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplimentaryTypes.TREESET, SupplimentaryTypes.REINFORCEMENT), new ReinforcementTypeAdapter());
+        configurationContext = this;
 
         infoManager = new BlockSaverInfoManager(this);
 
@@ -81,8 +89,17 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
         pistonsMoveReinforcedBlocks = plugin.getConfig().getBoolean("pistonsMoveReinforcedBlocks", true);
         useParticleEffects = plugin.getConfig().getBoolean("useParticleEffects", true);
         allowBlockFading = plugin.getConfig().getBoolean("allowBlockFading", true);
+        allowReinforcementGracePeriod = plugin.getConfig().getBoolean("allowReinforcementGracePeriod", true);
+        allowReinforcementHealing = plugin.getConfig().getBoolean("allowReinforcementHealing", true);
 
-        extinguishChance = plugin.getConfig().getDouble("extinguishChance", 0.8);
+        // Validates that the extinguish chance is a value from 0.0 to 1.0.
+        extinguishChance = (plugin.getConfig().getDouble("extinguishChance", 0.8) < 0 || plugin.getConfig().getDouble("extinguishChance", 0.8) > 1) ? 0.8 : plugin.getConfig().getDouble("extinguishChance", 0.8);
+
+        // Validates that the grace period for reinforcement removal is not less than zero.
+        gracePeriodTime = (plugin.getConfig().getInt("gracePeriodTime", 3) < 0) ? 3 : plugin.getConfig().getInt("gracePeriodTime", 3);
+
+        // Validates that the reinforcement healing time is not less than zero.
+        reinforcementHealingTime = (plugin.getConfig().getInt("reinforcementHealingTime", 5) < 0) ? 5 : plugin.getConfig().getInt("reinforcementHealingTime", 5);
 
         ConfigurationSection configSection;
 
@@ -157,7 +174,7 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
         return isMaterialReinforceable(material) ? reinforceableBlocks.get(material) : -1;
     }
 
-    public boolean attemptReinforcement(Block block, Material reinforcement) {
+    public boolean attemptReinforcement(Block block, Material reinforcement, String playerName) {
         // Retrieves the maximum reinforcement value the block being reinforced can have.
         int coefficient = getMaterialReinforcementCoefficient(block.getType());
 
@@ -195,9 +212,9 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
         // If we are accumulating reinforcement values, the block's reinforcement is increased by the additionalReinforcementValue which is simply the additional protection of the material being used added to the current reinforcement value of the block.
         // Otherwise, we simply attempt to increase the block's reinforcement by the amount provided by the material.
         if (accumulateReinforcementValues)
-            infoManager.setReinforcement(block.getLocation(), additionalReinforcementValue);
+            infoManager.setReinforcement(block.getLocation(), additionalReinforcementValue, playerName);
         else {
-            infoManager.setReinforcement(block.getLocation(), Math.min(additionalReinforcementValue, coefficient));
+            infoManager.setReinforcement(block.getLocation(), Math.min(additionalReinforcementValue, coefficient), playerName);
         }
 
         return true;
