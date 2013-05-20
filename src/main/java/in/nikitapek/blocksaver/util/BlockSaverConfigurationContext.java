@@ -26,14 +26,17 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
     private final TypeSafeMap<Material, Integer> reinforceableBlocks;
     private final TypeSafeMap<Material, Integer> reinforcementBlocks;
 
-    public Effect blockBreakFailEffect;
-    public Effect blockReinforcementDamageEffect;
-    public Sound blockReinforceSound;
+    public Effect reinforcementDamageFailEffect;
+    public Effect reinforcementDamageSuccessEffect;
+    public Sound reinforceSuccessSound;
+    public Sound reinforceFailSound;
+    public Sound hitFailSound;
 
     public final boolean accumulateReinforcementValues;
     public final boolean tntDamagesReinforcedBlocks;
     public final boolean fireDamagesReinforcedBlocks;
     public final boolean pistonsMoveReinforcedBlocks;
+    public final boolean useParticleEffects;
 
     public BlockSaverConfigurationContext(MbapiPlugin plugin) {
         super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplimentaryTypes.TREESET, SupplimentaryTypes.REINFORCEMENT), new ReinforcementTypeAdapter());
@@ -47,21 +50,26 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
 
         try {
             // Note: setting the default values here might be unnecessary because if the config values fail to load and it defaults to these, they will never result in an exception.
-            blockBreakFailEffect = Effect.valueOf(plugin.getConfig().getString("blockBreakFailEffect", Effect.EXTINGUISH.toString()));
-            blockReinforcementDamageEffect = Effect.valueOf(plugin.getConfig().getString("blockReinforcementDamageEffect", Effect.POTION_BREAK.toString()));
-            blockReinforceSound = Sound.valueOf(plugin.getConfig().getString("blockReinforceSound", Sound.ANVIL_USE.toString()));
+            reinforcementDamageFailEffect = Effect.valueOf(plugin.getConfig().getString("reinforcementDamageFailEffect", Effect.EXTINGUISH.toString()));
+            reinforcementDamageSuccessEffect = Effect.valueOf(plugin.getConfig().getString("reinforcementDamageSuccessEffect", Effect.POTION_BREAK.toString()));
+            reinforceSuccessSound = Sound.valueOf(plugin.getConfig().getString("reinforceSuccessSound", Sound.ANVIL_USE.toString()));
+            reinforceFailSound = Sound.valueOf(plugin.getConfig().getString("reinforceFailSound", Sound.BLAZE_HIT.toString()));
+            hitFailSound = Sound.valueOf(plugin.getConfig().getString("hitFailSound", Sound.CREEPER_DEATH.toString()));
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load one or more Effect values. Reverting to defaults.");
 
-            blockBreakFailEffect = Effect.EXTINGUISH;
-            blockReinforcementDamageEffect = Effect.POTION_BREAK;
-            blockReinforceSound = Sound.ANVIL_USE;
+            reinforcementDamageFailEffect = Effect.EXTINGUISH;
+            reinforcementDamageSuccessEffect = Effect.POTION_BREAK;
+            reinforceSuccessSound = Sound.ANVIL_USE;
+            reinforceFailSound = Sound.BLAZE_HIT;
+            hitFailSound = Sound.CREEPER_DEATH;
         }
 
         accumulateReinforcementValues = plugin.getConfig().getBoolean("accumulateReinforcementValues", true);
         tntDamagesReinforcedBlocks = plugin.getConfig().getBoolean("tntDamagesReinforcedBlocks", true);
         fireDamagesReinforcedBlocks = plugin.getConfig().getBoolean("fireDamagesReinforcedBlocks", true);
         pistonsMoveReinforcedBlocks = plugin.getConfig().getBoolean("pistonsMoveReinforcedBlocks", true);
+        useParticleEffects = plugin.getConfig().getBoolean("useParticleEffects", true);
 
         ConfigurationSection configSection;
 

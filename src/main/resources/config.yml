@@ -9,17 +9,27 @@
 ## The name of the effect to be played when a player fails to damage a reinforced block.
 # (Note: please use an effect contained within the Effect class)
 # Default: EXTINGUISH
-blockBreakFailEffect: EXTINGUISH
+reinforcementDamageFailEffect: EXTINGUISH
 
 ## The name of the effect to be played when a player successfully damages a reinforced block.
 # (Note: please use an effect contained within the Effect class)
 # Default: POTION_BREAK
-blockReinforcementDamageEffect: POTION_BREAK
+reinforcementDamageSuccessEffect: POTION_BREAK
 
 ## The name of the sound to be played when a player reinforces a block.
 # (Note: please use a sound contained within the Sound class)
 # Default: ANVIL_USE
-blockReinforceSound: ANVIL_USE
+reinforceSuccessSound: ANVIL_USE
+
+## The name of the sound to be played when a player fails to reinforce a block.
+# (Note: please use a sound contained within the Sound class)
+# Default: BLAZE_HIT
+reinforceFailSound: BLAZE_HIT
+
+## The name of the sound to be played when a player fails to hit a reinforced block.
+# (Note: please use a sound contained within the Sound class)
+# Default: CREEPER_DEATH
+hitFailSound: CREEPER_DEATH
 
 ## Whether or not reinforcement value should accumulate indefinitely, as opposed to reaching the limits specified by the Reinforceable Blocks List.
 # (Note: if this is set to false, the values will be capped at those provided in the list. Setting this to true then reverting to false will not reset the values to their maximums)
@@ -39,6 +49,10 @@ fireDamagesReinforcedBlocks: true
 ## Whether or not pistons can move reinforced blocks.
 # Default: true
 pistonsMoveReinforcedBlocks: true
+
+## Whether or not the plugin should attempt to use purely particle effects for feedback rather than using sounds along with effects.
+# Default: true
+useParticleEffects: true
 
 
 #======== Reinforceable Blocks List ========#

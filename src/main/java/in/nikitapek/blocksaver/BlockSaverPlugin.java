@@ -1,6 +1,10 @@
 package in.nikitapek.blocksaver;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 
 import in.nikitapek.blocksaver.events.BlockSaverListener;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
@@ -41,8 +45,7 @@ public class BlockSaverPlugin extends MbapiPlugin {
         }
     }
 
-    /*
-    public void sendParticleEffect(Location location) {
+    public void sendParticleEffect(List<Player> players, Location location) {
         PacketContainer particle = protocolManager.createPacket(60);
 
         particle.getDoubles().
@@ -52,6 +55,12 @@ public class BlockSaverPlugin extends MbapiPlugin {
         particle.getFloat().
             write(0, 3.0F);
 
-        protocolManager.sendServerPacket(player, particle);
-    }*/
+        for (Player player : players)
+            try {
+                protocolManager.sendServerPacket(player, particle);
+            }
+            catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+    }
 }

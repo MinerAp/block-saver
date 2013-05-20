@@ -5,6 +5,7 @@ import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import java.util.Iterator;
 import java.util.ListIterator;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -20,12 +21,21 @@ import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonBaseMaterial;
 import org.bukkit.material.PistonExtensionMaterial;
 
 public class BlockSaverListener implements Listener {
     private final BlockSaverConfigurationContext configurationContext;
+
+    private enum Feedback {
+        REINFORCE_SUCCESS,
+        REINFORCE_FAIL,
+        DAMAGE_SUCCESS,
+        DAMAGE_FAIL,
+        HIT_FAIL,
+    }
 
     public BlockSaverListener(BlockSaverConfigurationContext configurationContext) {
         this.configurationContext = configurationContext;
@@ -55,12 +65,12 @@ public class BlockSaverListener implements Listener {
         event.setCancelled(true);
 
         // Plays a sound effect to whether or not the players attempt to de-enforce the block was successful.
-        if (!event.getPlayer().getItemInHand().getType().equals(Material.DIAMOND_PICKAXE)) {
-            event.getPlayer().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.blockBreakFailEffect, 0);
+        if (!isBlockBrokenByTool(event.getBlock(), event.getPlayer().getItemInHand())) {
+            reinforcementFeedback(event.getBlock().getLocation(), Feedback.DAMAGE_FAIL);
             return;
         } else {
             // TODO: Make the particles appear without the sound (through ProtocolLib).
-            event.getPlayer().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.blockReinforcementDamageEffect, 0);
+            reinforcementFeedback(event.getBlock().getLocation(), Feedback.DAMAGE_SUCCESS);
         }
 
         configurationContext.infoManager.damageBlock(event.getBlock().getLocation());
@@ -97,20 +107,34 @@ public class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockInteract(final PlayerInteractEvent event) {
-        // If the player is not left-clicking, the event is of no relevance.
-        if (!event.getAction().equals(Action.LEFT_CLICK_BLOCK))
+        // If the player is left-clicking, the event is tested to see if it is an attempt to damage a reinforced block.
+        if (!event.getAction().equals(Action.LEFT_CLICK_BLOCK)) 
             return;
 
         // If the block the player is holding cannot be used for reinforcement, the event is of no relevance.
-        if (!configurationContext.isReinforcingMaterial(event.getPlayer().getItemInHand().getType()))
+        if (!configurationContext.isReinforcingMaterial(event.getPlayer().getItemInHand().getType())){
+            if (event.getClickedBlock() == null)
+                return;
+
+            if (!configurationContext.isReinforced(event.getClickedBlock().getLocation()))
+                return;
+
+            if (!isBlockBrokenByTool(event.getClickedBlock(), event.getPlayer().getItemInHand())) {
+                reinforcementFeedback(event.getClickedBlock().getLocation(), Feedback.HIT_FAIL);
+                event.setCancelled(true);
+            }
+
             return;
+        }
 
         // An attempt is made to reinforce the block the player clicks, which, if not successful, exits the event.
-        if (!configurationContext.attemptReinforcement(event.getClickedBlock(), event.getPlayer().getItemInHand().getType()))
+        if (!configurationContext.attemptReinforcement(event.getClickedBlock(), event.getPlayer().getItemInHand().getType())) {
+            reinforcementFeedback(event.getClickedBlock().getLocation(), Feedback.REINFORCE_FAIL);
             return;
+        }
 
-        // A "reinforcement successful" (pitch-shifted +50) sound is played as a reinforceable block was reinforced with a reinforcement material.
-        event.getPlayer().getWorld().playSound(event.getClickedBlock().getLocation(), configurationContext.blockReinforceSound, 1.0f, 50f);
+        // A "reinforcement successful" sound is played as a reinforceable block was reinforced with a reinforcement material.
+        reinforcementFeedback(event.getClickedBlock().getLocation(), Feedback.REINFORCE_SUCCESS);
 
         // The amount of the reinforcement material in the player's hand is decreased.
         if (event.getPlayer().getItemInHand().getAmount() > 1) {
@@ -140,10 +164,10 @@ public class BlockSaverListener implements Listener {
         // If fire is not allowed to damage blocks, the block damage fail effect is played and the event is exited.
         // Otherwise, the block successfully damaged event is played.
         if (!configurationContext.fireDamagesReinforcedBlocks) {
-            event.getBlock().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.blockBreakFailEffect, 0);
+            reinforcementFeedback(event.getBlock().getLocation(), Feedback.DAMAGE_FAIL);
             return;
         } else {
-            event.getBlock().getWorld().playEffect(event.getBlock().getLocation(), configurationContext.blockReinforcementDamageEffect, 0);
+            reinforcementFeedback(event.getBlock().getLocation(), Feedback.DAMAGE_SUCCESS);
         }
 
         // The block reinforcement is then damaged.
@@ -169,11 +193,10 @@ public class BlockSaverListener implements Listener {
             // If TNT damage is enabled for reinforced blocks, then the block is damaged and the successful damage effect is played.
             // Otherwise, the damage failed is played. In both cases, the block is not destroyed by the blast.
             if (configurationContext.tntDamagesReinforcedBlocks) {
-                block.getWorld().playEffect(block.getLocation(), configurationContext.blockReinforcementDamageEffect, 0);
-
+                reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_SUCCESS);
                 configurationContext.infoManager.damageBlock(block.getLocation());
             } else {
-                block.getWorld().playEffect(block.getLocation(), configurationContext.blockBreakFailEffect, 0);
+                reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_FAIL);
             }
 
             iter.remove();
@@ -269,5 +292,31 @@ public class BlockSaverListener implements Listener {
 
         if (configurationContext.infoManager.getReinforcementValue(block.getLocation()) > maximumReinforcement)
             configurationContext.infoManager.setReinforcement(block.getLocation(), maximumReinforcement);
+    }
+
+    private void reinforcementFeedback(Location location, Feedback feedback) {
+        switch (feedback) {
+            case REINFORCE_SUCCESS:
+                location.getWorld().playSound(location, configurationContext.reinforceSuccessSound, 1.0f, 50f);
+                break;
+            case REINFORCE_FAIL:
+                location.getWorld().playSound(location, configurationContext.reinforceFailSound, 1.0f, 50f);
+                break;
+            case DAMAGE_SUCCESS:
+                location.getWorld().playEffect(location, configurationContext.reinforcementDamageSuccessEffect, 0);
+                break;
+            case DAMAGE_FAIL:
+                location.getWorld().playEffect(location, configurationContext.reinforcementDamageFailEffect, 0);
+                break;
+            case HIT_FAIL:
+                location.getWorld().playSound(location, configurationContext.hitFailSound, 1.0f, 0f);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private boolean isBlockBrokenByTool(Block block, ItemStack tool) {
+        return !block.getDrops(tool).isEmpty();
     }
 }
