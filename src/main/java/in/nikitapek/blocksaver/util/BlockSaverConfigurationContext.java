@@ -41,6 +41,7 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean fireDamagesReinforcedBlocks;
     public final boolean pistonsMoveReinforcedBlocks;
     public final boolean useParticleEffects;
+    public final boolean allowBlockFading;
 
     public BlockSaverConfigurationContext(MbapiPlugin plugin) {
         super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplimentaryTypes.TREESET, SupplimentaryTypes.REINFORCEMENT), new ReinforcementTypeAdapter());
@@ -75,6 +76,7 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
         fireDamagesReinforcedBlocks = plugin.getConfig().getBoolean("fireDamagesReinforcedBlocks", true);
         pistonsMoveReinforcedBlocks = plugin.getConfig().getBoolean("pistonsMoveReinforcedBlocks", true);
         useParticleEffects = plugin.getConfig().getBoolean("useParticleEffects", true);
+        allowBlockFading = plugin.getConfig().getBoolean("allowBlockFading", true);
 
         ConfigurationSection configSection;
 

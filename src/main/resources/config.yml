@@ -54,6 +54,10 @@ pistonsMoveReinforcedBlocks: true
 # Default: true
 useParticleEffects: true
 
+## Whether or not blocks should be allowed to "fade" when reinforced (e.g. snow melting, ice melting)
+# Default: true
+allowBlockFading: true
+
 
 #======== Reinforceable Blocks List ========#
 

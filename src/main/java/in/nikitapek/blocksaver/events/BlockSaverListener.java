@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -18,6 +19,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
@@ -239,6 +241,22 @@ public class BlockSaverListener implements Listener {
         }
 
         configurationContext.infoManager.setReinforcement(block.getRelative(event.getDirection().getOppositeFace()).getLocation(), configurationContext.infoManager.removeReinforcement(block.getLocation()));
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onBlockFade(final BlockFadeEvent event) {
+        if (!event.getBlock().getType().equals(Material.SNOW) && !event.getBlock().getType().equals(Material.ICE))
+            return;
+
+        if (!configurationContext.isReinforced(event.getBlock().getLocation()))
+            return;
+
+        if (!configurationContext.allowBlockFading) {
+            event.setCancelled(true);
+            return;
+        }
+
+        configurationContext.infoManager.removeReinforcement(event.getBlock().getLocation());
     }
 
     private void moveReinforcement(Block block, BlockFace direction) {
