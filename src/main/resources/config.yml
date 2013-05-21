@@ -42,7 +42,7 @@ accumulateReinforcementValues: true
 tntDamagesReinforcedBlocks: true
 
 ## Whether or not fire can damage reinforced blocks.
-# (Note: fire on reinforced blocks will probably burn indefinitely at the moment, unless put out by players)
+# (Note: fire on reinforced blocks will burn indefinitely unless extinguishReinforcementFire is set to true.)
 # Default: true
 fireDamagesReinforcedBlocks: true
 
