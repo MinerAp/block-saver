@@ -6,6 +6,7 @@ import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import in.nikitapek.blocksaver.commands.CommandBlockSaver;
 import in.nikitapek.blocksaver.events.BlockSaverListener;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
@@ -27,6 +28,7 @@ public class BlockSaverPlugin extends MbapiPlugin {
         BlockSaverConfigurationContext configurationContext = new BlockSaverConfigurationContext(this);
         infoManager = configurationContext.infoManager;
 
+        registerCommandExecutor(new CommandBlockSaver(configurationContext));
         registerEventHandler(new BlockSaverListener(configurationContext));
 
         super.onEnable();

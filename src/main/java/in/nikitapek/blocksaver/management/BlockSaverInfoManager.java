@@ -6,35 +6,47 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonExtensionMaterial;
 
+import in.nikitapek.blocksaver.serialization.PlayerInfo;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
+import in.nikitapek.blocksaver.util.PlayerInfoConstructorFactory;
 import in.nikitapek.blocksaver.util.SupplimentaryTypes;
 
 import com.amshulman.mbapi.management.InfoManager;
+import com.amshulman.mbapi.storage.TypeSafeStorageMap;
 import com.amshulman.mbapi.storage.TypeSafeStorageSet;
 import com.amshulman.mbapi.util.ConfigurationContext;
+import com.amshulman.mbapi.util.ConstructorFactory;
 import com.amshulman.typesafety.TypeSafeSet;
+import com.google.gson.reflect.TypeToken;
 
 public class BlockSaverInfoManager extends InfoManager {
+    private final TypeSafeStorageMap<PlayerInfo> playerInfo;
     private final TypeSafeStorageSet<Reinforcement> reinforcements;
     private final BlockSaverConfigurationContext configurationContext;
+
+    private static final ConstructorFactory<PlayerInfo> FACTORY = new PlayerInfoConstructorFactory();
 
     public BlockSaverInfoManager(ConfigurationContext configurationContext) {
         super(configurationContext);
         this.configurationContext = (BlockSaverConfigurationContext) configurationContext;
 
-        reinforcements = storageManager.getStorageSet("reinforcements", SupplimentaryTypes.REINFORCEMENT);
+        playerInfo = storageManager.getStorageMap("playerInfo", new TypeToken<PlayerInfo>() {}.getType());
+        registerPlayerInfoLoader(playerInfo, FACTORY);
 
+        reinforcements = storageManager.getStorageSet("reinforcements", SupplimentaryTypes.REINFORCEMENT);
         reinforcements.load();
     }
 
     @Override
     public void saveAll() {
+        playerInfo.saveAll();
         reinforcements.saveAll();
     }
 
     @Override
     public void unloadAll() {
+        playerInfo.unloadAll();
         reinforcements.unloadAll();
     }
 
@@ -128,5 +140,15 @@ public class BlockSaverInfoManager extends InfoManager {
             return true;
 
         return (System.currentTimeMillis() - reinforcement.getTimeStamp() > (configurationContext.gracePeriodTime * 1000));    
+    }
+
+    public PlayerInfo getPlayerInfo(String playerName) {
+        PlayerInfo info = playerInfo.get(playerName);
+        if (info == null) {
+            playerInfo.load(playerName, FACTORY);
+            info = playerInfo.get(playerName);
+        }
+
+        return info;
     }
 }
