@@ -193,7 +193,10 @@ public class BlockSaverListener implements Listener {
             // Otherwise, the damage failed is played. In both cases, the block is not destroyed by the blast.
             if (configurationContext.tntDamagesReinforcedBlocks) {
                 reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_SUCCESS);
-                configurationContext.infoManager.damageBlock(block.getLocation(), null);
+                if (configurationContext.tntStripReinforcementEntirely)
+                    configurationContext.infoManager.removeReinforcement(block.getLocation());
+                else
+                    configurationContext.infoManager.damageBlock(block.getLocation(), null);
             } else {
                 reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_FAIL);
             }
@@ -204,6 +207,10 @@ public class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockPhysics(final BlockPhysicsEvent event) {
+        // This is to ensure TNT-based physics events are not processed.
+        if (!event.getBlock().getType().equals(Material.SAND) && !event.getBlock().getType().equals(Material.GRAVEL))
+            return;
+
         if (!configurationContext.isReinforced(event.getBlock().getLocation()))
             return;
 

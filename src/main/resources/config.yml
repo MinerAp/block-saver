@@ -41,9 +41,13 @@ hitFailSound: CREEPER_DEATH
 accumulateReinforcementValues: true
 
 ## Whether or not TNT can damage reinforced blocks.
-# Note: one TNT blast will only decrement the reinforcement value by one.
 # Default: true
 tntDamagesReinforcedBlocks: true
+
+## Whether or not TNT entirely strips reinforcements or decrements them.
+# Note: this option is ignored if tntDamagesReinforcedBlocks is set to false.
+# Default: true
+tntStripReinforcementEntirely: true
 
 ## Whether or not liquids can destroy reinforced blocks which can wash away (e.g. torches, railroad tracks).
 # Default: true
