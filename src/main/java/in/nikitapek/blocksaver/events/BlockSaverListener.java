@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -111,10 +112,12 @@ public class BlockSaverListener implements Listener {
         }
 
         // The amount of the reinforcement material in the player's hand is decreased.
-        if (event.getPlayer().getItemInHand().getAmount() > 1) {
-            event.getPlayer().getItemInHand().setAmount(event.getPlayer().getItemInHand().getAmount() - 1);
-        } else {
-            event.getPlayer().getInventory().remove(event.getPlayer().getItemInHand());
+        if (!event.getPlayer().getGameMode().equals(GameMode.CREATIVE)) {
+            if (event.getPlayer().getItemInHand().getAmount() > 1) {
+                event.getPlayer().getItemInHand().setAmount(event.getPlayer().getItemInHand().getAmount() - 1);
+            } else {
+                event.getPlayer().getInventory().remove(event.getPlayer().getItemInHand());
+            }
         }
 
         // A "reinforcement successful" sound is played as a reinforceable block was reinforced with a reinforcement material.
