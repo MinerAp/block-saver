@@ -7,46 +7,50 @@
 #======== Settings ==========#
 
 ## The name of the effect to be played when a player fails to damage a reinforced block.
-# (Note: please use an effect contained within the Effect class)
+# Note: please use an effect contained within the Effect class.
 # Default: EXTINGUISH
 reinforcementDamageFailEffect: EXTINGUISH
 
 ## The name of the effect to be played when a player successfully damages a reinforced block.
-# (Note: please use an effect contained within the Effect class)
+# Notes:
+#   Please use an effect contained within the Effect class.
+#   This value can be overriden by the useParticleEffects option, which, if enabled, will instead use coloured particle effects to represent the state of the block as it is damaged or reinforced.
 # Default: POTION_BREAK
 reinforcementDamageSuccessEffect: POTION_BREAK
 
 ## The name of the sound to be played when a player reinforces a block.
-# (Note: please use a sound contained within the Sound class)
+# Note: please use a sound contained within the Sound class.
 # Default: ANVIL_USE
 reinforceSuccessSound: ANVIL_USE
 
 ## The name of the sound to be played when a player fails to reinforce a block.
-# (Note: please use a sound contained within the Sound class)
+# Note: please use a sound contained within the Sound class.
 # Default: BLAZE_HIT
 reinforceFailSound: BLAZE_HIT
 
 ## The name of the sound to be played when a player fails to hit a reinforced block.
-# (Note: please use a sound contained within the Sound class)
+# Note: please use a sound contained within the Sound class.
 # Default: CREEPER_DEATH
 hitFailSound: CREEPER_DEATH
 
-## Whether or not reinforcement value should accumulate indefinitely, as opposed to reaching the limits specified by the Reinforceable Blocks List.
-# (Note: if this is set to false, the values will be capped at those provided in the list. Setting this to true then reverting to false will not reset the values to their maximums)
+## Whether or not reinforcement values should accumulate indefinitely, as opposed to reaching the limits specified by the Reinforceable Blocks List.
+# Notes:
+#   If this is set to false, the values will be capped at those provided in the list.
+#   Setting this to true then reverting to false will not reset the values to their maximums as defined in the Reinforceable Blocks List.
 # Default: true
 accumulateReinforcementValues: true
 
 ## Whether or not TNT can damage reinforced blocks.
-# (Note: one TNT blast will only decrement the reinforcement value by one)
+# Note: one TNT blast will only decrement the reinforcement value by one.
 # Default: true
 tntDamagesReinforcedBlocks: true
 
 ## Whether or not fire can damage reinforced blocks.
-# (Note: fire on reinforced blocks will burn indefinitely unless extinguishReinforcementFire is set to true.)
+# Note: if this is set to true, it is recommended to set extinguishReinforcementFire to true, otherwise fire will burn indefinitely and destroy enchantments quickly.
 # Default: true
 fireDamagesReinforcedBlocks: true
 
-## Whether or not fires burning on reinforced blocks should occaisionally extinguish, in order to allow these blocks to not be entirely ravaged by a fire.
+## Whether or not fires burning on reinforced blocks should occaisionally extinguish, in order to prevent these blocks from being entirely ravaged by a fire.
 # Default: true
 extinguishReinforcementFire: true
 
@@ -59,24 +63,26 @@ extinguishChance: 0.8
 # Default: true
 pistonsMoveReinforcedBlocks: true
 
-## Whether or not the plugin should attempt to use purely particle effects for feedback rather than using sounds along with effects.
+## Whether or not the plugin should attempt to use color-changing particle effects (dependant on the health of the reinforcement) for feedback rather than using the effects defined above, where possible.
 # Default: true
 useParticleEffects: true
 
-## Whether or not blocks should be allowed to "fade" when reinforced (e.g. snow melting, ice melting).
+## Whether or not blocks should be allowed to "fade" while reinforced (e.g. snow melting, ice melting).
 # Default: true
 allowBlockFading: true
 
 ## Whether or not the creator of the reinforcement should be given a grace period to remove the reinforcement if it is in an undesirable location.
+# Note: the item used in the reinforcement is not refunded.
 # Default: true
 allowReinforcementGracePeriod: true
 
 ## The amount of time the grace period should last to remove a reinforcement, if allowReinforcementGracePeriod is set to true.
-# Note: must be a value greater than zero. The value is measured in seconds.
+# Note: must be an integer value greater than zero. The value is measured in seconds.
 # Default: 3
 gracePeriodTime: 3
 
 ## Whether or not reinforcements should "heal" to their maximum reinforcement after a period of time.
+# Note: this does not mean the maximum reinforcement as described in the Reinforceable Blocks List, but rather the last highest reinforcement the block was raised to, prior to attack.
 # Default: true
 allowReinforcementHealing: true
 
@@ -88,7 +94,7 @@ reinforcementHealTime: 5
 
 #======== Reinforceable Blocks List ========#
 
-## A list of all the items which can be reinforced by this plugin, and the maximum "reinforcement value" the block can have.
+## A list of all the items which can be reinforced by this plugin, and the maximum "reinforcement value" the block can reach, if accumulateReinforcementValues is set to false.
 # (Note: Any value less than 1 is invalid)
 reinforceableBlocks:
   DIAMOND_BLOCK: 6
