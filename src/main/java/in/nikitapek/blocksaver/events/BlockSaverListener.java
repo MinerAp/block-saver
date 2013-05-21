@@ -21,6 +21,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockFadeEvent;
+import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
@@ -280,6 +281,25 @@ public class BlockSaverListener implements Listener {
         }
 
         configurationContext.infoManager.removeReinforcement(event.getBlock().getLocation());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onWaterPassThrough(BlockFromToEvent event) {
+        if (event.getBlock().getType() == Material.DRAGON_EGG)
+            return;
+
+        if (!configurationContext.isReinforced(event.getToBlock().getLocation()))
+            return;
+
+        if (removeReinforcementIfInvalid(event.getToBlock()))
+            return;
+
+        if (!configurationContext.liquidsDestroyReinforcedBlocks) {
+            event.setCancelled(true);
+            return;
+        }
+
+        configurationContext.infoManager.removeReinforcement(event.getToBlock().getLocation());
     }
 
     private void moveReinforcement(Block block, BlockFace direction) {

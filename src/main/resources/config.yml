@@ -45,6 +45,10 @@ accumulateReinforcementValues: true
 # Default: true
 tntDamagesReinforcedBlocks: true
 
+## Whether or not liquids can destroy reinforced blocks which can wash away (e.g. torches, railroad tracks).
+# Default: true
+liquidsDestroyReinforcedBlocks: true
+
 ## Whether or not fire can damage reinforced blocks.
 # Note: if this is set to true, it is recommended to set extinguishReinforcementFire to true, otherwise fire will burn indefinitely and destroy enchantments quickly.
 # Default: true
