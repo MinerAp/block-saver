@@ -357,7 +357,6 @@ public class BlockSaverListener implements Listener {
                     player.sendMessage(ChatColor.GRAY + "Failed to reinforce a block.");
                 break;
             case DAMAGE_SUCCESS:
-                location.getWorld().playEffect(location, configurationContext.reinforcementDamageSuccessEffect, 0);
                 if (player != null && configurationContext.infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback())
                     player.sendMessage(ChatColor.GRAY + "Damaged a reinforced block.");
 
@@ -365,7 +364,8 @@ public class BlockSaverListener implements Listener {
                     List<Player> players = new ArrayList<Player>();
                     players.add(player);
                     ((BlockSaverPlugin) configurationContext.plugin).sendParticleEffect(players, location);
-                }
+                } else
+                    location.getWorld().playEffect(location, configurationContext.reinforcementDamageSuccessEffect, 0);
                 break;
             case DAMAGE_FAIL:
                 location.getWorld().playEffect(location, configurationContext.reinforcementDamageFailEffect, 0);

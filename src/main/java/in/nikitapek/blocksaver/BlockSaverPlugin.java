@@ -83,7 +83,7 @@ public class BlockSaverPlugin extends MbapiPlugin {
         particle.getBooleans().
             write(0, false);
 
-        for (Player player : players)
+        for (Player player : getServer().getOnlinePlayers())
             try {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(player, particle);
             }
