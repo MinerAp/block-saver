@@ -41,6 +41,7 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean accumulateReinforcementValues;
     public final boolean tntDamagesReinforcedBlocks;
     public final boolean liquidsDestroyReinforcedBlocks;
+    public final boolean allowReinforcedBlockPhysics;
     public final boolean fireDamagesReinforcedBlocks;
     public final boolean extinguishReinforcementFire;
     public final boolean pistonsMoveReinforcedBlocks;
@@ -86,6 +87,7 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
         accumulateReinforcementValues = plugin.getConfig().getBoolean("accumulateReinforcementValues", true);
         tntDamagesReinforcedBlocks = plugin.getConfig().getBoolean("tntDamagesReinforcedBlocks", true);
         liquidsDestroyReinforcedBlocks = plugin.getConfig().getBoolean("liquidsDestroyReinforcedBlocks", true);
+        allowReinforcedBlockPhysics = plugin.getConfig().getBoolean("allowReinforcedBlockPhysics", true);
         fireDamagesReinforcedBlocks = plugin.getConfig().getBoolean("fireDamagesReinforcedBlocks", true);
         extinguishReinforcementFire = plugin.getConfig().getBoolean("extinguishReinforcementFire", true);
         pistonsMoveReinforcedBlocks = plugin.getConfig().getBoolean("pistonsMoveReinforcedBlocks", true);

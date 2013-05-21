@@ -204,7 +204,18 @@ public class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockPhysics(final BlockPhysicsEvent event) {
+        if (!configurationContext.isReinforced(event.getBlock().getLocation()))
+            return;
 
+        if (removeReinforcementIfInvalid(event.getBlock()))
+            return;
+
+        if (!configurationContext.allowReinforcedBlockPhysics) {
+            event.setCancelled(true);
+            return;
+        }
+
+        configurationContext.infoManager.removeReinforcement(event.getBlock().getLocation());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

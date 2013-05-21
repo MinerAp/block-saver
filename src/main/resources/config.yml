@@ -49,6 +49,11 @@ tntDamagesReinforcedBlocks: true
 # Default: true
 liquidsDestroyReinforcedBlocks: true
 
+## Whether or not physics-affected blocks (i.e. sand and gravel), if reinforced, are allowed to fall down.
+# Note: if the blocks are allowed to fall, their reinforcement is simply removed, not transferred to their new location.
+# Default: true
+allowReinforcedBlockPhysics: true
+
 ## Whether or not fire can damage reinforced blocks.
 # Note: if this is set to true, it is recommended to set extinguishReinforcementFire to true, otherwise fire will burn indefinitely and destroy enchantments quickly.
 # Default: true
