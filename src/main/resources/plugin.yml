@@ -20,3 +20,4 @@ permissions:
     description: Controls all BlockSaver permissions
     children:
       blocksaver.blocksaver: true
+      blocksaver.feedback: true
