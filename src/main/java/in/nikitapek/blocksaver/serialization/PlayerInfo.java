@@ -1,6 +1,6 @@
 package in.nikitapek.blocksaver.serialization;
 
-public class PlayerInfo {
+public final class PlayerInfo {
     private boolean isRecievingTextFeedback;
 
     public PlayerInfo() {
@@ -11,7 +11,7 @@ public class PlayerInfo {
         return isRecievingTextFeedback;
     }
 
-    public void setRecievingTextFeedback(boolean isRecievingTextFeedback) {
+    public void setRecievingTextFeedback(final boolean isRecievingTextFeedback) {
         this.isRecievingTextFeedback = isRecievingTextFeedback;
     }
 }

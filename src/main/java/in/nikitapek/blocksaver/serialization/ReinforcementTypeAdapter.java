@@ -12,16 +12,15 @@ import com.amshulman.typesafety.gson.GsonTypeAdapter;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 
-public class ReinforcementTypeAdapter implements GsonTypeAdapter<Location> {
+public final class ReinforcementTypeAdapter implements GsonTypeAdapter<Location> {
     private static final Type TYPE = SupplimentaryTypes.LOCATION;
 
     @Override
-    public JsonElement serialize(Location src, Type typeOfSrc, JsonSerializationContext context) {
-        JsonArray arr = new JsonArray();
+    public JsonElement serialize(final Location src, final Type typeOfSrc, final JsonSerializationContext context) {
+        final JsonArray arr = new JsonArray();
         arr.add(new JsonPrimitive(src.getWorld().getName()));
         arr.add(new JsonPrimitive(src.getX()));
         arr.add(new JsonPrimitive(src.getY()));
@@ -31,9 +30,9 @@ public class ReinforcementTypeAdapter implements GsonTypeAdapter<Location> {
     }
 
     @Override
-    public Location deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        JsonArray arr = json.getAsJsonArray();
-        World w = Bukkit.getWorld(arr.get(0).getAsString());
+    public Location deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) {
+        final JsonArray arr = json.getAsJsonArray();
+        final World w = Bukkit.getWorld(arr.get(0).getAsString());
         return new Location(w, arr.get(1).getAsDouble(), arr.get(2).getAsDouble(), arr.get(3).getAsDouble());
     }
 

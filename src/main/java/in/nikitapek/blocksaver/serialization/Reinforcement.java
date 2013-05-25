@@ -1,16 +1,17 @@
 package in.nikitapek.blocksaver.serialization;
 
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
+import in.nikitapek.blocksaver.util.BlockSaverUtil;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 
-public class Reinforcement implements Comparable<Reinforcement> {
-    private Location location;
+public final class Reinforcement implements Comparable<Reinforcement> {
+    private final Location location;
     private int value;
     private long timeStamp;
     private boolean justCreated;
-    private String creatorName;
+    private final String creatorName;
     private int lastMaximumValue;
 
     public Reinforcement(final Location location, final int value, final String creatorName) {
@@ -45,14 +46,15 @@ public class Reinforcement implements Comparable<Reinforcement> {
     public boolean isJustCreated() {
         return justCreated;
     }
-    
+
     public int getLastMaximumValue() {
         return lastMaximumValue;
     }
 
     public void updateTimeStamp() {
-        if ((System.currentTimeMillis() - timeStamp) >= (BlockSaverConfigurationContext.configurationContext.gracePeriodTime * 1000))
+        if ((System.currentTimeMillis() - timeStamp) >= (BlockSaverConfigurationContext.configurationContext.gracePeriodTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
             justCreated = false;
+        }
 
         timeStamp = System.currentTimeMillis();
     }
@@ -61,9 +63,10 @@ public class Reinforcement implements Comparable<Reinforcement> {
         lastMaximumValue = value;
     }
 
-    public void setReinforcementValue(int value) {
+    public void setReinforcementValue(final int value) {
         this.value = value;
         lastMaximumValue = Math.max(value, lastMaximumValue);
+        updateTimeStamp();
     }
 
     @Override
@@ -76,7 +79,7 @@ public class Reinforcement implements Comparable<Reinforcement> {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -86,7 +89,7 @@ public class Reinforcement implements Comparable<Reinforcement> {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        Reinforcement other = (Reinforcement) obj;
+        final Reinforcement other = (Reinforcement) obj;
         // TODO: Ask Andy if these lines are right.
         if (value != other.value) {
             return false;
@@ -102,7 +105,7 @@ public class Reinforcement implements Comparable<Reinforcement> {
     }
 
     @Override
-    public int compareTo(Reinforcement o) {
+    public int compareTo(final Reinforcement o) {
         int c = Integer.compare(location.getBlockX(), o.location.getBlockX());
         if (c != 0) {
             return c;

@@ -1,21 +1,20 @@
 package in.nikitapek.blocksaver;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
-
 import in.nikitapek.blocksaver.commands.CommandBlockSaver;
 import in.nikitapek.blocksaver.events.BlockSaverListener;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
+
 import com.amshulman.mbapi.MbapiPlugin;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 
-public class BlockSaverPlugin extends MbapiPlugin {
+public final class BlockSaverPlugin extends MbapiPlugin {
     private BlockSaverInfoManager infoManager;
 
     @Override
@@ -25,7 +24,7 @@ public class BlockSaverPlugin extends MbapiPlugin {
 
     @Override
     public void onEnable() {
-        BlockSaverConfigurationContext configurationContext = new BlockSaverConfigurationContext(this);
+        final BlockSaverConfigurationContext configurationContext = new BlockSaverConfigurationContext(this);
         infoManager = configurationContext.infoManager;
 
         registerCommandExecutor(new CommandBlockSaver(configurationContext));
@@ -43,11 +42,11 @@ public class BlockSaverPlugin extends MbapiPlugin {
         }
     }
 
-    public void sendParticleEffect(List<Player> players, Location location) {
-        PacketContainer particle = ProtocolLibrary.getProtocolManager().createPacket(61);
+    public void sendParticleEffect(final Location location) {
+        final PacketContainer particle = ProtocolLibrary.getProtocolManager().createPacket(61);
         int data = 22;
 
-        switch(infoManager.getReinforcementValue(location)) {
+        switch (infoManager.getReinforcementValue(location)) {
             case -1:
                 // If the block is not reinforced, but has just been damaged as a reinforced block (presumably due to the grace period), then we play the "nearly broken" effect.
                 data = 9;
@@ -75,20 +74,20 @@ public class BlockSaverPlugin extends MbapiPlugin {
         }
 
         particle.getIntegers().
-            write(0, 2002).
-            write(1, data).
-            write(2, (int) location.getX()).
-            write(3, (int) location.getY()).
-            write(4, (int) location.getZ());
+                write(0, 2002).
+                write(1, data).
+                write(2, (int) location.getX()).
+                write(3, (int) location.getY()).
+                write(4, (int) location.getZ());
         particle.getBooleans().
-            write(0, false);
+                write(0, false);
 
-        for (Player player : getServer().getOnlinePlayers())
+        for (final Player player : getServer().getOnlinePlayers()) {
             try {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(player, particle);
-            }
-            catch (InvocationTargetException e) {
+            } catch (final InvocationTargetException e) {
                 e.printStackTrace();
             }
+        }
     }
 }

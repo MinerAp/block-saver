@@ -13,8 +13,6 @@ import org.bukkit.block.Block;
 import com.google.gson.reflect.TypeToken;
 
 public final class SupplimentaryTypes {
-    private SupplimentaryTypes() {}
-
     @SuppressWarnings("rawtypes")
     public static final Type TREESET = new TypeToken<TreeSet>() {}.getType();
 
@@ -24,4 +22,6 @@ public final class SupplimentaryTypes {
     public static final Type REINFORCEMENT = new TypeToken<Reinforcement>() {}.getType();
     public static final Type LOCATION = new TypeToken<Location>() {}.getType();
     public static final Type LIST = new TypeToken<List<?>>() {}.getType();
+
+    private SupplimentaryTypes() {}
 }

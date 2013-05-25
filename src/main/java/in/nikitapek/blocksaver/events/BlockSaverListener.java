@@ -1,8 +1,8 @@
 package in.nikitapek.blocksaver.events;
 
+import in.nikitapek.blocksaver.BlockSaverPlugin;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
-import in.nikitapek.blocksaver.BlockSaverPlugin;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,7 +31,8 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-public class BlockSaverListener implements Listener {
+public final class BlockSaverListener implements Listener {
+    private static final byte PITCH_SHIFT = 50;
     private final BlockSaverConfigurationContext configurationContext;
 
     private enum Feedback {
@@ -42,7 +43,7 @@ public class BlockSaverListener implements Listener {
         HIT_FAIL
     }
 
-    public BlockSaverListener(BlockSaverConfigurationContext configurationContext) {
+    public BlockSaverListener(final BlockSaverConfigurationContext configurationContext) {
         this.configurationContext = configurationContext;
     }
 
@@ -50,8 +51,9 @@ public class BlockSaverListener implements Listener {
     public void onBlockPlace(final BlockPlaceEvent event) {
         // If a block is being placed somewhere where there is already a reinforcement value, the reinforcement value is removed.
         // This is to prevent "reinforcement transfers" to blocks which could not normally obtain reinforcements.
-        if (!configurationContext.isReinforced(event.getBlock().getLocation()))
+        if (!configurationContext.isReinforced(event.getBlock().getLocation())) {
             return;
+        }
 
         configurationContext.infoManager.removeReinforcement(event.getBlock().getLocation());
     }
@@ -59,8 +61,9 @@ public class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(final BlockBreakEvent event) {
         // If the block is not reinforced, this plugin does not stop the block break event.
-        if (!configurationContext.isReinforced(event.getBlock().getLocation()))
+        if (!configurationContext.isReinforced(event.getBlock().getLocation())) {
             return;
+        }
 
         removeReinforcementIfInvalid(event.getBlock());
 
@@ -82,16 +85,19 @@ public class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockInteract(final PlayerInteractEvent event) {
         // If the player is left-clicking, the event is tested to see if it is an attempt to damage a reinforced block.
-        if (!event.getAction().equals(Action.LEFT_CLICK_BLOCK))
+        if (!event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
             return;
+        }
 
         // If the block the player is holding cannot be used for reinforcement, the event is of no relevance.
-        if (!configurationContext.isReinforcingMaterial(event.getPlayer().getItemInHand().getType())){
-            if (event.getClickedBlock() == null)
+        if (!configurationContext.isReinforcingMaterial(event.getPlayer().getItemInHand().getType())) {
+            if (event.getClickedBlock() == null) {
                 return;
+            }
 
-            if (!configurationContext.isReinforced(event.getClickedBlock().getLocation()))
+            if (!configurationContext.isReinforced(event.getClickedBlock().getLocation())) {
                 return;
+            }
 
             if (!configurationContext.canToolBreakBlock(event.getClickedBlock().getType(), event.getPlayer().getItemInHand().getType())) {
                 reinforcementFeedback(event.getClickedBlock().getLocation(), Feedback.HIT_FAIL, event.getPlayer());
@@ -125,11 +131,13 @@ public class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBurn(final BlockBurnEvent event) {
         // If the block is not reinforced, it is allowed to burn normally.
-        if (!configurationContext.isReinforced(event.getBlock().getLocation()))
+        if (!configurationContext.isReinforced(event.getBlock().getLocation())) {
             return;
+        }
 
-        if (removeReinforcementIfInvalid(event.getBlock()))
+        if (removeReinforcementIfInvalid(event.getBlock())) {
             return;
+        }
 
         floorReinforcement(event.getBlock());
 
@@ -148,17 +156,17 @@ public class BlockSaverListener implements Listener {
         // The block reinforcement is then damaged.
         configurationContext.infoManager.damageBlock(event.getBlock().getLocation(), null);
 
-        if (!configurationContext.extinguishReinforcementFire)
+        if (!configurationContext.extinguishReinforcementFire) {
             return;
+        }
 
-        if (Math.random() > configurationContext.extinguishChance)
+        if (Math.random() > configurationContext.extinguishChance) {
             return;
+        }
 
-        for (BlockFace face : BlockFace.values())
-        {
-            Block relative = event.getBlock().getRelative(face);
-            if (relative.getType() == Material.FIRE)
-            {
+        for (final BlockFace face : BlockFace.values()) {
+            final Block relative = event.getBlock().getRelative(face);
+            if (relative.getType() == Material.FIRE) {
                 relative.setType(Material.AIR);
             }
         }
@@ -167,17 +175,20 @@ public class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockExplode(final EntityExplodeEvent event) {
-        if (event.blockList().isEmpty())
+        if (event.blockList().isEmpty()) {
             return;
+        }
 
-        for (Iterator<Block> iter = event.blockList().iterator(); iter.hasNext();) {
-            Block block = iter.next();
+        for (final Iterator<Block> iter = event.blockList().iterator(); iter.hasNext();) {
+            final Block block = iter.next();
 
-            if (!configurationContext.isReinforced(block.getLocation()))
+            if (!configurationContext.isReinforced(block.getLocation())) {
                 continue;
+            }
 
-            if (removeReinforcementIfInvalid(block))
+            if (removeReinforcementIfInvalid(block)) {
                 continue;
+            }
 
             floorReinforcement(block);
 
@@ -185,10 +196,11 @@ public class BlockSaverListener implements Listener {
             // Otherwise, the damage failed is played. In both cases, the block is not destroyed by the blast.
             if (configurationContext.tntDamagesReinforcedBlocks) {
                 reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_SUCCESS, null);
-                if (configurationContext.tntStripReinforcementEntirely)
+                if (configurationContext.tntStripReinforcementEntirely) {
                     configurationContext.infoManager.removeReinforcement(block.getLocation());
-                else
+                } else {
                     configurationContext.infoManager.damageBlock(block.getLocation(), null);
+                }
             } else {
                 reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_FAIL, null);
             }
@@ -200,14 +212,17 @@ public class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockPhysics(final BlockPhysicsEvent event) {
         // This is to ensure TNT-based physics events are not processed.
-        if (!event.getBlock().getType().equals(Material.SAND) && !event.getBlock().getType().equals(Material.GRAVEL))
+        if (!event.getBlock().getType().equals(Material.SAND) && !event.getBlock().getType().equals(Material.GRAVEL)) {
             return;
+        }
 
-        if (!configurationContext.isReinforced(event.getBlock().getLocation()))
+        if (!configurationContext.isReinforced(event.getBlock().getLocation())) {
             return;
+        }
 
-        if (removeReinforcementIfInvalid(event.getBlock()))
+        if (removeReinforcementIfInvalid(event.getBlock())) {
             return;
+        }
 
         if (!configurationContext.allowReinforcedBlockPhysics) {
             event.setCancelled(true);
@@ -219,10 +234,10 @@ public class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
-        ListIterator<Block> iter = event.getBlocks().listIterator(event.getBlocks().size());
+        final ListIterator<Block> iter = event.getBlocks().listIterator(event.getBlocks().size());
 
         while (iter.hasPrevious()) {
-            Block block = iter.previous();
+            final Block block = iter.previous();
 
             // If the next block is reinforced and piston reinforced block movement is disabled, the event is cancelled.
             if (configurationContext.isReinforced(block.getRelative(event.getDirection()).getLocation())) {
@@ -236,12 +251,14 @@ public class BlockSaverListener implements Listener {
             }
 
             // If the block is not reinforced, we move on to the next block.
-            if (!configurationContext.isReinforced(block.getLocation()))
+            if (!configurationContext.isReinforced(block.getLocation())) {
                 continue;
+            }
 
             // We attempt to remove any invalid reinforcements from the block. If any are invalid, we move to the next block.
-            if (removeReinforcementIfInvalid(block))
+            if (removeReinforcementIfInvalid(block)) {
                 continue;
+            }
 
             if (!configurationContext.pistonsMoveReinforcedBlocks) {
                 event.setCancelled(true);
@@ -252,22 +269,26 @@ public class BlockSaverListener implements Listener {
         }
 
         // Handle the reinforcement on the piston itself.
-        if (configurationContext.isReinforced(event.getBlock().getLocation()))
+        if (configurationContext.isReinforced(event.getBlock().getLocation())) {
             moveReinforcement(event.getBlock(), event.getDirection());
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPistonRetract(final BlockPistonRetractEvent event) {
-        if (!event.isSticky())
+        if (!event.isSticky()) {
             return;
+        }
 
-        Block block = event.getBlock().getRelative(event.getDirection(), 2);
+        final Block block = event.getBlock().getRelative(event.getDirection(), 2);
 
-        if (!configurationContext.isReinforced(block.getLocation()))
+        if (!configurationContext.isReinforced(block.getLocation())) {
             return;
+        }
 
-        if (removeReinforcementIfInvalid(block))
+        if (removeReinforcementIfInvalid(block)) {
             return;
+        }
 
         if (!configurationContext.pistonsMoveReinforcedBlocks) {
             event.setCancelled(true);
@@ -279,11 +300,13 @@ public class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockFade(final BlockFadeEvent event) {
-        if (!event.getBlock().getType().equals(Material.SNOW) && !event.getBlock().getType().equals(Material.ICE))
+        if (!event.getBlock().getType().equals(Material.SNOW) && !event.getBlock().getType().equals(Material.ICE)) {
             return;
+        }
 
-        if (!configurationContext.isReinforced(event.getBlock().getLocation()))
+        if (!configurationContext.isReinforced(event.getBlock().getLocation())) {
             return;
+        }
 
         if (!configurationContext.allowBlockFading) {
             event.setCancelled(true);
@@ -294,15 +317,18 @@ public class BlockSaverListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onWaterPassThrough(BlockFromToEvent event) {
-        if (event.getBlock().getType() == Material.DRAGON_EGG)
+    public void onWaterPassThrough(final BlockFromToEvent event) {
+        if (event.getBlock().getType() == Material.DRAGON_EGG) {
             return;
+        }
 
-        if (!configurationContext.isReinforced(event.getToBlock().getLocation()))
+        if (!configurationContext.isReinforced(event.getToBlock().getLocation())) {
             return;
+        }
 
-        if (removeReinforcementIfInvalid(event.getToBlock()))
+        if (removeReinforcementIfInvalid(event.getToBlock())) {
             return;
+        }
 
         if (!configurationContext.liquidsDestroyReinforcedBlocks) {
             event.setCancelled(true);
@@ -312,12 +338,12 @@ public class BlockSaverListener implements Listener {
         configurationContext.infoManager.removeReinforcement(event.getToBlock().getLocation());
     }
 
-    private void moveReinforcement(Block block, BlockFace direction) {
-        Reinforcement previousReinforcement = configurationContext.infoManager.getReinforcement(block.getLocation());
+    private void moveReinforcement(final Block block, final BlockFace direction) {
+        final Reinforcement previousReinforcement = configurationContext.infoManager.getReinforcement(block.getLocation());
         configurationContext.infoManager.setReinforcement(block.getRelative(direction).getLocation(), configurationContext.infoManager.removeReinforcement(block.getLocation()), previousReinforcement.getCreatorName());
     }
 
-    private boolean removeReinforcementIfInvalid(Block block) {
+    private boolean removeReinforcementIfInvalid(final Block block) {
         // Removes the reinforcement from the un-reinforceable block.
         if (!configurationContext.isMaterialReinforceable(block.getType())) {
             configurationContext.infoManager.removeReinforcement(block.getLocation());
@@ -327,55 +353,64 @@ public class BlockSaverListener implements Listener {
         return false;
     }
 
-    private void floorReinforcement(Block block) {
+    private void floorReinforcement(final Block block) {
         // If blocks are allowed to accumulate RV, then there is no need to floor the RV.
-        if (configurationContext.accumulateReinforcementValues)
+        if (configurationContext.accumulateReinforcementValues) {
             return;
+        }
 
         // Checks to see if the maximum RV is less than the actual RV. If so, floors the RV.
-        int maximumReinforcement = configurationContext.getMaterialReinforcementCoefficient(block.getType());
+        final int maximumReinforcement = configurationContext.getMaterialReinforcementCoefficient(block.getType());
 
-        Reinforcement reinforcement = configurationContext.infoManager.getReinforcement(block.getLocation());
+        final Reinforcement reinforcement = configurationContext.infoManager.getReinforcement(block.getLocation());
 
-        if (reinforcement == null)
+        if (reinforcement == null) {
             return;
+        }
 
-        if (reinforcement.getReinforcementValue() > maximumReinforcement)
+        if (reinforcement.getReinforcementValue() > maximumReinforcement) {
             configurationContext.infoManager.setReinforcement(block.getLocation(), maximumReinforcement, reinforcement.getCreatorName());
+        }
     }
 
-    private void reinforcementFeedback(Location location, Feedback feedback, Player player) {
+    private void reinforcementFeedback(final Location location, final Feedback feedback, final Player player) {
         switch (feedback) {
             case REINFORCE_SUCCESS:
-                location.getWorld().playSound(location, configurationContext.reinforceSuccessSound, 1.0f, 50f);
-                if (player != null && configurationContext.infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback())
+                location.getWorld().playSound(location, configurationContext.reinforceSuccessSound, 1.0f, PITCH_SHIFT);
+                if (player != null && configurationContext.infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback()) {
                     player.sendMessage(ChatColor.GRAY + "Reinforced a block.");
+                }
                 break;
             case REINFORCE_FAIL:
-                location.getWorld().playSound(location, configurationContext.reinforceFailSound, 1.0f, 50f);
-                if (player != null && configurationContext.infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback())
+                location.getWorld().playSound(location, configurationContext.reinforceFailSound, 1.0f, PITCH_SHIFT);
+                if (player != null && configurationContext.infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback()) {
                     player.sendMessage(ChatColor.GRAY + "Failed to reinforce a block.");
+                }
                 break;
             case DAMAGE_SUCCESS:
-                if (player != null && configurationContext.infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback())
+                if (player != null && configurationContext.infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback()) {
                     player.sendMessage(ChatColor.GRAY + "Damaged a reinforced block.");
+                }
 
                 if (player != null && configurationContext.useParticleEffects) {
-                    List<Player> players = new ArrayList<Player>();
+                    final List<Player> players = new ArrayList<Player>();
                     players.add(player);
-                    ((BlockSaverPlugin) configurationContext.plugin).sendParticleEffect(players, location);
-                } else
+                    ((BlockSaverPlugin) configurationContext.plugin).sendParticleEffect(location);
+                } else {
                     location.getWorld().playEffect(location, configurationContext.reinforcementDamageSuccessEffect, 0);
+                }
                 break;
             case DAMAGE_FAIL:
                 location.getWorld().playEffect(location, configurationContext.reinforcementDamageFailEffect, 0);
-                if (player != null && configurationContext.infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback())
+                if (player != null && configurationContext.infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback()) {
                     player.sendMessage(ChatColor.GRAY + "Failed to damage a reinforced block.");
+                }
                 break;
             case HIT_FAIL:
                 location.getWorld().playSound(location, configurationContext.hitFailSound, 1.0f, 0f);
-                if (player != null && configurationContext.infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback())
+                if (player != null && configurationContext.infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback()) {
                     player.sendMessage(ChatColor.GRAY + "Your tool is insufficient to damage this reinforced block.");
+                }
                 break;
             default:
                 break;

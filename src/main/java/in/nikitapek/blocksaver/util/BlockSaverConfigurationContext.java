@@ -6,9 +6,9 @@ import in.nikitapek.blocksaver.serialization.ReinforcementTypeAdapter;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import java.util.List;
 
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -23,20 +23,19 @@ import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.gson.TypeSafeSetTypeAdapter;
 import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 
-public class BlockSaverConfigurationContext extends ConfigurationContext {
-    public final BlockSaverInfoManager infoManager;
+public final class BlockSaverConfigurationContext extends ConfigurationContext {
     // TODO: Find a better way to access configuration values from the Reinforcement class to remove this atrocity.
     public static BlockSaverConfigurationContext configurationContext;
-
-    private final TypeSafeMap<Material, Integer> reinforceableBlocks;
-    private final TypeSafeMap<Material, Integer> reinforcementBlocks;
-    public final TypeSafeMap<Material, List<Material>> toolRequirements;
+    public static final byte REINFORCEMENT_MAXIMIZING_COEFFICIENT = -2;
+    public static final byte NO_REINFORCEMENT_VALUE = -1;
 
     public Effect reinforcementDamageFailEffect;
     public Effect reinforcementDamageSuccessEffect;
     public Sound reinforceSuccessSound;
     public Sound reinforceFailSound;
     public Sound hitFailSound;
+
+    public final BlockSaverInfoManager infoManager;
 
     public final boolean accumulateReinforcementValues;
     public final boolean tntDamagesReinforcedBlocks;
@@ -50,14 +49,17 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean allowBlockFading;
     public final boolean allowReinforcementGracePeriod;
     public final boolean allowReinforcementHealing;
-
     public final double extinguishChance;
-
     public final int gracePeriodTime;
     public final int reinforcementHealingTime;
 
-    public BlockSaverConfigurationContext(MbapiPlugin plugin) {
+    public final TypeSafeMap<Material, List<Material>> toolRequirements;
+    private final TypeSafeMap<Material, Integer> reinforceableBlocks;
+    private final TypeSafeMap<Material, Integer> reinforcementBlocks;
+
+    public BlockSaverConfigurationContext(final MbapiPlugin plugin) {
         super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplimentaryTypes.TREESET, SupplimentaryTypes.REINFORCEMENT), new ReinforcementTypeAdapter());
+
         configurationContext = this;
 
         infoManager = new BlockSaverInfoManager(this);
@@ -75,7 +77,7 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
             reinforceSuccessSound = Sound.valueOf(plugin.getConfig().getString("reinforceSuccessSound", Sound.ANVIL_USE.toString()));
             reinforceFailSound = Sound.valueOf(plugin.getConfig().getString("reinforceFailSound", Sound.BLAZE_HIT.toString()));
             hitFailSound = Sound.valueOf(plugin.getConfig().getString("hitFailSound", Sound.CREEPER_DEATH.toString()));
-        } catch (Exception e) {
+        } catch (final IllegalArgumentException ex) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load one or more Effect values. Reverting to defaults.");
 
             reinforcementDamageFailEffect = Effect.EXTINGUISH;
@@ -112,40 +114,41 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
         // Attempts to read the configurationSection containing the keys and values storing the block reinforcement coefficients.
         try {
             configSection = plugin.getConfig().getConfigurationSection("reinforceableBlocks");
-            for (String materialName : configSection.getKeys(false)) {
-                int value = configSection.getInt(materialName);
 
-                if (value > 0)
+            for (final String materialName : configSection.getKeys(false)) {
+                final int value = configSection.getInt(materialName);
+
+                if (value > 0) {
                     reinforceableBlocks.put(Material.getMaterial(materialName), value);
-                else
+                } else {
                     plugin.getLogger().log(Level.WARNING, materialName + "has an invalid reinforcement value.");
+                }
             }
-        } catch (Exception e) {
+        } catch (final NullPointerException ex) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load reinforceable blocks list.");
-            e.printStackTrace();
         }
 
         try {
             configSection = plugin.getConfig().getConfigurationSection("reinforcementBlocks");
-            for (String materialName : configSection.getKeys(false)) {
-                int value = configSection.getInt(materialName);
+            for (final String materialName : configSection.getKeys(false)) {
+                final int value = configSection.getInt(materialName);
 
-                if (value > 0 || value == -2)
+                if (value > 0 || value == REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
                     reinforcementBlocks.put(Material.getMaterial(materialName), value);
-                else
+                } else {
                     plugin.getLogger().log(Level.WARNING, materialName + "has an invalid reinforcement value.");
+                }
             }
-        } catch (Exception e) {
+        } catch (final NullPointerException ex) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load reinforcement blocks list.");
-            e.printStackTrace();
         }
 
         try {
             configSection = plugin.getConfig().getConfigurationSection("toolRequirements");
-            for (String materialName : configSection.getKeys(false)) {
-                String value = configSection.getString(materialName);
-                for (String split : value.split(",")) {
-                    List<Material> tools = new ArrayList<Material>();
+            for (final String materialName : configSection.getKeys(false)) {
+                final String value = configSection.getString(materialName);
+                for (final String split : value.split(",")) {
+                    final List<Material> tools = new ArrayList<Material>();
                     tools.add(Material.getMaterial(split));
 
                     if (toolRequirements.containsKey(Material.getMaterial(materialName))) {
@@ -156,87 +159,93 @@ public class BlockSaverConfigurationContext extends ConfigurationContext {
                     toolRequirements.put(Material.getMaterial(materialName), tools);
                 }
             }
-        } catch (Exception e) {
+        } catch (final NullPointerException ex) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load reinforcement blocks list.");
-            e.printStackTrace();
         }
     }
 
-    public boolean isMaterialReinforceable(Material material) {
+    public boolean isMaterialReinforceable(final Material material) {
         return reinforceableBlocks.containsKey(material);
     }
 
-    public boolean isReinforceable(Block block) {
-        int coefficient = getMaterialReinforcementCoefficient(block.getType());
+    public boolean isReinforceable(final Block block) {
+        final int coefficient = getMaterialReinforcementCoefficient(block.getType());
 
         return coefficient != -1 ? infoManager.getReinforcementValue(block.getLocation()) < coefficient : false;
     }
 
-    public boolean isReinforcingMaterial(Material material) {
+    public boolean isReinforcingMaterial(final Material material) {
         return reinforcementBlocks.containsKey(material);
     }
 
-    public int getMaterialReinforcementCoefficient(Material material) {
-        return isMaterialReinforceable(material) ? reinforceableBlocks.get(material) : -1;
+    public int getMaterialReinforcementCoefficient(final Material material) {
+        return isMaterialReinforceable(material) ? reinforceableBlocks.get(material) : NO_REINFORCEMENT_VALUE;
     }
 
-    public boolean attemptReinforcement(Block block, Material reinforcement, String playerName) {
+    public boolean attemptReinforcement(final Block block, final Material reinforcement, final String playerName) {
         // Retrieves the maximum reinforcement value the block being reinforced can have.
-        int coefficient = getMaterialReinforcementCoefficient(block.getType());
+        final int coefficient = getMaterialReinforcementCoefficient(block.getType());
 
         // If the block cannot be reinforced, the reinforcement fails.
-        if (coefficient == -1)
+        if (coefficient == -1) {
             return false;
+        }
 
         // Retrieves the current reinforcement value of the block (if it is reinforced).
-        int currentReinforcementValue = infoManager.getReinforcementValue(block.getLocation());
+        final int currentReinforcementValue = infoManager.getReinforcementValue(block.getLocation());
 
         // If reinforcement values are being capped, and the block is already at maximum reinforcement, the reinforcement fails.
-        if (!accumulateReinforcementValues && currentReinforcementValue >= coefficient)
+        if (!accumulateReinforcementValues && currentReinforcementValue >= coefficient) {
             return false;
+        }
 
         // If the material cannot be used for reinforcement, the reinforcement fails.
-        if (!reinforcementBlocks.containsKey(reinforcement))
+        if (!reinforcementBlocks.containsKey(reinforcement)) {
             return false;
+        }
 
         // Retrieves the amount the material will reinforce the block by.
         int additionalReinforcementValue = reinforcementBlocks.get(reinforcement);
 
-        // If the material being used to reinforce has a reinforcement value of -2, then we want to set the block to its maximum possible enforcement.
-        if (additionalReinforcementValue == -2) {
+        // If the material being used to reinforce has a reinforcement maximizing coefficient, then we want to set the block to its maximum possible enforcement.
+        if (additionalReinforcementValue == REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
             additionalReinforcementValue = coefficient;
 
             // If there is no reinforcement value cap, then we cannot set the block to its maximum reinforcement, therefore the reinforcement fails.
-            if (accumulateReinforcementValues)
+            if (accumulateReinforcementValues) {
                 return false;
+            }
         }
 
         // If the block is currently reinforced, we add the current reinforcement value to the value to reinforce the block by.
-        if (currentReinforcementValue != -1)
+        if (currentReinforcementValue != -1) {
             additionalReinforcementValue += currentReinforcementValue;
+        }
 
         // If we are accumulating reinforcement values, the block's reinforcement is increased by the additionalReinforcementValue which is simply the additional protection of the material being used added to the current reinforcement value of the block.
         // Otherwise, we simply attempt to increase the block's reinforcement by the amount provided by the material.
-        if (accumulateReinforcementValues)
+        if (accumulateReinforcementValues) {
             infoManager.setReinforcement(block.getLocation(), additionalReinforcementValue, playerName);
-        else {
+        } else {
             infoManager.setReinforcement(block.getLocation(), Math.min(additionalReinforcementValue, coefficient), playerName);
         }
 
         return true;
     }
 
-    public boolean isReinforced(Location location) {
+    public boolean isReinforced(final Location location) {
         return infoManager.getReinforcementValue(location) == -1 ? false : true;
     }
 
-    public boolean canToolBreakBlock(Material block, Material tool) {
-        if (!toolRequirements.containsKey(block))
+    public boolean canToolBreakBlock(final Material block, final Material tool) {
+        if (!toolRequirements.containsKey(block)) {
             return false;
+        }
 
-        for (Entry<Material, List<Material>> material : toolRequirements.entrySet()) {
-            if (!material.getKey().equals(block))
+        for (final Entry<Material, List<Material>> material : toolRequirements.entrySet()) {
+            if (!material.getKey().equals(block)) {
                 continue;
+            }
 
             if (!material.getValue().contains(tool)) {
                 return false;
