@@ -6,46 +6,30 @@
 	<groupId>in.nikitapek</groupId>
 	<artifactId>block-saver</artifactId>
 	<name>BlockSaver</name>
-	<description>A plugin to provide block reinforcement for the purposes of block protection.</description>
 	<version>${mbapi.version}.0</version>
+	<description>A plugin to provide block reinforcement for the purposes of block protection.</description>
 
 	<parent>
 		<groupId>com.amshulman</groupId>
 		<artifactId>bukkit-parent</artifactId>
-		<version>0.8</version>
+		<version>0.9</version>
 	</parent>
 
 	<dependencies>
+		<!-- Bukkit -->
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
 		</dependency>
+		<!-- Mbapi -->
 		<dependency>
 			<groupId>com.amshulman</groupId>
 			<artifactId>mbapi</artifactId>
 		</dependency>
+		<!-- ProtocolLib -->
 		<dependency>
 			<groupId>com.comphenix.protocol</groupId>
 			<artifactId>ProtocolLib</artifactId>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
-				<includes>
-					<include>plugin.yml</include>
-				</includes>
-			</resource>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>false</filtering>
-				<excludes>
-					<exclude>plugin.yml</exclude>
-				</excludes>
-			</resource>
-		</resources>
-	</build>
 </project>
