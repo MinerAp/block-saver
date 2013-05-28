@@ -104,6 +104,11 @@ allowReinforcementHealing: true
 # Default: 5
 reinforcementHealTime: 5
 
+## Whether or not a block remains in place when its RV reaches 0.
+# Note: if this is set to true, when RV reaches 0, the reinforcement is simply removed. Otherwise, the block gets destroyed.
+# Default: false
+leaveBlockAfterDeinforce: false
+
 
 #======== Reinforceable Blocks List ========#
 
@@ -133,7 +138,7 @@ reinforceableBlocks:
   BURNING_FURNACE: 5
   DISPENSER: 5
   MOB_SPAWNER: 10
-  IRON_FENCE: 
+  IRON_FENCE:
   ENCHANTMENT_TABLE: 5
   IRON_BLOCK: 5
   EMERALD_BLOCK: 5
@@ -157,7 +162,7 @@ reinforceableBlocks:
   IRON_DOOR: 3
   TRAP_DOOR: 3
   CHEST: 5
-  TRAPPED_CHEST: 
+  TRAPPED_CHEST:
   WORKBENCH: 5
   FENCE: 5
   FENCE_GATE: 5
@@ -199,7 +204,7 @@ reinforceableBlocks:
   REDSTONE_TORCH_OFF: 10
   REDSTONE_TORCH_ON: 10
   REDSTONE_COMPARATOR_ON: 10
-  REDSTONE_COMPARATOR_OFF: 10 
+  REDSTONE_COMPARATOR_OFF: 10
   REDSTONE_LAMP_ON: 5
   REDSTONE_LAMP_OFF: 5
   DIODE_BLOCK_OFF: 10
@@ -209,7 +214,7 @@ reinforceableBlocks:
   STONE_BUTTON: 3
   CACTUS: 3
   LEVER: 3
-  
+
 
 #======== Reinforcement Item List ========#
 

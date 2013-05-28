@@ -49,6 +49,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean allowBlockFading;
     public final boolean allowReinforcementGracePeriod;
     public final boolean allowReinforcementHealing;
+    public final boolean leaveBlockAfterDeinforce;
     public final double extinguishChance;
     public final int gracePeriodTime;
     public final int reinforcementHealingTime;
@@ -99,6 +100,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         allowBlockFading = plugin.getConfig().getBoolean("allowBlockFading", true);
         allowReinforcementGracePeriod = plugin.getConfig().getBoolean("allowReinforcementGracePeriod", true);
         allowReinforcementHealing = plugin.getConfig().getBoolean("allowReinforcementHealing", true);
+        leaveBlockAfterDeinforce = plugin.getConfig().getBoolean("leaveBlockAfterDeinforce", false);
 
         // Validates that the extinguish chance is a value from 0.0 to 1.0.
         extinguishChance = (plugin.getConfig().getDouble("extinguishChance", 0.8) < 0 || plugin.getConfig().getDouble("extinguishChance", 0.8) > 1) ? 0.8 : plugin.getConfig().getDouble("extinguishChance", 0.8);
