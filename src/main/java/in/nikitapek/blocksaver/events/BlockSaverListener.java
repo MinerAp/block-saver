@@ -15,7 +15,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Sheep;
+import org.bukkit.entity.Wither;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -28,6 +31,7 @@ import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -341,6 +345,42 @@ public final class BlockSaverListener implements Listener {
         }
 
         configurationContext.infoManager.removeReinforcement(event.getToBlock().getLocation());
+    }
+
+    @EventHandler
+    public void onEntityChangeBlock(final EntityChangeBlockEvent event) {
+        if (!configurationContext.isReinforced(event.getBlock().getLocation())) {
+            return;
+        }
+
+        if (removeReinforcementIfInvalid(event.getBlock())) {
+            return;
+        }
+
+        if (event.getEntity() instanceof Enderman) {
+            // If the enderman is placing a block, ignore the event.
+            if (event.getBlock().getType().equals(Material.AIR) && !event.getTo().equals(Material.AIR)) {
+                return;
+            }
+
+            // If the enderman is picking up a block, and is allowed to do so, the reinforcement is removed from the block.
+            if (!event.getBlock().getType().equals(Material.AIR) && event.getTo().equals(Material.AIR)) {
+                if (configurationContext.mobsInteractWithReinforcedBlocks) {
+                    configurationContext.infoManager.removeReinforcement(event.getBlock().getLocation());
+                } else {
+                    event.setCancelled(true);
+                }
+            }
+        }
+
+        // Are sheep able to eat grass, and prevent withers from destroying blocks.
+        if (event.getEntity() instanceof Sheep || event.getEntity() instanceof Wither) {
+            if (configurationContext.mobsInteractWithReinforcedBlocks) {
+                configurationContext.infoManager.removeReinforcement(event.getBlock().getLocation());
+            } else {
+                event.setCancelled(true);
+            }
+        }
     }
 
     private void moveReinforcement(final Block block, final BlockFace direction) {

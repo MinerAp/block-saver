@@ -109,6 +109,14 @@ reinforcementHealTime: 5
 # Default: false
 leaveBlockAfterDeinforce: false
 
+## Whether or not mobs can change/damage reinforced blocks.
+# Notes:
+#   Setting this to false will mean sheep cannot eat reinforced grass.
+#   Endermen will be unable to pickup reinforced blocks.
+#   Withers will be unable to damage reinforced blocks.
+# Default: false
+mobsInteractWithReinforcedBlocks: false
+
 
 #======== Reinforceable Blocks List ========#
 
