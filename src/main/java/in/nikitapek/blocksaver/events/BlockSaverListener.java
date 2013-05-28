@@ -15,12 +15,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EnderDragonPart;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -197,8 +195,8 @@ public final class BlockSaverListener implements Listener {
             entity = ((EnderDragonPart) entity).getParent();
         }
 
-        // If the event is caused by neither TNT nor a dragon, it is of no relevance.
-        if (!(entity instanceof TNTPrimed || entity instanceof EnderDragon)) {
+        // If the event is caused by neither TNT nor a dragon, nor a wither, it is of no relevance.
+        if (!EntityType.PRIMED_TNT.equals(event.getEntity().getType()) && !EntityType.ENDER_DRAGON.equals(event.getEntity().getType()) && !EntityType.WITHER.equals(event.getEntity().getType()) && !EntityType.WITHER_SKULL.equals(event.getEntity().getType())) {
             return;
         }
 
