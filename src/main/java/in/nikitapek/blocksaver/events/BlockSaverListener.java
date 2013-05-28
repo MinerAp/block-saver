@@ -17,12 +17,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EnderDragonPart;
-import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Sheep;
 import org.bukkit.entity.TNTPrimed;
-import org.bukkit.entity.Wither;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -219,16 +217,22 @@ public final class BlockSaverListener implements Listener {
 
             // If TNT damage is enabled for reinforced blocks, then the block is damaged and the successful damage effect is played.
             // Otherwise, the damage failed is played. In both cases, the block is not destroyed by the blast.
-            if ((entity instanceof TNTPrimed && configurationContext.tntDamagesReinforcedBlocks)) {
+            if (EntityType.PRIMED_TNT.equals(event.getEntity().getType()) && configurationContext.tntDamagesReinforcedBlocks) {
                 reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_SUCCESS, null);
                 if (configurationContext.tntStripReinforcementEntirely) {
                     configurationContext.infoManager.removeReinforcement(block.getLocation());
                 } else {
                     configurationContext.infoManager.damageBlock(block.getLocation(), null);
                 }
-            } else if (entity instanceof EnderDragon) {
-                reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_SUCCESS, null);
+            } else if (EntityType.WITHER.equals(event.getEntity().getType()) || EntityType.WITHER_SKULL.equals(event.getEntity().getType())) {
+                if (configurationContext.mobsInteractWithReinforcedBlocks) {
+                    reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_SUCCESS, null);
+                    configurationContext.infoManager.removeReinforcement(block.getLocation());
+                    continue;
+                }
+            } else if (EntityType.ENDER_DRAGON.equals(event.getEntity().getType())) {
                 if (configurationContext.enderdragonInteractWithReinforcedBlocks) {
+                    reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_SUCCESS, null);
                     configurationContext.infoManager.removeReinforcement(block.getLocation());
                     continue;
                 }
@@ -379,7 +383,11 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        if (event.getEntity() instanceof Enderman) {
+        if (event.getEntity() == null) {
+            return;
+        }
+
+        if (EntityType.ENDERMAN.equals(event.getEntity())) {
             // If the enderman is placing a block, ignore the event.
             if (event.getBlock().getType().equals(Material.AIR) && !event.getTo().equals(Material.AIR)) {
                 return;
@@ -396,7 +404,7 @@ public final class BlockSaverListener implements Listener {
         }
 
         // Are sheep able to eat grass, and prevent withers from destroying blocks.
-        if (event.getEntity() instanceof Sheep || event.getEntity() instanceof Wither) {
+        if (EntityType.SHEEP.equals(event.getEntity().getType()) || EntityType.WITHER.equals(event.getEntity().getType()) || EntityType.WITHER_SKULL.equals(event.getEntity().getType())) {
             if (configurationContext.mobsInteractWithReinforcedBlocks) {
                 configurationContext.infoManager.removeReinforcement(event.getBlock().getLocation());
             } else {
