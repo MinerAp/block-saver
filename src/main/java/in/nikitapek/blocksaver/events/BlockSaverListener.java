@@ -79,6 +79,11 @@ public final class BlockSaverListener implements Listener {
 
         configurationContext.infoManager.damageBlock(event.getBlock().getLocation(), event.getPlayer().getName());
 
+        // If the block is not reinforced, and blocks break when their RV reaches 0, we break the block.
+        if (!configurationContext.isReinforced(event.getBlock().getLocation()) && !configurationContext.leaveBlockAfterDeinforce) {
+            event.setCancelled(false);
+        }
+
         reinforcementFeedback(event.getBlock().getLocation(), Feedback.DAMAGE_SUCCESS, event.getPlayer());
     }
 
