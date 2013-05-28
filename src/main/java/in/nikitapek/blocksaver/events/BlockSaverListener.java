@@ -15,9 +15,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.EnderDragon;
+import org.bukkit.entity.EnderDragonPart;
 import org.bukkit.entity.Enderman;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.Wither;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -188,6 +192,18 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
+        Entity entity = event.getEntity();
+
+        // Make sure that we can later check if the entity is a dragon.
+        if (entity instanceof EnderDragonPart) {
+            entity = ((EnderDragonPart) entity).getParent();
+        }
+
+        // If the event is caused by neither TNT nor a dragon, it is of no relevance.
+        if (!(entity instanceof TNTPrimed || entity instanceof EnderDragon)) {
+            return;
+        }
+
         for (final Iterator<Block> iter = event.blockList().iterator(); iter.hasNext();) {
             final Block block = iter.next();
 
@@ -203,12 +219,18 @@ public final class BlockSaverListener implements Listener {
 
             // If TNT damage is enabled for reinforced blocks, then the block is damaged and the successful damage effect is played.
             // Otherwise, the damage failed is played. In both cases, the block is not destroyed by the blast.
-            if (configurationContext.tntDamagesReinforcedBlocks) {
+            if ((entity instanceof TNTPrimed && configurationContext.tntDamagesReinforcedBlocks)) {
                 reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_SUCCESS, null);
                 if (configurationContext.tntStripReinforcementEntirely) {
                     configurationContext.infoManager.removeReinforcement(block.getLocation());
                 } else {
                     configurationContext.infoManager.damageBlock(block.getLocation(), null);
+                }
+            } else if (entity instanceof EnderDragon) {
+                reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_SUCCESS, null);
+                if (configurationContext.enderdragonInteractWithReinforcedBlocks) {
+                    configurationContext.infoManager.removeReinforcement(block.getLocation());
+                    continue;
                 }
             } else {
                 reinforcementFeedback(block.getLocation(), Feedback.DAMAGE_FAIL, null);

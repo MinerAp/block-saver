@@ -51,6 +51,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean allowReinforcementHealing;
     public final boolean leaveBlockAfterDeinforce;
     public final boolean mobsInteractWithReinforcedBlocks;
+    public final boolean enderdragonInteractWithReinforcedBlocks;
     public final double extinguishChance;
     public final int gracePeriodTime;
     public final int reinforcementHealingTime;
@@ -103,6 +104,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         allowReinforcementHealing = plugin.getConfig().getBoolean("allowReinforcementHealing", true);
         leaveBlockAfterDeinforce = plugin.getConfig().getBoolean("leaveBlockAfterDeinforce", false);
         mobsInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("mobsInteractWithReinforcedBlocks", false);
+        enderdragonInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("enderdragonInteractWithReinforcedBlocks", false);
 
         // Validates that the extinguish chance is a value from 0.0 to 1.0.
         extinguishChance = (plugin.getConfig().getDouble("extinguishChance", 0.9) < 0 || plugin.getConfig().getDouble("extinguishChance", 0.9) > 1) ? 0.9 : plugin.getConfig().getDouble("extinguishChance", 0.9);

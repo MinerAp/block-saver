@@ -117,6 +117,10 @@ leaveBlockAfterDeinforce: false
 # Default: false
 mobsInteractWithReinforcedBlocks: false
 
+## Whether or not the enderdragon can change/damage reinforced blocks.
+# Default: false
+enderdragonInteractWithReinforcedBlocks: false
+
 
 #======== Reinforceable Blocks List ========#
 
