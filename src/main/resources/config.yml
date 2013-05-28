@@ -37,8 +37,8 @@ hitFailSound: CREEPER_DEATH
 # Notes:
 #   If this is set to false, the values will be capped at those provided in the list.
 #   Setting this to true then reverting to false will not reset the values to their maximums as defined in the Reinforceable Blocks List.
-# Default: true
-accumulateReinforcementValues: true
+# Default: false
+accumulateReinforcementValues: false
 
 ## Whether or not TNT can damage reinforced blocks.
 # Default: true
@@ -46,8 +46,8 @@ tntDamagesReinforcedBlocks: true
 
 ## Whether or not TNT entirely strips reinforcements or decrements them.
 # Note: this option is ignored if tntDamagesReinforcedBlocks is set to false.
-# Default: true
-tntStripReinforcementEntirely: true
+# Default: false
+tntStripReinforcementEntirely: false
 
 ## Whether or not liquids can destroy reinforced blocks which can wash away (e.g. torches, railroad tracks).
 # Default: true
@@ -69,8 +69,8 @@ extinguishReinforcementFire: true
 
 ## If extinguishReinforcementFire is set to true, this value determines the likelyhood that a fire is to be extinguished.
 # Note: This must be a value in the range 0.0-1.0, with a 1.0 being a 100% chance of extinguishment.
-# Default: 0.8
-extinguishChance: 0.8
+# Default: 0.9
+extinguishChance: 0.9
 
 ## Whether or not pistons can move reinforced blocks.
 # Default: true
@@ -81,8 +81,8 @@ pistonsMoveReinforcedBlocks: true
 useParticleEffects: true
 
 ## Whether or not blocks should be allowed to "fade" while reinforced (e.g. snow melting, ice melting).
-# Default: true
-allowBlockFading: true
+# Default: false
+allowBlockFading: false
 
 ## Whether or not the creator of the reinforcement should be given a grace period to remove the reinforcement if it is in an undesirable location.
 # Note: the item used in the reinforcement is not refunded.
@@ -174,6 +174,9 @@ reinforceableBlocks:
   NETHERRACK: 20
   NOTE_BLOCK: 10
   OBSIDIAN: 2
+  PISTON_BASE: 5
+  PISTON_STICKY_BASE: 5
+  PISTON_EXTENSION: 5
   POWERED_RAIL: 15
   QUARTZ_BLOCK: 15
   QUARTZ_STAIRS: 15

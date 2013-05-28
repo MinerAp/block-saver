@@ -88,22 +88,22 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             hitFailSound = Sound.CREEPER_DEATH;
         }
 
-        accumulateReinforcementValues = plugin.getConfig().getBoolean("accumulateReinforcementValues", true);
+        accumulateReinforcementValues = plugin.getConfig().getBoolean("accumulateReinforcementValues", false);
         tntDamagesReinforcedBlocks = plugin.getConfig().getBoolean("tntDamagesReinforcedBlocks", true);
-        tntStripReinforcementEntirely = plugin.getConfig().getBoolean("tntStripReinforcementEntirely", true);
+        tntStripReinforcementEntirely = plugin.getConfig().getBoolean("tntStripReinforcementEntirely", false);
         liquidsDestroyReinforcedBlocks = plugin.getConfig().getBoolean("liquidsDestroyReinforcedBlocks", true);
         allowReinforcedBlockPhysics = plugin.getConfig().getBoolean("allowReinforcedBlockPhysics", true);
         fireDamagesReinforcedBlocks = plugin.getConfig().getBoolean("fireDamagesReinforcedBlocks", true);
         extinguishReinforcementFire = plugin.getConfig().getBoolean("extinguishReinforcementFire", true);
         pistonsMoveReinforcedBlocks = plugin.getConfig().getBoolean("pistonsMoveReinforcedBlocks", true);
         useParticleEffects = plugin.getConfig().getBoolean("useParticleEffects", true);
-        allowBlockFading = plugin.getConfig().getBoolean("allowBlockFading", true);
+        allowBlockFading = plugin.getConfig().getBoolean("allowBlockFading", false);
         allowReinforcementGracePeriod = plugin.getConfig().getBoolean("allowReinforcementGracePeriod", true);
         allowReinforcementHealing = plugin.getConfig().getBoolean("allowReinforcementHealing", true);
         leaveBlockAfterDeinforce = plugin.getConfig().getBoolean("leaveBlockAfterDeinforce", false);
 
         // Validates that the extinguish chance is a value from 0.0 to 1.0.
-        extinguishChance = (plugin.getConfig().getDouble("extinguishChance", 0.8) < 0 || plugin.getConfig().getDouble("extinguishChance", 0.8) > 1) ? 0.8 : plugin.getConfig().getDouble("extinguishChance", 0.8);
+        extinguishChance = (plugin.getConfig().getDouble("extinguishChance", 0.9) < 0 || plugin.getConfig().getDouble("extinguishChance", 0.9) > 1) ? 0.9 : plugin.getConfig().getDouble("extinguishChance", 0.9);
 
         // Validates that the grace period for reinforcement removal is not less than zero.
         gracePeriodTime = (plugin.getConfig().getInt("gracePeriodTime", 3) < 0) ? 3 : plugin.getConfig().getInt("gracePeriodTime", 3);
