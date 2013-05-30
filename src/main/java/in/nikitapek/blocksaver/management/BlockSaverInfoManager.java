@@ -7,8 +7,17 @@ import in.nikitapek.blocksaver.util.BlockSaverUtil;
 import in.nikitapek.blocksaver.util.PlayerInfoConstructorFactory;
 import in.nikitapek.blocksaver.util.SupplimentaryTypes;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonExtensionMaterial;
@@ -18,14 +27,14 @@ import com.amshulman.mbapi.storage.TypeSafeStorageMap;
 import com.amshulman.mbapi.storage.TypeSafeStorageSet;
 import com.amshulman.mbapi.util.ConfigurationContext;
 import com.amshulman.mbapi.util.ConstructorFactory;
-import com.amshulman.typesafety.TypeSafeSet;
 import com.google.gson.reflect.TypeToken;
 
 public final class BlockSaverInfoManager extends InfoManager {
     private static final ConstructorFactory<PlayerInfo> FACTORY = new PlayerInfoConstructorFactory();
 
     private final TypeSafeStorageMap<PlayerInfo> playerInfo;
-    private final TypeSafeStorageSet<Reinforcement> reinforcements;
+    private final TypeSafeStorageSet<Reinforcement> reinforcementSet;
+    private final Map<Chunk, List<Location>> reinforcements;
     private final BlockSaverConfigurationContext configurationContext;
 
     public BlockSaverInfoManager(final ConfigurationContext configurationContext) {
@@ -35,32 +44,53 @@ public final class BlockSaverInfoManager extends InfoManager {
         playerInfo = storageManager.getStorageMap("playerInfo", new TypeToken<PlayerInfo>() {}.getType());
         registerPlayerInfoLoader(playerInfo, FACTORY);
 
-        reinforcements = storageManager.getStorageSet("reinforcements", SupplimentaryTypes.REINFORCEMENT);
-        reinforcements.load();
+        reinforcementSet = storageManager.getStorageSet("reinforcements", SupplimentaryTypes.REINFORCEMENT);
+        reinforcementSet.load();
+
+        // Transfer the reinforcements from the reinforcementSet to block Metadata and store all of the locations in reinforcements.
+        reinforcements = new HashMap<Chunk, List<Location>>();
+        final Iterator<Reinforcement> iter = reinforcementSet.iterator();
+        while (iter.hasNext()) {
+            writeReinforcementToMetadata(iter.next());
+            iter.remove();
+        }
     }
 
     @Override
     public void saveAll() {
+        // Saves all of the reinforcements to the reinforcementSet.
+        reinforcementSet.clear();
+        for (final Entry<Chunk, List<Location>> entry : reinforcements.entrySet()) {
+            for (final Location location : entry.getValue()) {
+                final Reinforcement reinforcement = getReinforcement(location);
+                if (reinforcement != null) {
+                    reinforcementSet.add(getReinforcement(location));
+                }
+            }
+        }
+
         playerInfo.saveAll();
-        reinforcements.saveAll();
+        reinforcementSet.saveAll();
     }
 
     @Override
     public void unloadAll() {
+        // Saves all of the reinforcements to the reinforcementSet.
+        reinforcementSet.clear();
+        for (final Entry<Chunk, List<Location>> entry : reinforcements.entrySet()) {
+            for (final Location location : entry.getValue()) {
+                final Reinforcement reinforcement = getReinforcement(location);
+                if (reinforcement != null) {
+                    reinforcementSet.add(getReinforcement(location));
+                }
+            }
+        }
+
         playerInfo.unloadAll();
-        reinforcements.unloadAll();
+        reinforcementSet.unloadAll();
     }
 
-    public TypeSafeSet<Reinforcement> getReinforcements() {
-        return reinforcements;
-    }
-
-    public int getReinforcementValue(final Location location) {
-        final Reinforcement reinforcement = getReinforcement(location);
-        return (reinforcement == null) ? -1 : reinforcement.getReinforcementValue();
-    }
-
-    public Reinforcement getReinforcement(Location location) {
+    public boolean containsReinforcement(Location location) {
         // If a part of the piston was damaged, the rest should be damaged too.
         if (location.getBlock().getType().equals(Material.PISTON_EXTENSION)) {
             final MaterialData data = location.getBlock().getState().getData();
@@ -76,24 +106,69 @@ public final class BlockSaverInfoManager extends InfoManager {
             }
         }
 
-        for (final Reinforcement reinforcement : reinforcements) {
-            if (reinforcement.getLocation().equals(location)) {
-                return reinforcement;
-            }
+        // This is commented out to allow Reinforcements to be cloned/moved via WorldEdit.
+        /*
+         * if (!reinforcements.containsKey(location.getChunk())) {
+         * return false;
+         * }
+         * if (!reinforcements.get(location.getChunk()).contains(location)) {
+         * return false;
+         * }
+         */
+
+        final Block block = location.getBlock();
+        if (!block.hasMetadata("RV") || !block.hasMetadata("RTS") || !block.hasMetadata("RJC") || !block.hasMetadata("RCN") || !block.hasMetadata("RLMV")) {
+            Reinforcement.removeFromMetadata(block);
+            return false;
         }
 
-        return null;
+        // This is only in case WE has moved a reinforcement.
+        ensureKeyExists(location);
+
+        return true;
     }
 
-    public void setReinforcement(final Location location, final int value, final String playerName) {
-        final Reinforcement reinforcement = getReinforcement(location);
+    public Reinforcement getReinforcement(final Location location) {
+        if (!containsReinforcement(location)) {
+            return null;
+        }
 
+        return new Reinforcement(location);
+    }
+
+    private void writeReinforcementToMetadata(final Reinforcement reinforcement) {
         if (reinforcement == null) {
-            reinforcements.add(new Reinforcement(location, value, playerName));
             return;
         }
 
-        reinforcement.setReinforcementValue(value);
+        // Makes sure the Chunk key for the reinforcement already exists, before adding the location.
+        ensureKeyExists(reinforcement.getLocation());
+
+        reinforcement.writeToMetadata();
+    }
+
+    private void ensureKeyExists(final Location location) {
+        // Makes sure the Chunk key for the reinforcement already exists, before adding the location.
+        // The if statement is commented out to prevent a SOE because of the ensureKeyExists() check in containsReinforcement().
+        // if (!containsReinforcement(location)) {
+        if (!reinforcements.containsKey(location.getChunk())) {
+            reinforcements.put(location.getChunk(), new ArrayList<Location>());
+        }
+        reinforcements.get(location.getChunk()).add(location);
+        // }
+    }
+
+    public void setReinforcement(final Location location, final int value, final String playerName) {
+        final Reinforcement reinforcement;
+
+        if (containsReinforcement(location)) {
+            reinforcement = getReinforcement(location);
+        } else {
+            reinforcement = new Reinforcement(location, value, playerName);
+        }
+
+        ensureKeyExists(location);
+        writeReinforcementToMetadata(reinforcement);
     }
 
     public void damageBlock(final Location location, final String playerName) {
@@ -103,7 +178,7 @@ public final class BlockSaverInfoManager extends InfoManager {
             return;
         }
 
-        // Heals the block is the plugin is configured to do so and the required amount of time elapsed.
+        // Heals the block if the plugin is configured to do so and the required amount of time has elapsed.
         if (configurationContext.allowReinforcementHealing) {
             if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (configurationContext.reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
                 reinforcement.setReinforcementValue(reinforcement.getLastMaximumValue());
@@ -116,7 +191,7 @@ public final class BlockSaverInfoManager extends InfoManager {
         }
 
         reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1);
-        return;
+        writeReinforcementToMetadata(reinforcement);
     }
 
     public int removeReinforcement(final Location location) {
@@ -126,9 +201,16 @@ public final class BlockSaverInfoManager extends InfoManager {
             return -1;
         }
 
-        reinforcements.remove(reinforcement);
+        if (reinforcements.containsKey(location.getChunk())) {
+            reinforcements.get(location.getChunk()).remove(location);
+            if (reinforcements.get(location.getChunk()).isEmpty()) {
+                reinforcements.remove(location.getChunk());
+            }
+        }
 
-        return reinforcement.getReinforcementValue();
+        final int reinforcementValue = reinforcement.getReinforcementValue();
+        Reinforcement.removeFromMetadata(location.getBlock());
+        return reinforcementValue;
     }
 
     public boolean isFortified(final Reinforcement reinforcement, final String playerName) {

@@ -55,7 +55,7 @@ public final class BlockSaverListener implements Listener {
     public void onBlockPlace(final BlockPlaceEvent event) {
         // If a block is being placed somewhere where there is already a reinforcement value, the reinforcement value is removed.
         // This is to prevent "reinforcement transfers" to blocks which could not normally obtain reinforcements.
-        if (!configurationContext.isReinforced(event.getBlock().getLocation())) {
+        if (!configurationContext.infoManager.containsReinforcement(event.getBlock().getLocation())) {
             return;
         }
 
@@ -65,7 +65,7 @@ public final class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(final BlockBreakEvent event) {
         // If the block is not reinforced, this plugin does not stop the block break event.
-        if (!configurationContext.isReinforced(event.getBlock().getLocation())) {
+        if (!configurationContext.infoManager.containsReinforcement(event.getBlock().getLocation())) {
             return;
         }
 
@@ -84,7 +84,7 @@ public final class BlockSaverListener implements Listener {
         configurationContext.infoManager.damageBlock(event.getBlock().getLocation(), event.getPlayer().getName());
 
         // If the block is not reinforced, and blocks break when their RV reaches 0, we break the block.
-        if (!configurationContext.isReinforced(event.getBlock().getLocation()) && !configurationContext.leaveBlockAfterDeinforce) {
+        if (!configurationContext.infoManager.containsReinforcement(event.getBlock().getLocation()) && !configurationContext.leaveBlockAfterDeinforce) {
             event.setCancelled(false);
         }
 
@@ -104,7 +104,7 @@ public final class BlockSaverListener implements Listener {
                 return;
             }
 
-            if (!configurationContext.isReinforced(event.getClickedBlock().getLocation())) {
+            if (!configurationContext.infoManager.containsReinforcement(event.getClickedBlock().getLocation())) {
                 return;
             }
 
@@ -140,7 +140,7 @@ public final class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBurn(final BlockBurnEvent event) {
         // If the block is not reinforced, it is allowed to burn normally.
-        if (!configurationContext.isReinforced(event.getBlock().getLocation())) {
+        if (!configurationContext.infoManager.containsReinforcement(event.getBlock().getLocation())) {
             return;
         }
 
@@ -203,7 +203,7 @@ public final class BlockSaverListener implements Listener {
         for (final Iterator<Block> iter = event.blockList().iterator(); iter.hasNext();) {
             final Block block = iter.next();
 
-            if (!configurationContext.isReinforced(block.getLocation())) {
+            if (!configurationContext.infoManager.containsReinforcement(block.getLocation())) {
                 continue;
             }
 
@@ -249,7 +249,7 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        if (!configurationContext.isReinforced(event.getBlock().getLocation())) {
+        if (!configurationContext.infoManager.containsReinforcement(event.getBlock().getLocation())) {
             return;
         }
 
@@ -273,7 +273,7 @@ public final class BlockSaverListener implements Listener {
             final Block block = iter.previous();
 
             // If the next block is reinforced and piston reinforced block movement is disabled, the event is cancelled.
-            if (configurationContext.isReinforced(block.getRelative(event.getDirection()).getLocation())) {
+            if (configurationContext.infoManager.containsReinforcement(block.getRelative(event.getDirection()).getLocation())) {
                 // Deletes the reinforcement from the block ahead if it is invalid.
                 removeReinforcementIfInvalid(block.getRelative(event.getDirection()));
 
@@ -284,7 +284,7 @@ public final class BlockSaverListener implements Listener {
             }
 
             // If the block is not reinforced, we move on to the next block.
-            if (!configurationContext.isReinforced(block.getLocation())) {
+            if (!configurationContext.infoManager.containsReinforcement(block.getLocation())) {
                 continue;
             }
 
@@ -302,7 +302,7 @@ public final class BlockSaverListener implements Listener {
         }
 
         // Handle the reinforcement on the piston itself.
-        if (configurationContext.isReinforced(event.getBlock().getLocation())) {
+        if (configurationContext.infoManager.containsReinforcement(event.getBlock().getLocation())) {
             moveReinforcement(event.getBlock(), event.getDirection());
         }
     }
@@ -315,7 +315,7 @@ public final class BlockSaverListener implements Listener {
 
         final Block block = event.getBlock().getRelative(event.getDirection(), 2);
 
-        if (!configurationContext.isReinforced(block.getLocation())) {
+        if (!configurationContext.infoManager.containsReinforcement(block.getLocation())) {
             return;
         }
 
@@ -337,7 +337,7 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        if (!configurationContext.isReinforced(event.getBlock().getLocation())) {
+        if (!configurationContext.infoManager.containsReinforcement(event.getBlock().getLocation())) {
             return;
         }
 
@@ -355,7 +355,7 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        if (!configurationContext.isReinforced(event.getToBlock().getLocation())) {
+        if (!configurationContext.infoManager.containsReinforcement(event.getToBlock().getLocation())) {
             return;
         }
 
@@ -373,7 +373,7 @@ public final class BlockSaverListener implements Listener {
 
     @EventHandler
     public void onEntityChangeBlock(final EntityChangeBlockEvent event) {
-        if (!configurationContext.isReinforced(event.getBlock().getLocation())) {
+        if (!configurationContext.infoManager.containsReinforcement(event.getBlock().getLocation())) {
             return;
         }
 
