@@ -3,12 +3,7 @@ package in.nikitapek.blocksaver.events;
 import in.nikitapek.blocksaver.BlockSaverPlugin;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-
+import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -22,18 +17,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockBurnEvent;
-import org.bukkit.event.block.BlockFadeEvent;
-import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 public final class BlockSaverListener implements Listener {
     private static final byte PITCH_SHIFT = 50;
@@ -81,7 +73,7 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        configurationContext.infoManager.damageBlock(event.getBlock().getLocation(), event.getPlayer().getName());
+        configurationContext.infoManager.damageBlock(event.getBlock().getLocation(), event.getPlayer().getName(), BlockSaverDamageCause.TOOL);
 
         // If the block is not reinforced, and blocks break when their RV reaches 0, we break the block.
         if (!configurationContext.infoManager.containsReinforcement(event.getBlock().getLocation()) && !configurationContext.leaveBlockAfterDeinforce) {
@@ -163,7 +155,7 @@ public final class BlockSaverListener implements Listener {
         }
 
         // The block reinforcement is then damaged.
-        configurationContext.infoManager.damageBlock(event.getBlock().getLocation(), null);
+        configurationContext.infoManager.damageBlock(event.getBlock().getLocation(), null, BlockSaverDamageCause.FIRE);
 
         if (!configurationContext.extinguishReinforcementFire) {
             return;
@@ -220,7 +212,7 @@ public final class BlockSaverListener implements Listener {
                 if (configurationContext.tntStripReinforcementEntirely) {
                     configurationContext.infoManager.removeReinforcement(block.getLocation());
                 } else {
-                    configurationContext.infoManager.damageBlock(block.getLocation(), null);
+                    configurationContext.infoManager.damageBlock(block.getLocation(), null, BlockSaverDamageCause.TNT);
                 }
             } else if (EntityType.WITHER.equals(event.getEntity().getType()) || EntityType.WITHER_SKULL.equals(event.getEntity().getType())) {
                 if (configurationContext.mobsInteractWithReinforcedBlocks) {

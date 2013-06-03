@@ -9,6 +9,7 @@ import com.google.gson.reflect.TypeToken;
 import in.nikitapek.blocksaver.serialization.PlayerInfo;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
+import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
 import in.nikitapek.blocksaver.util.PlayerInfoConstructorFactory;
 import in.nikitapek.blocksaver.util.SupplimentaryTypes;
@@ -165,7 +166,7 @@ public final class BlockSaverInfoManager extends InfoManager {
         writeReinforcementToMetadata(reinforcement);
     }
 
-    public void damageBlock(final Location location, final String playerName) {
+    public void damageBlock(final Location location, final String playerName, BlockSaverDamageCause damageCause) {
         final Reinforcement reinforcement = getReinforcement(location);
 
         if (reinforcement == null) {
@@ -184,7 +185,11 @@ public final class BlockSaverInfoManager extends InfoManager {
             return;
         }
 
-        reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1);
+        if (damageCause == BlockSaverDamageCause.TNT) {
+            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue()-((float) Math.pow(configurationContext.getMaterialReinforcementCoefficient(reinforcement.getBlock().getType()), 2)/100));
+        } else {
+            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1);
+        }
         writeReinforcementToMetadata(reinforcement);
     }
 
