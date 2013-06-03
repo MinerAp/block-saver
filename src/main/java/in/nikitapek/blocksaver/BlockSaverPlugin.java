@@ -33,20 +33,11 @@ public final class BlockSaverPlugin extends MbapiPlugin {
         super.onEnable();
     }
 
-    @Override
-    public void onDisable() {
-        super.onDisable();
-
-        if (infoManager != null) {
-            infoManager.unloadAll();
-        }
-    }
-
     public void sendParticleEffect(final Location location) {
         final PacketContainer particle = ProtocolLibrary.getProtocolManager().createPacket(61);
         int data = 22;
 
-        switch (infoManager.getReinforcementValue(location)) {
+        switch (infoManager.getReinforcement(location).getReinforcementValue()) {
             case -1:
                 // If the block is not reinforced, but has just been damaged as a reinforced block (presumably due to the grace period), then we play the "nearly broken" effect.
                 data = 9;

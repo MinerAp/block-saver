@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 
 import org.bukkit.Effect;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -177,7 +176,32 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public boolean isReinforceable(final Block block) {
         final int coefficient = getMaterialReinforcementCoefficient(block.getType());
 
-        return coefficient != -1 ? infoManager.getReinforcementValue(block.getLocation()) < coefficient : false;
+        // If the block's material cannot be reinforced, the reinforcement fails.
+        if (coefficient == -1) {
+            return false;
+        }
+
+        // Retrieves the reinforcement on the block, if the reinforcement exists.
+        final Reinforcement reinforcement = infoManager.getReinforcement(block.getLocation());
+
+        // If the block is not reinforced, it can be reinforced further.
+        if (reinforcement == null) {
+            return true;
+        }
+
+        final int currentReinforcementValue = reinforcement.getReinforcementValue();
+
+        // If reinforcement values are being accumulated, the RV cannot have reached RVC, and therefore the block is reinforceable.
+        if (accumulateReinforcementValues) {
+            return true;
+        }
+
+        // If reinforcement values are being capped, and the RV is already at RVC, the block cannot be reinforced further.
+        if (currentReinforcementValue >= coefficient) {
+            return false;
+        }
+
+        return true;
     }
 
     public boolean isReinforcingMaterial(final Material material) {
@@ -188,30 +212,31 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         return isMaterialReinforceable(material) ? reinforceableBlocks.get(material) : NO_REINFORCEMENT_VALUE;
     }
 
-    public boolean attemptReinforcement(final Block block, final Material reinforcement, final String playerName) {
-        // Retrieves the maximum reinforcement value the block being reinforced can have.
+    public boolean attemptReinforcement(final Block block, final Material reinforcementMaterial, final String playerName) {
+        // If the material cannot be used for reinforcement, the reinforcement fails.
+        if (!reinforcementBlocks.containsKey(reinforcementMaterial)) {
+            return false;
+        }
+
+        if (!isReinforceable(block)) {
+            return false;
+        }
+
+        // Retrieves the reinforcement on the block, if the reinforcement exists.
+        final Reinforcement reinforcement = infoManager.getReinforcement(block.getLocation());
+        final int currentReinforcementValue;
+
+        // If the block is not reinforced, we must designate the coefficient as such.
+        if (reinforcement == null) {
+            currentReinforcementValue = -1;
+        } else {
+            currentReinforcementValue = reinforcement.getReinforcementValue();
+        }
+
         final int coefficient = getMaterialReinforcementCoefficient(block.getType());
 
-        // If the block cannot be reinforced, the reinforcement fails.
-        if (coefficient == -1) {
-            return false;
-        }
-
-        // Retrieves the current reinforcement value of the block (if it is reinforced).
-        final int currentReinforcementValue = infoManager.getReinforcementValue(block.getLocation());
-
-        // If reinforcement values are being capped, and the block is already at maximum reinforcement, the reinforcement fails.
-        if (!accumulateReinforcementValues && currentReinforcementValue >= coefficient) {
-            return false;
-        }
-
-        // If the material cannot be used for reinforcement, the reinforcement fails.
-        if (!reinforcementBlocks.containsKey(reinforcement)) {
-            return false;
-        }
-
         // Retrieves the amount the material will reinforce the block by.
-        int additionalReinforcementValue = reinforcementBlocks.get(reinforcement);
+        int additionalReinforcementValue = reinforcementBlocks.get(reinforcementMaterial);
 
         // If the material being used to reinforce has a reinforcement maximizing coefficient, then we want to set the block to its maximum possible enforcement.
         if (additionalReinforcementValue == REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
@@ -237,10 +262,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         }
 
         return true;
-    }
-
-    public boolean isReinforced(final Location location) {
-        return infoManager.getReinforcementValue(location) == -1 ? false : true;
     }
 
     public boolean canToolBreakBlock(final Material block, final Material tool) {
