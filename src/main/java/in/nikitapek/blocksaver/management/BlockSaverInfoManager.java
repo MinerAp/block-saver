@@ -1,19 +1,17 @@
 package in.nikitapek.blocksaver.management;
 
+import com.amshulman.mbapi.management.InfoManager;
+import com.amshulman.mbapi.storage.TypeSafeStorageMap;
+import com.amshulman.mbapi.storage.TypeSafeStorageSet;
+import com.amshulman.mbapi.util.ConfigurationContext;
+import com.amshulman.mbapi.util.ConstructorFactory;
+import com.google.gson.reflect.TypeToken;
 import in.nikitapek.blocksaver.serialization.PlayerInfo;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
 import in.nikitapek.blocksaver.util.PlayerInfoConstructorFactory;
 import in.nikitapek.blocksaver.util.SupplimentaryTypes;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,12 +20,8 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonExtensionMaterial;
 
-import com.amshulman.mbapi.management.InfoManager;
-import com.amshulman.mbapi.storage.TypeSafeStorageMap;
-import com.amshulman.mbapi.storage.TypeSafeStorageSet;
-import com.amshulman.mbapi.util.ConfigurationContext;
-import com.amshulman.mbapi.util.ConstructorFactory;
-import com.google.gson.reflect.TypeToken;
+import java.util.*;
+import java.util.Map.Entry;
 
 public final class BlockSaverInfoManager extends InfoManager {
     private static final ConstructorFactory<PlayerInfo> FACTORY = new PlayerInfoConstructorFactory();
@@ -158,7 +152,7 @@ public final class BlockSaverInfoManager extends InfoManager {
         // }
     }
 
-    public void setReinforcement(final Location location, final int value, final String playerName) {
+    public void setReinforcement(final Location location, final float value, final String playerName) {
         final Reinforcement reinforcement;
 
         if (containsReinforcement(location)) {
@@ -194,7 +188,7 @@ public final class BlockSaverInfoManager extends InfoManager {
         writeReinforcementToMetadata(reinforcement);
     }
 
-    public int removeReinforcement(final Location location) {
+    public float removeReinforcement(final Location location) {
         final Reinforcement reinforcement = getReinforcement(location);
 
         if (reinforcement == null) {
@@ -208,7 +202,7 @@ public final class BlockSaverInfoManager extends InfoManager {
             }
         }
 
-        final int reinforcementValue = reinforcement.getReinforcementValue();
+        final float reinforcementValue = reinforcement.getReinforcementValue();
         Reinforcement.removeFromMetadata(location.getBlock());
         return reinforcementValue;
     }

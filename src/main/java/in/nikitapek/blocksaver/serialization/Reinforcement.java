@@ -9,11 +9,11 @@ import org.bukkit.metadata.FixedMetadataValue;
 
 public final class Reinforcement implements Comparable<Reinforcement> {
     private final Location location;
-    private int value;
+    private float value;
     private long timeStamp;
     private boolean justCreated;
     private String creatorName;
-    private int lastMaximumValue;
+    private float lastMaximumValue;
 
     public Reinforcement(final Location location) {
         this.location = location;
@@ -23,7 +23,7 @@ public final class Reinforcement implements Comparable<Reinforcement> {
         setLastMaximumValue(getLastMaximumValue());
     }
 
-    public Reinforcement(final Location location, final int value, final String creatorName) {
+    public Reinforcement(final Location location, final float value, final String creatorName) {
         this.location = location;
         setReinforcementValue(value);
         setJustCreated(true);
@@ -62,7 +62,7 @@ public final class Reinforcement implements Comparable<Reinforcement> {
         return location;
     }
 
-    public int getReinforcementValue() {
+    public float getReinforcementValue() {
         if (!getBlock().hasMetadata("RV")) {
             throw new IllegalArgumentException("An RV for a non-reinforced block was attempted to be retrieved");
         }
@@ -99,7 +99,7 @@ public final class Reinforcement implements Comparable<Reinforcement> {
         return creatorName;
     }
 
-    public int getLastMaximumValue() {
+    public float getLastMaximumValue() {
         if (!getBlock().hasMetadata("RLMV")) {
             setLastMaximumValue(getReinforcementValue());
             // throw new IllegalArgumentException("An RLMV for a non-reinforced block was attempted to be retrieved");
@@ -109,7 +109,7 @@ public final class Reinforcement implements Comparable<Reinforcement> {
         return lastMaximumValue;
     }
 
-    public void setReinforcementValue(final int value) {
+    public void setReinforcementValue(final float value) {
         this.value = value;
         getBlock().setMetadata("RV", new FixedMetadataValue(BlockSaverConfigurationContext.configurationContext.plugin, value));
 
@@ -132,7 +132,7 @@ public final class Reinforcement implements Comparable<Reinforcement> {
         getBlock().setMetadata("RCN", new FixedMetadataValue(BlockSaverConfigurationContext.configurationContext.plugin, creatorName));
     }
 
-    private void setLastMaximumValue(final int lastMaximumValue) {
+    private void setLastMaximumValue(final float lastMaximumValue) {
         this.lastMaximumValue = lastMaximumValue;
         getBlock().setMetadata("RLMV", new FixedMetadataValue(BlockSaverConfigurationContext.configurationContext.plugin, lastMaximumValue));
     }
@@ -141,7 +141,7 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + getReinforcementValue(); // TODO: Ask Andy if this line is right.
+        result = (int) (prime * result + getReinforcementValue()); // TODO: Ask Andy if this line is right.
         result = prime * result + ((location == null) ? 0 : location.hashCode());
         return result;
     }

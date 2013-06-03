@@ -187,7 +187,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             return true;
         }
 
-        final int currentReinforcementValue = reinforcement.getReinforcementValue();
+        final float currentReinforcementValue = reinforcement.getReinforcementValue();
 
         // If reinforcement values are being accumulated, the RV cannot have reached RVC, and therefore the block is reinforceable.
         if (accumulateReinforcementValues) {
@@ -218,7 +218,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
 
         // Retrieves the reinforcement on the block, if the reinforcement exists.
         final Reinforcement reinforcement = infoManager.getReinforcement(block.getLocation());
-        final int currentReinforcementValue;
+        final float currentReinforcementValue;
 
         // If the block is not reinforced, we must designate the coefficient as such.
         if (reinforcement == null) {

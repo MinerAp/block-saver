@@ -32,7 +32,7 @@ public final class BlockSaverPlugin extends MbapiPlugin {
         final PacketContainer particle = ProtocolLibrary.getProtocolManager().createPacket(61);
         int data = 22;
 
-        switch (infoManager.getReinforcement(location).getReinforcementValue()) {
+        switch ((int) infoManager.getReinforcement(location).getReinforcementValue()) {
             case -1:
                 // If the block is not reinforced, but has just been damaged as a reinforced block (presumably due to the grace period), then we play the "nearly broken" effect.
                 data = 9;
