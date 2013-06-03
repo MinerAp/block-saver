@@ -1,26 +1,24 @@
 package in.nikitapek.blocksaver.util;
 
+import com.amshulman.mbapi.MbapiPlugin;
+import com.amshulman.mbapi.util.ConfigurationContext;
+import com.amshulman.typesafety.TypeSafeMap;
+import com.amshulman.typesafety.gson.TypeSafeSetTypeAdapter;
+import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.serialization.ReinforcementTypeAdapter;
-
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 
-import com.amshulman.mbapi.MbapiPlugin;
-import com.amshulman.mbapi.util.ConfigurationContext;
-import com.amshulman.typesafety.TypeSafeMap;
-import com.amshulman.typesafety.gson.TypeSafeSetTypeAdapter;
-import com.amshulman.typesafety.impl.TypeSafeMapImpl;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.logging.Level;
 
 public final class BlockSaverConfigurationContext extends ConfigurationContext {
     // TODO: Find a better way to access configuration values from the Reinforcement class to remove this atrocity.
@@ -197,11 +195,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         }
 
         // If reinforcement values are being capped, and the RV is already at RVC, the block cannot be reinforced further.
-        if (currentReinforcementValue >= coefficient) {
-            return false;
-        }
-
-        return true;
+        return currentReinforcementValue < coefficient;
     }
 
     public boolean isReinforcingMaterial(final Material material) {
