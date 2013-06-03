@@ -18,11 +18,6 @@ public final class BlockSaverPlugin extends MbapiPlugin {
     private BlockSaverInfoManager infoManager;
 
     @Override
-    public void onLoad() {
-        super.onLoad();
-    }
-
-    @Override
     public void onEnable() {
         final BlockSaverConfigurationContext configurationContext = new BlockSaverConfigurationContext(this);
         infoManager = configurationContext.infoManager;
