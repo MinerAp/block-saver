@@ -1,18 +1,18 @@
 package in.nikitapek.blocksaver;
 
+import com.amshulman.mbapi.MbapiPlugin;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketContainer;
 import in.nikitapek.blocksaver.commands.CommandBlockSaver;
 import in.nikitapek.blocksaver.events.BlockSaverListener;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
-
-import java.lang.reflect.InvocationTargetException;
-
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import com.amshulman.mbapi.MbapiPlugin;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketContainer;
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
 
 public final class BlockSaverPlugin extends MbapiPlugin {
     private BlockSaverInfoManager infoManager;
@@ -77,7 +77,7 @@ public final class BlockSaverPlugin extends MbapiPlugin {
             try {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(player, particle);
             } catch (final InvocationTargetException e) {
-                e.printStackTrace();
+                Bukkit.getLogger().log(Level.INFO, "Failed to send packet to: " + player.getName());
             }
         }
     }
