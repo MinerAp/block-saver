@@ -109,6 +109,18 @@ reinforcementHealTime: 5
 # Default: false
 leaveBlockAfterDeinforce: false
 
+## Whether or not mobs can change/damage reinforced blocks.
+# Notes:
+#   Setting this to false will mean sheep cannot eat reinforced grass.
+#   Endermen will be unable to pickup reinforced blocks.
+#   Withers will be unable to damage reinforced blocks.
+# Default: false
+mobsInteractWithReinforcedBlocks: false
+
+## Whether or not the enderdragon can change/damage reinforced blocks.
+# Default: false
+enderdragonInteractWithReinforcedBlocks: false
+
 
 #======== Reinforceable Blocks List ========#
 
@@ -266,6 +278,7 @@ toolRequirements:
   FENCE_GATE: IRON_AXE,DIAMOND_AXE,GOLD_AXE
   FURNACE: IRON_PICKAXE,DIAMOND_PICKAXE,GOLD_PICKAXE
   GOLD_BLOCK: IRON_PICKAXE,DIAMOND_PICKAXE,GOLD_PICKAXE
+  GRASS: IRON_SHOVEL,DIAMOND_SHOVEL,GOLD_SHOVEL
   HOPPER: IRON_PICKAXE,DIAMOND_PICKAXE,GOLD_PICKAXE
   ICE: IRON_PICKAXE,DIAMOND_PICKAXE,GOLD_PICKAXE
   IRON_BLOCK: IRON_PICKAXE,DIAMOND_PICKAXE,GOLD_PICKAXE
