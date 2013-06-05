@@ -4,6 +4,7 @@ load: POSTWORLD
 version: ${project.version}
 author: Indiv0
 description: A plugin for providing block protection capabilities on a server.
+softdepend: [WorldEdit]
 depend: [ProtocolLib]
 
 commands:
