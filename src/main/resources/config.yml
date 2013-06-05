@@ -122,6 +122,13 @@ mobsInteractWithReinforcedBlocks: false
 enderdragonInteractWithReinforcedBlocks: false
 
 
+#======== Advanced Settings ========#
+
+## Whether or not to log BlockSaver events to LogBlock.
+# Default: true
+enableLogBlockLogging: true
+
+
 #======== Reinforceable Blocks List ========#
 
 ## A list of all the items which can be reinforced by this plugin, and the maximum "reinforcement value" the block can reach, if accumulateReinforcementValues is set to false.

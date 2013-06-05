@@ -16,6 +16,7 @@ import java.util.logging.Level;
 
 public final class BlockSaverPlugin extends MbapiPlugin {
     private BlockSaverInfoManager infoManager;
+    //private LogBlockPlugin logBlockPlugin;
 
     @Override
     public void onEnable() {

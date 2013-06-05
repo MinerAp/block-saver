@@ -31,5 +31,13 @@
 			<groupId>com.comphenix.protocol</groupId>
 			<artifactId>ProtocolLib</artifactId>
 		</dependency>
+		<!-- LogBlock -->
+		<dependency>
+			<groupId>de.diddiz.logblock</groupId>
+			<artifactId>LogBlock</artifactId>
+            <version>1.70</version>
+            <systemPath>${project.basedir}/lib/LogBlock.jar</systemPath>
+            <scope>system</scope>
+		</dependency>
 	</dependencies>
 </project>
