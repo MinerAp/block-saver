@@ -68,7 +68,7 @@ public final class BlockSaverListener implements Listener {
         // Cancel the event before the diamond pickaxe check because reinforced blocks should not be breakable without one.
         event.setCancelled(true);
 
-        if (!configurationContext.canToolBreakBlock(event.getBlock().getType(), event.getPlayer().getItemInHand().getType())) {
+        if (!configurationContext.canToolBreakBlock(event.getBlock().getType(), event.getPlayer().getItemInHand())) {
             reinforcementFeedback(event.getBlock().getLocation(), Feedback.DAMAGE_FAIL, event.getPlayer());
             return;
         }
@@ -100,7 +100,7 @@ public final class BlockSaverListener implements Listener {
                 return;
             }
 
-            if (!configurationContext.canToolBreakBlock(event.getClickedBlock().getType(), event.getPlayer().getItemInHand().getType())) {
+            if (!configurationContext.canToolBreakBlock(event.getClickedBlock().getType(), event.getPlayer().getItemInHand())) {
                 reinforcementFeedback(event.getClickedBlock().getLocation(), Feedback.HIT_FAIL, event.getPlayer());
                 event.setCancelled(true);
             }
