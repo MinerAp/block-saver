@@ -3,6 +3,7 @@ package in.nikitapek.blocksaver;
 import com.amshulman.mbapi.MbapiPlugin;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
+import de.diddiz.LogBlock.LogBlock;
 import in.nikitapek.blocksaver.commands.CommandBlockSaver;
 import in.nikitapek.blocksaver.events.BlockSaverListener;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
@@ -16,10 +17,12 @@ import java.util.logging.Level;
 
 public final class BlockSaverPlugin extends MbapiPlugin {
     private BlockSaverInfoManager infoManager;
-    //private LogBlockPlugin logBlockPlugin;
+    private LogBlock logBlockPlugin;
 
     @Override
     public void onEnable() {
+        logBlockPlugin = (LogBlock) Bukkit.getPluginManager().getPlugin("LogBlock");
+
         final BlockSaverConfigurationContext configurationContext = new BlockSaverConfigurationContext(this);
         infoManager = configurationContext.infoManager;
 
