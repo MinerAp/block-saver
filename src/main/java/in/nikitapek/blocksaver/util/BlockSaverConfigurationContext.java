@@ -8,11 +8,13 @@ import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.serialization.ReinforcementTypeAdapter;
+import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -53,7 +55,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public final int gracePeriodTime;
     public final int reinforcementHealingTime;
 
-    public final TypeSafeMap<Material, List<Material>> toolRequirements;
+    public final TypeSafeMap<Material, List<Integer>> toolRequirements;
     private final TypeSafeMap<Material, Integer> reinforceableBlocks;
     private final TypeSafeMap<Material, Integer> reinforcementBlocks;
 
@@ -66,7 +68,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
 
         reinforceableBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.INTEGER);
         reinforcementBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.INTEGER);
-        toolRequirements = new TypeSafeMapImpl<Material, List<Material>>(new EnumMap<Material, List<Material>>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.LIST);
+        toolRequirements = new TypeSafeMapImpl<Material, List<Integer>>(new EnumMap<Material, List<Integer>>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.LIST);
 
         plugin.saveDefaultConfig();
 
@@ -149,18 +151,35 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         try {
             configSection = plugin.getConfig().getConfigurationSection("toolRequirements");
             for (final String materialName : configSection.getKeys(false)) {
-                final String value = configSection.getString(materialName);
-                for (final String split : value.split(",")) {
-                    final List<Material> tools = new ArrayList<Material>();
-                    tools.add(Material.getMaterial(split));
-
-                    if (toolRequirements.containsKey(Material.getMaterial(materialName))) {
-                        tools.addAll(toolRequirements.get(Material.getMaterial(materialName)));
-                        toolRequirements.remove(Material.getMaterial(materialName));
+                final Material blockMaterial = Material.getMaterial(materialName);
+                final List<Integer> tools = new ArrayList<Integer>();
+                tools: for (final String split : configSection.getString(materialName).split(",")) {
+                    // If HANDS is a supplied tool we add -1 to the tool list to represent it.
+                    if ("HANDS".equals(split)) {
+                        tools.add(-1);
                     }
-
-                    toolRequirements.put(Material.getMaterial(materialName), tools);
+                    // If ALL is provided as a valid tool, we clear the list of other tools, add -2 to the tool list to represent it, and skip the rest of the tools.
+                    else if ("ALL".equals(split)) {
+                        tools.clear();
+                        tools.add(-2);
+                        toolRequirements.remove(blockMaterial);
+                        break tools;
+                    } else{
+                        Material material = Material.getMaterial(split);
+                        if (material != null) {
+                            tools.add(material.getId());
+                        }
+                    }
                 }
+
+                // Copies over the previously added tools for the block.
+                if (toolRequirements.containsKey(blockMaterial)) {
+                    tools.addAll(toolRequirements.get(blockMaterial));
+                    toolRequirements.remove(blockMaterial);
+                    Bukkit.getLogger().log(Level.WARNING, "Tool requirements for the block " + blockMaterial.name() + " have been loaded more than once.");
+                }
+
+                toolRequirements.put(Material.getMaterial(materialName), tools);
             }
         } catch (final NullPointerException ex) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load reinforcement blocks list.");
@@ -258,21 +277,31 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         return true;
     }
 
-    public boolean canToolBreakBlock(final Material block, final Material tool) {
+    public boolean canToolBreakBlock(final Material block, final ItemStack tool) {
         if (!toolRequirements.containsKey(block)) {
             return false;
         }
 
-        for (final Entry<Material, List<Material>> material : toolRequirements.entrySet()) {
+        for (final Entry<Material, List<Integer>> material : toolRequirements.entrySet()) {
+            // If the material is not the same as the block being broken, the loop continues.
             if (!material.getKey().equals(block)) {
                 continue;
             }
-
-            if (!material.getValue().contains(tool)) {
-                return false;
+            // If any tool is allowed, the tool can break the block.
+            else if (material.getValue().contains(-2)) {
+                return true;
+            }
+            // If the ItemStack is empty or the type is 0, then the player is using their hand.
+            // A check for whether or not hands are allowed to be used is done.
+            else if ((tool == null || tool.getTypeId() == 0) && material.getValue().contains(-1)) {
+                return true;
+            }
+            // Finally, a check is performed to see if the tool is valid.
+            else if (material.getValue().contains(tool.getTypeId())) {
+                return true;
             }
         }
 
-        return true;
+        return false;
     }
 }
