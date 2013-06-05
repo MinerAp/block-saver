@@ -248,6 +248,11 @@ reinforcementBlocks:
 #======== Tool Requirement List ========#
 
 ## A list of tools which can break certain blocks when reinforced. Used to prevent un-advanced players from easily destroying reinforcements.
+# Notes:
+#   Materials must use names as defined by the Bukkit Material class.
+#   If a reinforceable block does not have any tools listed, it will be unbreakable by a player (but fire and TNT may still apply).
+#   Write "ALL" in order to signify that the block may be broken by any tool or block, including a player's hands.
+#   Write "HANDS" to signify that the block is breakable by a player's hands, in addition to any other tool listed.
 toolRequirements:
   ACTIVATOR_RAIL: IRON_PICKAXE,DIAMOND_PICKAXE,GOLD_PICKAXE
   ANVIL: IRON_PICKAXE,DIAMOND_PICKAXE,GOLD_PICKAXE
