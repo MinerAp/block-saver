@@ -36,8 +36,8 @@
 			<groupId>de.diddiz.logblock</groupId>
 			<artifactId>LogBlock</artifactId>
 			<version>1.70</version>
-			<systemPath>${project.basedir}/lib/LogBlock.jar</systemPath>
-			<scope>system</scope>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/LogBlock.jar</systemPath>
 		</dependency>
 	</dependencies>
 </project>

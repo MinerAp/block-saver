@@ -1,8 +1,8 @@
 package in.nikitapek.blocksaver.serialization;
 
+import com.amshulman.mbapi.MbapiPlugin;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
-
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -14,6 +14,9 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     private boolean justCreated;
     private String creatorName;
     private float lastMaximumValue;
+
+    private static MbapiPlugin plugin;
+    private static int gracePeriodTime;
 
     public Reinforcement(final Location location) {
         this.location = location;
@@ -30,8 +33,13 @@ public final class Reinforcement implements Comparable<Reinforcement> {
         setCreatorName(creatorName);
     }
 
+    public static void initialize(BlockSaverConfigurationContext configurationContext) {
+        plugin = configurationContext.plugin;
+        gracePeriodTime = configurationContext.gracePeriodTime;
+    }
+
     public void updateTimeStamp() {
-        if ((System.currentTimeMillis() - getTimeStamp()) >= (BlockSaverConfigurationContext.configurationContext.gracePeriodTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
+        if ((System.currentTimeMillis() - getTimeStamp()) >= (gracePeriodTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
             setJustCreated(false);
         }
 
@@ -39,19 +47,19 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     }
 
     public void writeToMetadata() {
-        getBlock().setMetadata("RV", new FixedMetadataValue(BlockSaverConfigurationContext.configurationContext.plugin, value));
-        getBlock().setMetadata("RTS", new FixedMetadataValue(BlockSaverConfigurationContext.configurationContext.plugin, timeStamp));
-        getBlock().setMetadata("RJC", new FixedMetadataValue(BlockSaverConfigurationContext.configurationContext.plugin, justCreated));
-        getBlock().setMetadata("RCN", new FixedMetadataValue(BlockSaverConfigurationContext.configurationContext.plugin, creatorName));
-        getBlock().setMetadata("RLMV", new FixedMetadataValue(BlockSaverConfigurationContext.configurationContext.plugin, lastMaximumValue));
+        getBlock().setMetadata("RV", new FixedMetadataValue(plugin, value));
+        getBlock().setMetadata("RTS", new FixedMetadataValue(plugin, timeStamp));
+        getBlock().setMetadata("RJC", new FixedMetadataValue(plugin, justCreated));
+        getBlock().setMetadata("RCN", new FixedMetadataValue(plugin, creatorName));
+        getBlock().setMetadata("RLMV", new FixedMetadataValue(plugin, lastMaximumValue));
     }
 
     public static void removeFromMetadata(final Block block) {
-        block.removeMetadata("RV", BlockSaverConfigurationContext.configurationContext.plugin);
-        block.removeMetadata("RTS", BlockSaverConfigurationContext.configurationContext.plugin);
-        block.removeMetadata("RJC", BlockSaverConfigurationContext.configurationContext.plugin);
-        block.removeMetadata("RCN", BlockSaverConfigurationContext.configurationContext.plugin);
-        block.removeMetadata("RLMV", BlockSaverConfigurationContext.configurationContext.plugin);
+        block.removeMetadata("RV", plugin);
+        block.removeMetadata("RTS", plugin);
+        block.removeMetadata("RJC", plugin);
+        block.removeMetadata("RCN", plugin);
+        block.removeMetadata("RLMV", plugin);
     }
 
     public Block getBlock() {
@@ -111,7 +119,7 @@ public final class Reinforcement implements Comparable<Reinforcement> {
 
     public void setReinforcementValue(final float value) {
         this.value = value;
-        getBlock().setMetadata("RV", new FixedMetadataValue(BlockSaverConfigurationContext.configurationContext.plugin, value));
+        getBlock().setMetadata("RV", new FixedMetadataValue(plugin, value));
 
         setLastMaximumValue(Math.max(value, getLastMaximumValue()));
         updateTimeStamp();
@@ -119,22 +127,22 @@ public final class Reinforcement implements Comparable<Reinforcement> {
 
     private void setTimeStamp(final long timeStamp) {
         this.timeStamp = timeStamp;
-        getBlock().setMetadata("RTS", new FixedMetadataValue(BlockSaverConfigurationContext.configurationContext.plugin, timeStamp));
+        getBlock().setMetadata("RTS", new FixedMetadataValue(plugin, timeStamp));
     }
 
     private void setJustCreated(final boolean justCreated) {
         this.justCreated = justCreated;
-        getBlock().setMetadata("RJC", new FixedMetadataValue(BlockSaverConfigurationContext.configurationContext.plugin, justCreated));
+        getBlock().setMetadata("RJC", new FixedMetadataValue(plugin, justCreated));
     }
 
     private void setCreatorName(final String creatorName) {
         this.creatorName = creatorName;
-        getBlock().setMetadata("RCN", new FixedMetadataValue(BlockSaverConfigurationContext.configurationContext.plugin, creatorName));
+        getBlock().setMetadata("RCN", new FixedMetadataValue(plugin, creatorName));
     }
 
     private void setLastMaximumValue(final float lastMaximumValue) {
         this.lastMaximumValue = lastMaximumValue;
-        getBlock().setMetadata("RLMV", new FixedMetadataValue(BlockSaverConfigurationContext.configurationContext.plugin, lastMaximumValue));
+        getBlock().setMetadata("RLMV", new FixedMetadataValue(plugin, lastMaximumValue));
     }
 
     @Override
