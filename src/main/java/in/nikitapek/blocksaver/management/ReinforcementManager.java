@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-public class ReinforcementManager {
+public final class ReinforcementManager {
     private static final byte NO_REINFORCEMENT_VALUE = -1;
     private static final byte PITCH_SHIFT = 50;
 
