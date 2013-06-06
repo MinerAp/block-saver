@@ -1,6 +1,5 @@
 package in.nikitapek.blocksaver.events;
 
-import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
@@ -390,7 +389,7 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        if (EntityType.ENDERMAN.equals(event.getEntity())) {
+        if (EntityType.ENDERMAN.equals(event.getEntity().getType())) {
             // If the enderman is placing a block, ignore the event.
             if (event.getBlock().getType().equals(Material.AIR) && !event.getTo().equals(Material.AIR)) {
                 return;
