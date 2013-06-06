@@ -200,7 +200,7 @@ public final class BlockSaverListener implements Listener {
         }
 
         // If the event is caused by neither TNT nor a dragon, nor a wither, it is of no relevance.
-        if (!EntityType.PRIMED_TNT.equals(event.getEntity().getType()) && !EntityType.ENDER_DRAGON.equals(event.getEntity().getType()) && !EntityType.WITHER.equals(event.getEntity().getType()) && !EntityType.WITHER_SKULL.equals(event.getEntity().getType())) {
+        if (!EntityType.PRIMED_TNT.equals(entity.getType()) && !EntityType.ENDER_DRAGON.equals(entity.getType()) && !EntityType.WITHER.equals(entity.getType()) && !EntityType.WITHER_SKULL.equals(entity.getType())) {
             return;
         }
 
@@ -219,20 +219,20 @@ public final class BlockSaverListener implements Listener {
 
             // If TNT damage is enabled for reinforced blocks, then the block is damaged and the successful damage effect is played.
             // Otherwise, the damage failed is played. In both cases, the block is not destroyed by the blast.
-            if (EntityType.PRIMED_TNT.equals(event.getEntity().getType()) && tntDamagesReinforcedBlocks) {
+            if (EntityType.PRIMED_TNT.equals(entity.getType()) && tntDamagesReinforcedBlocks) {
                 reinforcementManager.sendFeedback(block.getLocation(), BlockSaverFeedback.DAMAGE_SUCCESS, null);
                 if (tntStripReinforcementEntirely) {
                     reinforcementManager.removeReinforcement(block.getLocation());
                 } else {
                     reinforcementManager.damageBlock(block.getLocation(), null, BlockSaverDamageCause.TNT);
                 }
-            } else if (EntityType.WITHER.equals(event.getEntity().getType()) || EntityType.WITHER_SKULL.equals(event.getEntity().getType())) {
+            } else if (EntityType.WITHER.equals(entity.getType()) || EntityType.WITHER_SKULL.equals(entity.getType())) {
                 if (mobsInteractWithReinforcedBlocks) {
                     reinforcementManager.sendFeedback(block.getLocation(), BlockSaverFeedback.DAMAGE_SUCCESS, null);
                     reinforcementManager.removeReinforcement(block.getLocation());
                     continue;
                 }
-            } else if (EntityType.ENDER_DRAGON.equals(event.getEntity().getType())) {
+            } else if (EntityType.ENDER_DRAGON.equals(entity.getType())) {
                 if (enderdragonInteractWithReinforcedBlocks) {
                     reinforcementManager.sendFeedback(block.getLocation(), BlockSaverFeedback.DAMAGE_SUCCESS, null);
                     reinforcementManager.removeReinforcement(block.getLocation());
