@@ -14,7 +14,7 @@ reinforcementDamageFailEffect: EXTINGUISH
 ## The name of the effect to be played when a player successfully damages a reinforced block.
 # Notes:
 #   Please use an effect contained within the Effect class.
-#   This value can be overriden by the useParticleEffects option, which, if enabled, will instead use coloured particle effects to represent the state of the block as it is damaged or reinforced.
+#   This value can be overridden by the useParticleEffects option, which, if enabled, will instead use coloured particle effects to represent the state of the block as it is damaged or reinforced.
 # Default: POTION_BREAK
 reinforcementDamageSuccessEffect: POTION_BREAK
 
@@ -63,12 +63,12 @@ allowReinforcedBlockPhysics: true
 # Default: true
 fireDamagesReinforcedBlocks: true
 
-## Whether or not fires burning on reinforced blocks should occaisionally extinguish, in order to prevent these blocks from being entirely ravaged by a fire.
+## Whether or not fires burning on reinforced blocks should occasionally extinguish, in order to prevent these blocks from being entirely ravaged by a fire.
 # Default: true
 extinguishReinforcementFire: true
 
-## If extinguishReinforcementFire is set to true, this value determines the likelyhood that a fire is to be extinguished.
-# Note: This must be a value in the range 0.0-1.0, with a 1.0 being a 100% chance of extinguishment.
+## If extinguishReinforcementFire is set to true, this value determines the likelihood that a fire is to be extinguished.
+# Note: This must be a value in the range 0.0-1.0, with a 1.0 being a 100% chance of extinguishing.
 # Default: 0.9
 extinguishChance: 0.9
 

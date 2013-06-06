@@ -56,13 +56,13 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     private final ReinforcementManager reinforcementManager;
 
     public BlockSaverConfigurationContext(final MbapiPlugin plugin) {
-        super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplimentaryTypes.TREESET, SupplimentaryTypes.REINFORCEMENT), new ReinforcementTypeAdapter());
+        super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplementaryTypes.TREESET, SupplementaryTypes.REINFORCEMENT), new ReinforcementTypeAdapter());
 
         infoManager = new BlockSaverInfoManager(this);
 
-        reinforceableBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.INTEGER);
-        reinforcementBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.INTEGER);
-        toolRequirements = new TypeSafeMapImpl<Material, List<Integer>>(new EnumMap<Material, List<Integer>>(Material.class), SupplimentaryTypes.MATERIAL, SupplimentaryTypes.LIST);
+        reinforceableBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
+        reinforcementBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
+        toolRequirements = new TypeSafeMapImpl<Material, List<Integer>>(new EnumMap<Material, List<Integer>>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.LIST);
 
         plugin.saveDefaultConfig();
 

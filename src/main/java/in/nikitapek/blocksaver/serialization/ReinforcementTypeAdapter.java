@@ -1,6 +1,6 @@
 package in.nikitapek.blocksaver.serialization;
 
-import in.nikitapek.blocksaver.util.SupplimentaryTypes;
+import in.nikitapek.blocksaver.util.SupplementaryTypes;
 
 import java.lang.reflect.Type;
 
@@ -16,7 +16,7 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 
 public final class ReinforcementTypeAdapter implements GsonTypeAdapter<Location> {
-    private static final Type TYPE = SupplimentaryTypes.LOCATION;
+    private static final Type TYPE = SupplementaryTypes.LOCATION;
 
     @Override
     public JsonElement serialize(final Location src, final Type typeOfSrc, final JsonSerializationContext context) {

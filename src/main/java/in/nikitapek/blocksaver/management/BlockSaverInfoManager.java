@@ -9,7 +9,7 @@ import in.nikitapek.blocksaver.serialization.PlayerInfo;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.PlayerInfoConstructorFactory;
-import in.nikitapek.blocksaver.util.SupplimentaryTypes;
+import in.nikitapek.blocksaver.util.SupplementaryTypes;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 
@@ -33,7 +33,7 @@ public final class BlockSaverInfoManager extends InfoManager {
         playerInfo = storageManager.getStorageMap("playerInfo", new TypeToken<PlayerInfo>() {}.getType());
         registerPlayerInfoLoader(playerInfo, FACTORY);
 
-        reinforcementSet = storageManager.getStorageSet("reinforcements", SupplimentaryTypes.REINFORCEMENT);
+        reinforcementSet = storageManager.getStorageSet("reinforcements", SupplementaryTypes.REINFORCEMENT);
         reinforcementSet.load();
 
         // Transfer the reinforcements from the reinforcementSet to block Metadata and store all of the locations in reinforcements.

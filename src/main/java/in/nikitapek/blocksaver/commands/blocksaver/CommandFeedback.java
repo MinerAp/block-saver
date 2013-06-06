@@ -14,8 +14,8 @@ import com.amshulman.typesafety.TypeSafeCollections;
 import com.amshulman.typesafety.TypeSafeList;
 
 public final class CommandFeedback extends PlayerOnlyCommand {
-    private static final String FEEDBACK_ENABLED = ChatColor.GRAY + "You are now recieving reinforcement-related text feedback.";
-    private static final String FEEDBACK_DISABLED = ChatColor.GRAY + "You are no longer recieving reinforcement-related text feedback.";
+    private static final String FEEDBACK_ENABLED = ChatColor.GRAY + "You are now receiving reinforcement-related text feedback.";
+    private static final String FEEDBACK_DISABLED = ChatColor.GRAY + "You are no longer receiving reinforcement-related text feedback.";
 
     private final BlockSaverInfoManager infoManager;
 
@@ -28,9 +28,9 @@ public final class CommandFeedback extends PlayerOnlyCommand {
     protected boolean executeForPlayer(final Player player, final TypeSafeList<String> args) {
         final PlayerInfo playerInfo = infoManager.getPlayerInfo(player.getName());
 
-        playerInfo.setRecievingTextFeedback(!playerInfo.isRecievingTextFeedback());
+        playerInfo.setReceivingTextFeedback(!playerInfo.isReceivingTextFeedback());
 
-        if (playerInfo.isRecievingTextFeedback()) {
+        if (playerInfo.isReceivingTextFeedback()) {
             player.sendMessage(FEEDBACK_ENABLED);
         } else {
             player.sendMessage(FEEDBACK_DISABLED);

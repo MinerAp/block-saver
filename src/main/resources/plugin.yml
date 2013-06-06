@@ -12,7 +12,7 @@ commands:
     description: Controls all functions of the BlockSaver plugin.
     usage: |
       /<command> [feedback]
-      Example: /<command> feedback - Toggles whether or not a player should recieve written feedback for various reinforcement events.
+      Example: /<command> feedback - Toggles whether or not a player should receive written feedback for various reinforcement events.
     permission: blocksaver.blocksaver
     permission-message: Sorry, you don't have permission to use BlockSaver.
 

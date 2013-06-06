@@ -283,18 +283,18 @@ public class ReinforcementManager {
         switch (feedback) {
             case REINFORCE_SUCCESS:
                 location.getWorld().playSound(location, reinforceSuccessSound, 1.0f, PITCH_SHIFT);
-                if (player != null && infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback()) {
+                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
                     player.sendMessage(ChatColor.GRAY + "Reinforced a block.");
                 }
                 break;
             case REINFORCE_FAIL:
                 location.getWorld().playSound(location, reinforceFailSound, 1.0f, PITCH_SHIFT);
-                if (player != null && infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback()) {
+                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
                     player.sendMessage(ChatColor.GRAY + "Failed to reinforce a block.");
                 }
                 break;
             case DAMAGE_SUCCESS:
-                if (player != null && infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback()) {
+                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
                     player.sendMessage(ChatColor.GRAY + "Damaged a reinforced block.");
                 }
 
@@ -308,13 +308,13 @@ public class ReinforcementManager {
                 break;
             case DAMAGE_FAIL:
                 location.getWorld().playEffect(location, reinforcementDamageFailEffect, 0);
-                if (player != null && infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback()) {
+                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
                     player.sendMessage(ChatColor.GRAY + "Failed to damage a reinforced block.");
                 }
                 break;
             case HIT_FAIL:
                 location.getWorld().playSound(location, hitFailSound, 1.0f, 0f);
-                if (player != null && infoManager.getPlayerInfo(player.getName()).isRecievingTextFeedback()) {
+                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
                     player.sendMessage(ChatColor.GRAY + "Your tool is insufficient to damage this reinforced block.");
                 }
                 break;
