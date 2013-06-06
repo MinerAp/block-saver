@@ -178,8 +178,8 @@ public final class ReinforcementManager {
             }
             // If the ItemStack is empty or the type is 0, then the player is using their hand.
             // A check for whether or not hands are allowed to be used is done.
-            else if ((tool == null || tool.getTypeId() == 0) && material.getValue().contains(-1)) {
-                return true;
+            else if (tool == null || tool.getTypeId() == 0) {
+                return material.getValue().contains(-1);
             }
             // Finally, a check is performed to see if the tool is valid.
             else if (material.getValue().contains(tool.getTypeId())) {
