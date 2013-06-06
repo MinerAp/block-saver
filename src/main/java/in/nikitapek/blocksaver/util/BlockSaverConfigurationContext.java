@@ -114,24 +114,26 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         ConfigurationSection configSection;
 
         // Attempts to read the configurationSection containing the keys and values storing the block reinforcement coefficients.
-        try {
-            configSection = plugin.getConfig().getConfigurationSection("reinforceableBlocks");
-
+        configSection = plugin.getConfig().getConfigurationSection("reinforceableBlocks");
+        if (configSection == null) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to load reinforceable blocks list.");
+        } else {
             for (final String materialName : configSection.getKeys(false)) {
+                final Material material = Material.getMaterial(materialName);
                 final int value = configSection.getInt(materialName);
 
-                if (value > 0) {
-                    reinforceableBlocks.put(Material.getMaterial(materialName), value);
+                if (material != null && value > 0) {
+                    reinforceableBlocks.put(material, value);
                 } else {
                     plugin.getLogger().log(Level.WARNING, materialName + "has an invalid reinforcement value.");
                 }
             }
-        } catch (final NullPointerException ex) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to load reinforceable blocks list.");
         }
 
-        try {
-            configSection = plugin.getConfig().getConfigurationSection("reinforcementBlocks");
+        configSection = plugin.getConfig().getConfigurationSection("reinforcementBlocks");
+        if (configSection == null) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to load reinforcement blocks list.");
+        } else {
             for (final String materialName : configSection.getKeys(false)) {
                 final int value = configSection.getInt(materialName);
 
@@ -141,15 +143,16 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
                     plugin.getLogger().log(Level.WARNING, materialName + "has an invalid reinforcement value.");
                 }
             }
-        } catch (final NullPointerException ex) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to load reinforcement blocks list.");
         }
 
-        try {
-            configSection = plugin.getConfig().getConfigurationSection("toolRequirements");
+        configSection = plugin.getConfig().getConfigurationSection("toolRequirements");
+        if (configSection == null) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to load tool requirements list.");
+        } else {
             for (final String materialName : configSection.getKeys(false)) {
                 final Material blockMaterial = Material.getMaterial(materialName);
                 final List<Integer> tools = new ArrayList<Integer>();
+
                 for (final String split : configSection.getString(materialName).split(",")) {
                     // If HANDS is a supplied tool we add -1 to the tool list to represent it.
                     if ("HANDS".equals(split)) {
@@ -178,8 +181,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
 
                 toolRequirements.put(Material.getMaterial(materialName), tools);
             }
-        } catch (final NullPointerException ex) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to load reinforcement blocks list.");
         }
 
         // Load the Reinforcement class. This is to ensure Reinforcement has access to MbapiPlugin and related configuration values.
