@@ -16,7 +16,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonExtensionMaterial;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -302,8 +301,6 @@ public final class ReinforcementManager {
                 }
 
                 if (player != null && useParticleEffects) {
-                    final List<Player> players = new ArrayList<Player>();
-                    players.add(player);
                     BlockSaverUtil.sendParticleEffect(location, infoManager.getReinforcement(location).getReinforcementValue());
                 } else {
                     location.getWorld().playEffect(location, reinforcementDamageSuccessEffect, 0);
