@@ -387,6 +387,7 @@ public final class ReinforcementManager {
         final float reinforcementValue = reinforcement.getReinforcementValue();
         Reinforcement.removeFromMetadata(location.getBlock());
         return reinforcementValue;
+
     }
 
     private boolean isFortified(final Reinforcement reinforcement, final String playerName) {

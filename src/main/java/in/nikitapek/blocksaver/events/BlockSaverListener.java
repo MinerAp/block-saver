@@ -7,6 +7,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EnderDragonPart;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -56,9 +57,7 @@ public final class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(final BlockBreakEvent event) {
-        final Block block = event.getBlock();
-        final Location location = block.getLocation();
-        final Player player = event.getPlayer();
+        final Location location = event.getBlock().getLocation();
 
         // If the block is not reinforced, this plugin does not stop the block break event.
         if (!reinforcementManager.isReinforced(location)) {
@@ -66,7 +65,7 @@ public final class BlockSaverListener implements Listener {
         }
 
         // If the block is not successfully broken (e.g. the RV is not 0), then the event is cancelled.
-        event.setCancelled(reinforcementManager.attemptToBreakBlock(location, player));
+        event.setCancelled(reinforcementManager.attemptToBreakBlock(location, event.getPlayer()));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -153,12 +152,16 @@ public final class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockPhysics(final BlockPhysicsEvent event) {
+        final Block block = event.getBlock();
+        final Location location = block.getLocation();
+        final Material material = block.getType();
+
         // This is to ensure TNT-based physics events are not processed.
-        if (!event.getBlock().getType().equals(Material.SAND) && !event.getBlock().getType().equals(Material.GRAVEL)) {
+        if (!material.equals(Material.SAND) && !material.equals(Material.GRAVEL)) {
             return;
         }
 
-        if (!reinforcementManager.isReinforced(event.getBlock().getLocation())) {
+        if (!reinforcementManager.isReinforced(location)) {
             return;
         }
 
@@ -167,18 +170,20 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        reinforcementManager.removeReinforcement(event.getBlock().getLocation());
+        reinforcementManager.removeReinforcement(location);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
+        final Block piston = event.getBlock();
+        final BlockFace direction = event.getDirection();
         final ListIterator<Block> iter = event.getBlocks().listIterator(event.getBlocks().size());
 
         while (iter.hasPrevious()) {
             final Block block = iter.previous();
 
             // If the next block is reinforced and piston reinforced block movement is disabled, the event is cancelled.
-            if (reinforcementManager.isReinforced(block.getRelative(event.getDirection()).getLocation())) {
+            if (reinforcementManager.isReinforced(block.getRelative(direction).getLocation())) {
                 if (!pistonsMoveReinforcedBlocks) {
                     event.setCancelled(true);
                     return;
@@ -195,12 +200,12 @@ public final class BlockSaverListener implements Listener {
                 return;
             }
 
-            reinforcementManager.moveReinforcement(block, event.getDirection());
+            reinforcementManager.moveReinforcement(block, direction);
         }
 
         // Handle the reinforcement on the piston itself.
-        if (reinforcementManager.isReinforced(event.getBlock().getLocation())) {
-            reinforcementManager.moveReinforcement(event.getBlock(), event.getDirection());
+        if (reinforcementManager.isReinforced(piston.getLocation())) {
+            reinforcementManager.moveReinforcement(piston, direction);
         }
     }
 
@@ -210,7 +215,8 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        final Block block = event.getBlock().getRelative(event.getDirection(), 2);
+        final BlockFace direction = event.getDirection();
+        final Block block = event.getBlock().getRelative(direction, 2);
 
         if (!reinforcementManager.isReinforced(block.getLocation())) {
             return;
@@ -221,16 +227,20 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        reinforcementManager.moveReinforcement(block, event.getDirection().getOppositeFace());
+        reinforcementManager.moveReinforcement(block, direction.getOppositeFace());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockFade(final BlockFadeEvent event) {
-        if (!event.getBlock().getType().equals(Material.SNOW) && !event.getBlock().getType().equals(Material.ICE)) {
+        final Block block = event.getBlock();
+        final Location location = block.getLocation();
+        final Material material = block.getType();
+
+        if (!material.equals(Material.SNOW) && !material.equals(Material.ICE)) {
             return;
         }
 
-        if (!reinforcementManager.isReinforced(event.getBlock().getLocation())) {
+        if (!reinforcementManager.isReinforced(location)) {
             return;
         }
 
@@ -239,16 +249,20 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        reinforcementManager.removeReinforcement(event.getBlock().getLocation());
+        reinforcementManager.removeReinforcement(location);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onWaterPassThrough(final BlockFromToEvent event) {
-        if (event.getBlock().getType() == Material.DRAGON_EGG) {
+        final Location location = event.getToBlock().getLocation();
+
+        if (!reinforcementManager.isReinforced(location)) {
             return;
         }
 
-        if (!reinforcementManager.isReinforced(event.getToBlock().getLocation())) {
+        // If the event is caused by a dragon egg moving to a new location, simply make sure it is not teleporting into a field.
+        if (event.getBlock().getType() == Material.DRAGON_EGG) {
+            reinforcementManager.removeReinforcement(location);
             return;
         }
 
@@ -257,12 +271,18 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        reinforcementManager.removeReinforcement(event.getToBlock().getLocation());
+        reinforcementManager.removeReinforcement(location);
     }
 
     @EventHandler
     public void onEntityChangeBlock(final EntityChangeBlockEvent event) {
-        if (!reinforcementManager.isReinforced(event.getBlock().getLocation())) {
+        final Block block = event.getBlock();
+        final Location location = block.getLocation();
+        final Material fromMaterial = block.getType();
+        final EntityType entityType = event.getEntityType();
+        final Material toMaterial = event.getTo();
+
+        if (!reinforcementManager.isReinforced(location)) {
             return;
         }
 
@@ -270,16 +290,16 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        if (EntityType.ENDERMAN.equals(event.getEntity().getType())) {
+        if (EntityType.ENDERMAN.equals(entityType)) {
             // If the enderman is placing a block, ignore the event.
-            if (event.getBlock().getType().equals(Material.AIR) && !event.getTo().equals(Material.AIR)) {
+            if (fromMaterial.equals(Material.AIR) && !toMaterial.equals(Material.AIR)) {
                 return;
             }
 
             // If the enderman is picking up a block, and is allowed to do so, the reinforcement is removed from the block.
-            if (!event.getBlock().getType().equals(Material.AIR) && event.getTo().equals(Material.AIR)) {
+            if (!fromMaterial.equals(Material.AIR) && toMaterial.equals(Material.AIR)) {
                 if (mobsInteractWithReinforcedBlocks) {
-                    reinforcementManager.removeReinforcement(event.getBlock().getLocation());
+                    reinforcementManager.removeReinforcement(location);
                 } else {
                     event.setCancelled(true);
                 }
@@ -287,9 +307,9 @@ public final class BlockSaverListener implements Listener {
         }
 
         // Are sheep able to eat grass, and prevent withers from destroying blocks.
-        if (EntityType.SHEEP.equals(event.getEntity().getType()) || EntityType.WITHER.equals(event.getEntity().getType()) || EntityType.WITHER_SKULL.equals(event.getEntity().getType())) {
+        if (EntityType.SHEEP.equals(entityType) || EntityType.WITHER.equals(entityType) || EntityType.WITHER_SKULL.equals(entityType)) {
             if (mobsInteractWithReinforcedBlocks) {
-                reinforcementManager.removeReinforcement(event.getBlock().getLocation());
+                reinforcementManager.removeReinforcement(location);
             } else {
                 event.setCancelled(true);
             }
