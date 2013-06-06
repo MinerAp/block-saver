@@ -150,7 +150,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             for (final String materialName : configSection.getKeys(false)) {
                 final Material blockMaterial = Material.getMaterial(materialName);
                 final List<Integer> tools = new ArrayList<Integer>();
-                tools: for (final String split : configSection.getString(materialName).split(",")) {
+                for (final String split : configSection.getString(materialName).split(",")) {
                     // If HANDS is a supplied tool we add -1 to the tool list to represent it.
                     if ("HANDS".equals(split)) {
                         tools.add(-1);
@@ -160,7 +160,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
                         tools.clear();
                         tools.add(-2);
                         toolRequirements.remove(blockMaterial);
-                        break tools;
+                        break;
                     } else{
                         Material material = Material.getMaterial(split);
                         if (material != null) {

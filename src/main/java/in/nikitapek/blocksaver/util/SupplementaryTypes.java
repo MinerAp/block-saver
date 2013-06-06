@@ -1,16 +1,13 @@
 package in.nikitapek.blocksaver.util;
 
+import com.google.gson.reflect.TypeToken;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
+import org.bukkit.Location;
+import org.bukkit.Material;
 
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.TreeSet;
-
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-
-import com.google.gson.reflect.TypeToken;
 
 public final class SupplementaryTypes {
     @SuppressWarnings("rawtypes")
