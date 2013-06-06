@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.logging.Level;
 
 public final class BlockSaverConfigurationContext extends ConfigurationContext {
+    private final static double EXTINGUISH_CHANCE = 0.9;
+
     public Effect reinforcementDamageFailEffect;
     public Effect reinforcementDamageSuccessEffect;
     public Sound reinforceSuccessSound;
@@ -101,7 +103,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         enableLogBlockLogging = plugin.getConfig().getBoolean("enableLogBlockLogging", true);
 
         // Validates that the extinguish chance is a value from 0.0 to 1.0.
-        extinguishChance = (plugin.getConfig().getDouble("extinguishChance", 0.9) < 0 || plugin.getConfig().getDouble("extinguishChance", 0.9) > 1) ? 0.9 : plugin.getConfig().getDouble("extinguishChance", 0.9);
+        extinguishChance = (plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE) < 0 || plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE) > 1) ? EXTINGUISH_CHANCE : plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE);
 
         // Validates that the grace period for reinforcement removal is not less than zero.
         gracePeriodTime = (plugin.getConfig().getInt("gracePeriodTime", 3) < 0) ? 3 : plugin.getConfig().getInt("gracePeriodTime", 3);

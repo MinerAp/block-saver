@@ -146,38 +146,31 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = (int) (prime * result + getReinforcementValue()); // TODO: Ask Andy if this line is right.
-        result = prime * result + ((location == null) ? 0 : location.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Reinforcement that = (Reinforcement) o;
+
+        if (justCreated != that.justCreated) return false;
+        if (Float.compare(that.lastMaximumValue, lastMaximumValue) != 0) return false;
+        if (timeStamp != that.timeStamp) return false;
+        if (Float.compare(that.value, value) != 0) return false;
+        if (!creatorName.equals(that.creatorName)) return false;
+        if (!location.equals(that.location)) return false;
+
+        return true;
     }
 
     @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Reinforcement other = (Reinforcement) obj;
-        // TODO: Ask Andy if these lines are right.
-        if (getReinforcementValue() != other.getReinforcementValue()) {
-            return false;
-        }
-        if (location == null) {
-            if (other.location != null) {
-                return false;
-            }
-        } else if (!location.equals(other.location)) {
-            return false;
-        }
-        return true;
+    public int hashCode() {
+        int result = location.hashCode();
+        result = 31 * result + (value != +0.0f ? Float.floatToIntBits(value) : 0);
+        result = 31 * result + (int) (timeStamp ^ (timeStamp >>> 32));
+        result = 31 * result + (justCreated ? 1 : 0);
+        result = 31 * result + creatorName.hashCode();
+        result = 31 * result + (lastMaximumValue != +0.0f ? Float.floatToIntBits(lastMaximumValue) : 0);
+        return result;
     }
 
     @Override
