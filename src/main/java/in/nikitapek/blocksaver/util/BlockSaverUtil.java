@@ -12,6 +12,8 @@ import java.util.logging.Level;
 public final class BlockSaverUtil {
     public static final short MILLISECONDS_PER_SECOND = 1000;
     public static final byte REINFORCEMENT_MAXIMIZING_COEFFICIENT = -2;
+    public static final int HANDS_TOOL_CODE = -1;
+    public static final int ALL_TOOL_CODE = -2;
 
     // The ID of the packet used for particle effects.
     private static final byte PARTICLE_EFFECT_PACKET = 61;

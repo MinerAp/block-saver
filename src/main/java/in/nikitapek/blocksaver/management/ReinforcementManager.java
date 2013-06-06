@@ -11,11 +11,13 @@ import in.nikitapek.blocksaver.util.BlockSaverUtil;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonExtensionMaterial;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -33,10 +35,18 @@ public final class ReinforcementManager {
     private final Sound hitFailSound;
 
     private final boolean accumulateReinforcementValues;
+    private final boolean tntDamagesReinforcedBlocks;
+    private final boolean tntStripReinforcementEntirely;
+    private final boolean fireDamagesReinforcedBlocks;
+    private final boolean extinguishReinforcementFire;
     private final boolean useParticleEffects;
     private final boolean allowReinforcementGracePeriod;
     private final boolean allowReinforcementHealing;
+    private final boolean leaveBlockAfterDeinforce;
     private final boolean enableLogBlockLogging;
+    private final boolean mobsInteractWithReinforcedBlocks;
+    private final boolean enderdragonInteractWithReinforcedBlocks;
+    private final double extinguishChance;
     private final int gracePeriodTime;
     private final int reinforcementHealingTime;
 
@@ -52,13 +62,22 @@ public final class ReinforcementManager {
         this.reinforceSuccessSound = configurationContext.reinforceSuccessSound;
         this.reinforceFailSound = configurationContext.reinforceFailSound;
         this.hitFailSound = configurationContext.hitFailSound;
-        this.useParticleEffects = configurationContext.useParticleEffects;
+
         this.accumulateReinforcementValues = configurationContext.accumulateReinforcementValues;
+        this.tntDamagesReinforcedBlocks = configurationContext.tntDamagesReinforcedBlocks;
+        this.tntStripReinforcementEntirely = configurationContext.tntStripReinforcementEntirely;
+        this.fireDamagesReinforcedBlocks = configurationContext.fireDamagesReinforcedBlocks;
+        this.extinguishReinforcementFire = configurationContext.extinguishReinforcementFire;
+        this.useParticleEffects = configurationContext.useParticleEffects;
         this.allowReinforcementGracePeriod = configurationContext.allowReinforcementGracePeriod;
         this.allowReinforcementHealing = configurationContext.allowReinforcementHealing;
+        this.leaveBlockAfterDeinforce = configurationContext.leaveBlockAfterDeinforce;
         this.enableLogBlockLogging = configurationContext.enableLogBlockLogging;
         this.reinforceableBlocks = configurationContext.reinforceableBlocks;
         this.toolRequirements = configurationContext.toolRequirements;
+        this.mobsInteractWithReinforcedBlocks = configurationContext.mobsInteractWithReinforcedBlocks;
+        this.enderdragonInteractWithReinforcedBlocks = configurationContext.enderdragonInteractWithReinforcedBlocks;
+        this.extinguishChance = configurationContext.extinguishChance;
         this.gracePeriodTime = configurationContext.gracePeriodTime;
         this.reinforcementHealingTime = configurationContext.reinforcementHealingTime;
 
@@ -110,41 +129,83 @@ public final class ReinforcementManager {
         return reinforceableBlocks.containsKey(material);
     }
 
-    public boolean canToolBreakBlock(final Material block, final ItemStack tool) {
-        if (!toolRequirements.containsKey(block)) {
+    private boolean canToolDamageBlock(final Location location, final ItemStack tool) {
+        final Material blockMaterial = location.getBlock().getType();
+
+        // If the location does not contain a reinforcement, there is nothing stopping the tool from damaging the block.
+        if (!isReinforced(location)) {
+            return true;
+        }
+
+        // If the tool can be used for reinforcement, then it cannot be used to break a reinforced block.
+        if (canMaterialReinforce(tool.getType())) {
             return false;
         }
 
-        for (final Entry<Material, List<Integer>> material : toolRequirements.entrySet()) {
+        // If the block does not contain a valid tool for use, the block is not breakable by the tool provided.
+        if (!toolRequirements.containsKey(blockMaterial)) {
+            return false;
+        }
+
+        for (final Entry<Material, List<Integer>> blockTools : toolRequirements.entrySet()) {
             // If the material is not the same as the block being broken, the loop continues.
-            if (!material.getKey().equals(block)) {
+            if (!blockTools.getKey().equals(blockMaterial)) {
                 continue;
             }
-            // If any tool is allowed, the tool can break the block.
-            else if (material.getValue().contains(-2)) {
+
+            // Gets the list of tools which can be used on blockMaterial.
+            final List<Integer> toolList = blockTools.getValue();
+
+            // If any tool is allowed for this material, the tool can break the block.
+            if (toolList.contains(BlockSaverUtil.ALL_TOOL_CODE)) {
                 return true;
             }
             // If the ItemStack is empty or the type is 0, then the player is using their hand.
             // A check for whether or not hands are allowed to be used is done.
             else if (tool == null || tool.getTypeId() == 0) {
-                return material.getValue().contains(-1);
+                return toolList.contains(BlockSaverUtil.HANDS_TOOL_CODE);
             }
             // Finally, a check is performed to see if the tool is valid.
-            else if (material.getValue().contains(tool.getTypeId())) {
+            else if (toolList.contains(tool.getTypeId())) {
                 return true;
             }
+
+            return false;
         }
 
         return false;
     }
 
-    public boolean attemptReinforcement(final Block block, final Material reinforcementMaterial, final String playerName) {
+    public boolean canPlayerDamageBlock(final Location location, final Player player) {
+        if (!canToolDamageBlock(location, player.getItemInHand())) {
+            sendFeedback(location, BlockSaverFeedback.HIT_FAIL, player);
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean canPlayerBreakBlock(final Location location, final Player player) {
+        if (canToolDamageBlock(location, player.getItemInHand())) {
+            sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, player);
+            return true;
+        } else {
+            sendFeedback(location, BlockSaverFeedback.DAMAGE_FAIL, player);
+            return false;
+        }
+    }
+
+    public boolean attemptReinforcement(final Location location, final Material reinforcementMaterial, final Player player) {
+        final Block block = location.getBlock();
+
         // If the material cannot be used for reinforcement, the reinforcement fails.
         if (!reinforceableBlocks.containsKey(reinforcementMaterial)) {
+            sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
             return false;
         }
 
         if (!isReinforceable(block)) {
+            sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
             return false;
         }
 
@@ -170,6 +231,7 @@ public final class ReinforcementManager {
 
             // If there is no reinforcement value cap, then we cannot set the block to its maximum reinforcement, therefore the reinforcement fails.
             if (accumulateReinforcementValues) {
+                sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
                 return false;
             }
         }
@@ -182,11 +244,12 @@ public final class ReinforcementManager {
         // If we are accumulating reinforcement values, the block's reinforcement is increased by the additionalReinforcementValue which is simply the additional protection of the material being used added to the current reinforcement value of the block.
         // Otherwise, we simply attempt to increase the block's reinforcement by the amount provided by the material.
         if (accumulateReinforcementValues) {
-            infoManager.setReinforcement(block.getLocation(), additionalReinforcementValue, playerName);
+            infoManager.setReinforcement(block.getLocation(), additionalReinforcementValue, player.getName());
         } else {
-            infoManager.setReinforcement(block.getLocation(), Math.min(additionalReinforcementValue, coefficient), playerName);
+            infoManager.setReinforcement(block.getLocation(), Math.min(additionalReinforcementValue, coefficient), player.getName());
         }
 
+        sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
         return true;
     }
 
@@ -215,7 +278,7 @@ public final class ReinforcementManager {
         }
     }
 
-    public void damageBlock(final Location location, final String playerName, BlockSaverDamageCause damageCause) {
+    public void damageBlock(final Location location, final Player player, BlockSaverDamageCause damageCause) {
         final Reinforcement reinforcement = infoManager.getReinforcement(location);
 
         if (reinforcement == null) {
@@ -229,16 +292,41 @@ public final class ReinforcementManager {
             }
         }
 
-        if (reinforcement.getReinforcementValue() <= 1 || !isFortified(reinforcement, playerName)) {
-            removeReinforcement(location);
-            return;
+        if (damageCause == BlockSaverDamageCause.FIRE) {
+            // If fire is not allowed to damage blocks, the block damage fail feedback is provided and the damage fails.
+            if (!fireDamagesReinforcedBlocks) {
+                sendFeedback(location, BlockSaverFeedback.DAMAGE_FAIL, null);
+                return;
+            }
+
+            // Attempt to extinguish the fires on the reinforced block if the configuration allows for it.
+            if (extinguishReinforcementFire && Math.random() > extinguishChance) {
+                for (final BlockFace face : BlockFace.values()) {
+                    final Block relative = location.getBlock().getRelative(face);
+                    if (relative.getType() == Material.FIRE) {
+                        relative.setType(Material.AIR);
+                    }
+                }
+            }
         }
 
-        if (damageCause == BlockSaverDamageCause.TNT) {
+        // Damage the reinforcement on the block.
+        // If the cause of damage is TNT, handle the RV decrease specially.
+        if (damageCause == BlockSaverDamageCause.EXPLOSION) {
             reinforcement.setReinforcementValue(reinforcement.getReinforcementValue()-((float) Math.pow(getMaterialReinforcementCoefficient(reinforcement.getBlock().getType()), 2)/100));
         } else {
             reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1);
         }
+
+        sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, player);
+
+        // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
+        // This uses leq 1 incase TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
+        if (reinforcement.getReinforcementValue() <= 1 || !isFortified(reinforcement, player.getName())) {
+            removeReinforcement(location);
+            return;
+        }
+
         infoManager.writeReinforcementToMetadata(reinforcement);
     }
 
@@ -325,7 +413,58 @@ public final class ReinforcementManager {
         return false;
     }
 
-    public void sendFeedback(final Location location, final BlockSaverFeedback feedback, final Player player) {
+    public boolean attemptToBreakBlock(final Location location, final Player player) {
+        if (player == null) {
+            return false;
+        }
+
+        if (!canPlayerBreakBlock(location, player)) {
+            return false;
+        }
+
+        damageBlock(location, player, BlockSaverDamageCause.TOOL);
+
+        // If the block is no longer reinforced, and blocks are configured to break when their RV reaches 0, the event is allowed to proceed and break the block.
+        if (!isReinforced(location) && !leaveBlockAfterDeinforce) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public void explodeBlocks(final List<Block> blockList, final EntityType entityType) {
+        // If the exploding entity is not configured to interact with blocks, then the explosion fails.
+        if ((EntityType.WITHER.equals(entityType) || EntityType.WITHER_SKULL.equals(entityType)) && !mobsInteractWithReinforcedBlocks) {
+            return;
+        } else if (EntityType.PRIMED_TNT.equals(entityType) && !tntDamagesReinforcedBlocks) {
+            return;
+        } else if (EntityType.ENDER_DRAGON.equals(entityType) && !enderdragonInteractWithReinforcedBlocks) {
+            return;
+        }
+
+        for (final Iterator<Block> iter = blockList.iterator(); iter.hasNext();) {
+            final Block block = iter.next();
+            final Location location = block.getLocation();
+
+            if (!isReinforced(location)) {
+                continue;
+            }
+
+            // If TNT damage is enabled for reinforced blocks and TNT reinforcement stripping is also enabled, then the block reinforcement is stripped.
+            // Otherwise, the block is simply damaged.
+            if (EntityType.PRIMED_TNT.equals(entityType) && !tntStripReinforcementEntirely) {
+                damageBlock(location, null, BlockSaverDamageCause.EXPLOSION);
+            } else {
+                removeReinforcement(location);
+            }
+
+            removeReinforcement(location);
+            sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, null);
+            iter.remove();
+        }
+    }
+
+    private void sendFeedback(final Location location, final BlockSaverFeedback feedback, final Player player) {
         switch (feedback) {
             case REINFORCE_SUCCESS:
                 location.getWorld().playSound(location, reinforceSuccessSound, 1.0f, PITCH_SHIFT);

@@ -156,12 +156,12 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
                 for (final String split : configSection.getString(materialName).split(",")) {
                     // If HANDS is a supplied tool we add -1 to the tool list to represent it.
                     if ("HANDS".equals(split)) {
-                        tools.add(-1);
+                        tools.add(BlockSaverUtil.HANDS_TOOL_CODE);
                     }
                     // If ALL is provided as a valid tool, we clear the list of other tools, add -2 to the tool list to represent it, and skip the rest of the tools.
                     else if ("ALL".equals(split)) {
                         tools.clear();
-                        tools.add(-2);
+                        tools.add(BlockSaverUtil.ALL_TOOL_CODE);
                         toolRequirements.remove(blockMaterial);
                         break;
                     } else{
