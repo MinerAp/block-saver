@@ -60,7 +60,8 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public BlockSaverConfigurationContext(final MbapiPlugin plugin) {
         super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplementaryTypes.TREESET, SupplementaryTypes.REINFORCEMENT), new ReinforcementTypeAdapter());
 
-        infoManager = new BlockSaverInfoManager(this);
+        // Load the Reinforcement class. This is to ensure Reinforcement has access to MbapiPlugin and related configuration values.
+        Reinforcement.initialize(this);
 
         reinforceableBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
         reinforcementBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
@@ -183,8 +184,8 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             }
         }
 
-        // Load the Reinforcement class. This is to ensure Reinforcement has access to MbapiPlugin and related configuration values.
-        Reinforcement.initialize(this);
+        // Load the BlockSaverInfoManager.
+        infoManager = new BlockSaverInfoManager(this);
         // Load the ReinforcementManager.
         reinforcementManager = new ReinforcementManager(this);
     }

@@ -73,13 +73,14 @@ public final class ReinforcementManager {
         this.allowReinforcementHealing = configurationContext.allowReinforcementHealing;
         this.leaveBlockAfterDeinforce = configurationContext.leaveBlockAfterDeinforce;
         this.enableLogBlockLogging = configurationContext.enableLogBlockLogging;
-        this.reinforceableBlocks = configurationContext.reinforceableBlocks;
-        this.toolRequirements = configurationContext.toolRequirements;
         this.mobsInteractWithReinforcedBlocks = configurationContext.mobsInteractWithReinforcedBlocks;
         this.enderdragonInteractWithReinforcedBlocks = configurationContext.enderdragonInteractWithReinforcedBlocks;
         this.extinguishChance = configurationContext.extinguishChance;
         this.gracePeriodTime = configurationContext.gracePeriodTime;
         this.reinforcementHealingTime = configurationContext.reinforcementHealingTime;
+
+        this.reinforceableBlocks = configurationContext.reinforceableBlocks;
+        this.toolRequirements = configurationContext.toolRequirements;
 
         // Loads LogBlock related things in order to be able to record BlockSaver events.
         final LogBlock logBlockPlugin = (LogBlock) Bukkit.getPluginManager().getPlugin("LogBlock");
@@ -258,23 +259,21 @@ public final class ReinforcementManager {
         infoManager.setReinforcement(block.getRelative(direction).getLocation(), removeReinforcement(block.getLocation()), previousReinforcement.getCreatorName());
     }
 
-    private void floorReinforcement(final Block block) {
+    public void floorReinforcement(final Reinforcement reinforcement) {
         // If blocks are allowed to accumulate RV, then there is no need to floor the RV.
         if (accumulateReinforcementValues) {
             return;
         }
 
         // Checks to see if the maximum RV is less than the actual RV. If so, floors the RV.
-        final int maximumReinforcement = getMaterialReinforcementCoefficient(block.getType());
-
-        final Reinforcement reinforcement = infoManager.getReinforcement(block.getLocation());
+        final int maximumReinforcement = getMaterialReinforcementCoefficient(reinforcement.getBlock().getType());
 
         if (reinforcement == null) {
             return;
         }
 
         if (reinforcement.getReinforcementValue() > maximumReinforcement) {
-            infoManager.setReinforcement(block.getLocation(), maximumReinforcement, reinforcement.getCreatorName());
+            infoManager.setReinforcement(reinforcement.getLocation(), maximumReinforcement, reinforcement.getCreatorName());
         }
     }
 
@@ -327,11 +326,13 @@ public final class ReinforcementManager {
             return;
         }
 
-        infoManager.writeReinforcementToMetadata(reinforcement);
+        // TODO: Remove this.
+        //infoManager.writeReinforcementToMetadata(reinforcement);
     }
 
     public boolean isReinforced(Location location) {
         final Block block = location.getBlock();
+        final Chunk chunk = location.getChunk();
 
         // If a part of the piston was damaged, retrieves the base of the piston.
         if (block.getType().equals(Material.PISTON_EXTENSION)) {
@@ -349,7 +350,7 @@ public final class ReinforcementManager {
         }
 
         // Confirm that the reinforcement list is already tracking the chunk and location.
-        if (!infoManager.getReinforcements().containsKey(location.getChunk()) || !infoManager.getReinforcements().get(location.getChunk()).contains(location)) {
+        if (!infoManager.getReinforcements().containsKey(chunk) || !infoManager.getReinforcements().get(chunk).contains(location)) {
             return false;
         }
 
@@ -364,8 +365,6 @@ public final class ReinforcementManager {
             removeReinforcement(block.getLocation());
             return false;
         }
-
-        floorReinforcement(block);
 
         return true;
     }
@@ -387,7 +386,6 @@ public final class ReinforcementManager {
         final float reinforcementValue = reinforcement.getReinforcementValue();
         Reinforcement.removeFromMetadata(location.getBlock());
         return reinforcementValue;
-
     }
 
     private boolean isFortified(final Reinforcement reinforcement, final String playerName) {

@@ -80,11 +80,6 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        // If the player is not clicking a valid block, the event is of no relevance.
-        if (block == null) {
-            return;
-        }
-
         // The player is not allowed to damage the block if he is using an item used for reinforcement, or non-valid tool to break the block.
         if (!reinforcementManager.canMaterialReinforce(item.getType()) && !reinforcementManager.canPlayerDamageBlock(location, player)) {
             event.setCancelled(true);

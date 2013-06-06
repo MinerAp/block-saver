@@ -72,7 +72,7 @@ public final class BlockSaverInfoManager extends InfoManager {
         }
     }
 
-    public void writeReinforcementToMetadata(final Reinforcement reinforcement) {
+    private void writeReinforcementToMetadata(final Reinforcement reinforcement) {
         if (reinforcement == null) {
             return;
         }
@@ -99,7 +99,9 @@ public final class BlockSaverInfoManager extends InfoManager {
             return null;
         }
 
-        return new Reinforcement(location);
+        final Reinforcement reinforcement = new Reinforcement(location);
+        configurationContext.getReinforcementManager().floorReinforcement(reinforcement);
+        return reinforcement;
     }
 
     public void setReinforcement(final Location location, final float value, final String playerName) {
@@ -107,6 +109,8 @@ public final class BlockSaverInfoManager extends InfoManager {
 
         if (configurationContext.getReinforcementManager().isReinforced(location)) {
             reinforcement = getReinforcement(location);
+            reinforcement.setReinforcementValue(value);
+            reinforcement.updateTimeStamp();
         } else {
             reinforcement = new Reinforcement(location, value, playerName);
         }
