@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.ListIterator;
 
 public final class BlockSaverListener implements Listener {
-    private final BlockSaverInfoManager infoManager;
     private final ReinforcementManager reinforcementManager;
 
     private final boolean tntDamagesReinforcedBlocks;
@@ -41,7 +40,6 @@ public final class BlockSaverListener implements Listener {
     private final double extinguishChance;
 
     public BlockSaverListener(final BlockSaverConfigurationContext configurationContext) {
-        this.infoManager = configurationContext.infoManager;
         this.reinforcementManager = configurationContext.getReinforcementManager();
 
         this.tntDamagesReinforcedBlocks = configurationContext.tntDamagesReinforcedBlocks;
