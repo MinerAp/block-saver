@@ -98,12 +98,44 @@ public final class ReinforcementManager {
         return reinforcementValue < coefficient;
     }
 
-    public int getMaterialReinforcementCoefficient(final Material material) {
+    private int getMaterialReinforcementCoefficient(final Material material) {
         return isMaterialReinforceable(material) ? reinforceableBlocks.get(material) : NO_REINFORCEMENT_VALUE;
     }
 
-    public boolean isMaterialReinforceable(final Material material) {
+    private boolean isMaterialReinforceable(final Material material) {
         return reinforceableBlocks.containsKey(material);
+    }
+
+    public boolean canMaterialReinforce(final Material material) {
+        return reinforceableBlocks.containsKey(material);
+    }
+
+    public boolean canToolBreakBlock(final Material block, final ItemStack tool) {
+        if (!toolRequirements.containsKey(block)) {
+            return false;
+        }
+
+        for (final Entry<Material, List<Integer>> material : toolRequirements.entrySet()) {
+            // If the material is not the same as the block being broken, the loop continues.
+            if (!material.getKey().equals(block)) {
+                continue;
+            }
+            // If any tool is allowed, the tool can break the block.
+            else if (material.getValue().contains(-2)) {
+                return true;
+            }
+            // If the ItemStack is empty or the type is 0, then the player is using their hand.
+            // A check for whether or not hands are allowed to be used is done.
+            else if (tool == null || tool.getTypeId() == 0) {
+                return material.getValue().contains(-1);
+            }
+            // Finally, a check is performed to see if the tool is valid.
+            else if (material.getValue().contains(tool.getTypeId())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean attemptReinforcement(final Block block, final Material reinforcementMaterial, final String playerName) {
@@ -158,55 +190,12 @@ public final class ReinforcementManager {
         return true;
     }
 
-    public boolean canMaterialReinforce(final Material material) {
-        return reinforceableBlocks.containsKey(material);
-    }
-
-    public boolean canToolBreakBlock(final Material block, final ItemStack tool) {
-        if (!toolRequirements.containsKey(block)) {
-            return false;
-        }
-
-        for (final Entry<Material, List<Integer>> material : toolRequirements.entrySet()) {
-            // If the material is not the same as the block being broken, the loop continues.
-            if (!material.getKey().equals(block)) {
-                continue;
-            }
-            // If any tool is allowed, the tool can break the block.
-            else if (material.getValue().contains(-2)) {
-                return true;
-            }
-            // If the ItemStack is empty or the type is 0, then the player is using their hand.
-            // A check for whether or not hands are allowed to be used is done.
-            else if (tool == null || tool.getTypeId() == 0) {
-                return material.getValue().contains(-1);
-            }
-            // Finally, a check is performed to see if the tool is valid.
-            else if (material.getValue().contains(tool.getTypeId())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-
     public void moveReinforcement(final Block block, final BlockFace direction) {
         final Reinforcement previousReinforcement = infoManager.getReinforcement(block.getLocation());
         infoManager.setReinforcement(block.getRelative(direction).getLocation(), removeReinforcement(block.getLocation()), previousReinforcement.getCreatorName());
     }
 
-    public boolean removeReinforcementIfInvalid(final Block block) {
-        // Removes the reinforcement from the un-reinforceable block.
-        if (!isMaterialReinforceable(block.getType())) {
-            removeReinforcement(block.getLocation());
-            return true;
-        }
-
-        return false;
-    }
-
-    public void floorReinforcement(final Block block) {
+    private void floorReinforcement(final Block block) {
         // If blocks are allowed to accumulate RV, then there is no need to floor the RV.
         if (accumulateReinforcementValues) {
             return;
@@ -253,7 +242,66 @@ public final class ReinforcementManager {
         infoManager.writeReinforcementToMetadata(reinforcement);
     }
 
-    public boolean isFortified(final Reinforcement reinforcement, final String playerName) {
+    public boolean isReinforced(Location location) {
+        final Block block = location.getBlock();
+
+        // If a part of the piston was damaged, retrieves the base of the piston.
+        if (block.getType().equals(Material.PISTON_EXTENSION)) {
+            final MaterialData data = block.getState().getData();
+            BlockFace direction = null;
+
+            // Check the block it pushed directly
+            if (data instanceof PistonExtensionMaterial) {
+                direction = ((PistonExtensionMaterial) data).getFacing();
+            }
+
+            if (direction != null) {
+                location = block.getRelative(direction.getOppositeFace()).getLocation();
+            }
+        }
+
+        // Confirm that the reinforcement list is already tracking the chunk and location.
+        if (!infoManager.getReinforcements().containsKey(location.getChunk()) || !infoManager.getReinforcements().get(location.getChunk()).contains(location)) {
+            return false;
+        }
+
+        // If the block is being tracked by the reinforcement list, but does not have all the metadata required to be a proper reinforced block, it is removed from the list.
+        if (!block.hasMetadata("RV") || !block.hasMetadata("RTS") || !block.hasMetadata("RJC") || !block.hasMetadata("RCN") || !block.hasMetadata("RLMV")) {
+            Reinforcement.removeFromMetadata(block);
+            return false;
+        }
+
+        // Removes the reinforcement from the un-reinforceable block.
+        if (!isMaterialReinforceable(block.getType())) {
+            removeReinforcement(block.getLocation());
+            return false;
+        }
+
+        floorReinforcement(block);
+
+        return true;
+    }
+
+    public float removeReinforcement(final Location location) {
+        final Reinforcement reinforcement = infoManager.getReinforcement(location);
+
+        if (reinforcement == null) {
+            return -1;
+        }
+
+        if (infoManager.getReinforcements().containsKey(location.getChunk())) {
+            infoManager.getReinforcements().get(location.getChunk()).remove(location);
+            if (infoManager.getReinforcements().get(location.getChunk()).isEmpty()) {
+                infoManager.getReinforcements().remove(location.getChunk());
+            }
+        }
+
+        final float reinforcementValue = reinforcement.getReinforcementValue();
+        Reinforcement.removeFromMetadata(location.getBlock());
+        return reinforcementValue;
+    }
+
+    private boolean isFortified(final Reinforcement reinforcement, final String playerName) {
         if (!allowReinforcementGracePeriod) {
             return true;
         }
@@ -275,10 +323,6 @@ public final class ReinforcementManager {
         }
 
         return false;
-    }
-
-    private void logBlockEvent(String playerName, Location location) {
-        logBlockConsumer.queueBlock(playerName, location, location.getBlock().getTypeId(), location.getBlock().getTypeId(), location.getBlock().getData());
     }
 
     public void sendFeedback(final Location location, final BlockSaverFeedback feedback, final Player player) {
@@ -327,53 +371,7 @@ public final class ReinforcementManager {
         }
     }
 
-    public boolean isReinforced(Location location) {
-        // If a part of the piston was damaged, retrieves the base of the piston.
-        if (location.getBlock().getType().equals(Material.PISTON_EXTENSION)) {
-            final MaterialData data = location.getBlock().getState().getData();
-            BlockFace direction = null;
-
-            // Check the block it pushed directly
-            if (data instanceof PistonExtensionMaterial) {
-                direction = ((PistonExtensionMaterial) data).getFacing();
-            }
-
-            if (direction != null) {
-                location = location.getBlock().getRelative(direction.getOppositeFace()).getLocation();
-            }
-        }
-
-        // Confirm that the reinforcement list is already tracking the chunk and location.
-        if (!infoManager.getReinforcements().containsKey(location.getChunk()) || !infoManager.getReinforcements().get(location.getChunk()).contains(location)) {
-            return false;
-        }
-
-        final Block block = location.getBlock();
-        // If the block is being tracked by the reinforcement list, but does not have all the metadata required to be a proper reinforced block, it is removed from the list.
-        if (!block.hasMetadata("RV") || !block.hasMetadata("RTS") || !block.hasMetadata("RJC") || !block.hasMetadata("RCN") || !block.hasMetadata("RLMV")) {
-            Reinforcement.removeFromMetadata(block);
-            return false;
-        }
-
-        return true;
-    }
-
-    public float removeReinforcement(final Location location) {
-        final Reinforcement reinforcement = infoManager.getReinforcement(location);
-
-        if (reinforcement == null) {
-            return -1;
-        }
-
-        if (infoManager.getReinforcements().containsKey(location.getChunk())) {
-            infoManager.getReinforcements().get(location.getChunk()).remove(location);
-            if (infoManager.getReinforcements().get(location.getChunk()).isEmpty()) {
-                infoManager.getReinforcements().remove(location.getChunk());
-            }
-        }
-
-        final float reinforcementValue = reinforcement.getReinforcementValue();
-        Reinforcement.removeFromMetadata(location.getBlock());
-        return reinforcementValue;
+    private void logBlockEvent(String playerName, Location location) {
+        logBlockConsumer.queueBlock(playerName, location, location.getBlock().getTypeId(), location.getBlock().getTypeId(), location.getBlock().getData());
     }
 }

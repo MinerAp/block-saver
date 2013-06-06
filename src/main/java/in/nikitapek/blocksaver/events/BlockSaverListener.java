@@ -5,12 +5,14 @@ import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
 import in.nikitapek.blocksaver.util.BlockSaverFeedback;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EnderDragonPart;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -68,31 +70,31 @@ public final class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(final BlockBreakEvent event) {
+        final Block block = event.getBlock();
+        final Location location = block.getLocation();
+        final Player player = event.getPlayer();
+
         // If the block is not reinforced, this plugin does not stop the block break event.
-        if (!reinforcementManager.isReinforced(event.getBlock().getLocation())) {
+        if (!reinforcementManager.isReinforced(location)) {
             return;
         }
-
-        reinforcementManager.removeReinforcementIfInvalid(event.getBlock());
-
-        reinforcementManager.floorReinforcement(event.getBlock());
 
         // Cancel the event before the diamond pickaxe check because reinforced blocks should not be breakable without one.
         event.setCancelled(true);
 
-        if (!reinforcementManager.canToolBreakBlock(event.getBlock().getType(), event.getPlayer().getItemInHand())) {
-            reinforcementManager.sendFeedback(event.getBlock().getLocation(), BlockSaverFeedback.DAMAGE_FAIL, event.getPlayer());
+        if (!reinforcementManager.canToolBreakBlock(block.getType(), player.getItemInHand())) {
+            reinforcementManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_FAIL, player);
             return;
         }
 
-        reinforcementManager.damageBlock(event.getBlock().getLocation(), event.getPlayer().getName(), BlockSaverDamageCause.TOOL);
+        reinforcementManager.damageBlock(location, player.getName(), BlockSaverDamageCause.TOOL);
 
         // If the block is not reinforced, and blocks break when their RV reaches 0, we break the block.
-        if (!reinforcementManager.isReinforced(event.getBlock().getLocation()) && !leaveBlockAfterDeinforce) {
+        if (!reinforcementManager.isReinforced(location) && !leaveBlockAfterDeinforce) {
             event.setCancelled(false);
         }
 
-        reinforcementManager.sendFeedback(event.getBlock().getLocation(), BlockSaverFeedback.DAMAGE_SUCCESS, event.getPlayer());
+        reinforcementManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, player);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -147,12 +149,6 @@ public final class BlockSaverListener implements Listener {
         if (!reinforcementManager.isReinforced(event.getBlock().getLocation())) {
             return;
         }
-
-        if (reinforcementManager.removeReinforcementIfInvalid(event.getBlock())) {
-            return;
-        }
-
-        reinforcementManager.floorReinforcement(event.getBlock());
 
         // If the block is reinforced, the burn event is cancelled for the block.
         event.setCancelled(true);
@@ -211,12 +207,6 @@ public final class BlockSaverListener implements Listener {
                 continue;
             }
 
-            if (reinforcementManager.removeReinforcementIfInvalid(block)) {
-                continue;
-            }
-
-            reinforcementManager.floorReinforcement(block);
-
             // If TNT damage is enabled for reinforced blocks, then the block is damaged and the successful damage effect is played.
             // Otherwise, the damage failed is played. In both cases, the block is not destroyed by the blast.
             if (EntityType.PRIMED_TNT.equals(entity.getType()) && tntDamagesReinforcedBlocks) {
@@ -257,10 +247,6 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        if (reinforcementManager.removeReinforcementIfInvalid(event.getBlock())) {
-            return;
-        }
-
         if (!allowReinforcedBlockPhysics) {
             event.setCancelled(true);
             return;
@@ -278,9 +264,6 @@ public final class BlockSaverListener implements Listener {
 
             // If the next block is reinforced and piston reinforced block movement is disabled, the event is cancelled.
             if (reinforcementManager.isReinforced(block.getRelative(event.getDirection()).getLocation())) {
-                // Deletes the reinforcement from the block ahead if it is invalid.
-                reinforcementManager.removeReinforcementIfInvalid(block.getRelative(event.getDirection()));
-
                 if (!pistonsMoveReinforcedBlocks) {
                     event.setCancelled(true);
                     return;
@@ -289,11 +272,6 @@ public final class BlockSaverListener implements Listener {
 
             // If the block is not reinforced, we move on to the next block.
             if (!reinforcementManager.isReinforced(block.getLocation())) {
-                continue;
-            }
-
-            // We attempt to remove any invalid reinforcements from the block. If any are invalid, we move to the next block.
-            if (reinforcementManager.removeReinforcementIfInvalid(block)) {
                 continue;
             }
 
@@ -320,10 +298,6 @@ public final class BlockSaverListener implements Listener {
         final Block block = event.getBlock().getRelative(event.getDirection(), 2);
 
         if (!reinforcementManager.isReinforced(block.getLocation())) {
-            return;
-        }
-
-        if (reinforcementManager.removeReinforcementIfInvalid(block)) {
             return;
         }
 
@@ -363,10 +337,6 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        if (reinforcementManager.removeReinforcementIfInvalid(event.getToBlock())) {
-            return;
-        }
-
         if (!liquidsDestroyReinforcedBlocks) {
             event.setCancelled(true);
             return;
@@ -378,10 +348,6 @@ public final class BlockSaverListener implements Listener {
     @EventHandler
     public void onEntityChangeBlock(final EntityChangeBlockEvent event) {
         if (!reinforcementManager.isReinforced(event.getBlock().getLocation())) {
-            return;
-        }
-
-        if (reinforcementManager.removeReinforcementIfInvalid(event.getBlock())) {
             return;
         }
 
