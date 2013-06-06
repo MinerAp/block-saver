@@ -70,7 +70,6 @@ public class ReinforcementManager {
         } else {
             logBlockConsumer = null;
         }
-
     }
 
     public boolean isReinforceable(final Block block) {
