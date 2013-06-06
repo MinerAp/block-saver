@@ -146,11 +146,11 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
 
-        Reinforcement that = (Reinforcement) o;
+        Reinforcement that = (Reinforcement) obj;
 
         if (justCreated != that.justCreated) return false;
         if (Float.compare(that.lastMaximumValue, lastMaximumValue) != 0) return false;
@@ -174,17 +174,17 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     }
 
     @Override
-    public int compareTo(final Reinforcement o) {
-        int c = Integer.compare(location.getBlockX(), o.location.getBlockX());
+    public int compareTo(final Reinforcement obj) {
+        int c = Integer.compare(location.getBlockX(), obj.location.getBlockX());
         if (c != 0) {
             return c;
         }
 
-        c = Integer.compare(location.getBlockY(), o.location.getBlockY());
+        c = Integer.compare(location.getBlockY(), obj.location.getBlockY());
         if (c != 0) {
             return c;
         }
 
-        return Integer.compare(location.getBlockZ(), o.location.getBlockZ());
+        return Integer.compare(location.getBlockZ(), obj.location.getBlockZ());
     }
 }
