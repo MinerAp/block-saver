@@ -272,7 +272,11 @@ public class ReinforcementManager {
             return true;
         }
 
-        return (System.currentTimeMillis() - reinforcement.getTimeStamp() > (gracePeriodTime * BlockSaverUtil.MILLISECONDS_PER_SECOND));
+        if (System.currentTimeMillis() - reinforcement.getTimeStamp() > (gracePeriodTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
+            return true;
+        }
+
+        return false;
     }
 
     private void logBlockEvent(String playerName, Location location) {
