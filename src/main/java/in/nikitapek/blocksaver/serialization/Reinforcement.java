@@ -15,8 +15,8 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     private String creatorName;
     private float lastMaximumValue;
 
-    private static MbapiPlugin PLUGIN;
-    private static int GRACE_PERIOD_TIME;
+    private static MbapiPlugin plugin;
+    private static int gracePeriodTime;
 
     public Reinforcement(final Location location) {
         this.location = location;
@@ -34,12 +34,12 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     }
 
     public static void initialize(BlockSaverConfigurationContext configurationContext) {
-        PLUGIN = configurationContext.plugin;
-        GRACE_PERIOD_TIME = configurationContext.gracePeriodTime;
+        plugin = configurationContext.plugin;
+        gracePeriodTime = configurationContext.gracePeriodTime;
     }
 
     public void updateTimeStamp() {
-        if ((System.currentTimeMillis() - getTimeStamp()) >= (GRACE_PERIOD_TIME * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
+        if ((System.currentTimeMillis() - getTimeStamp()) >= (gracePeriodTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
             setJustCreated(false);
         }
 
@@ -47,19 +47,19 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     }
 
     public void writeToMetadata() {
-        getBlock().setMetadata("RV", new FixedMetadataValue(PLUGIN, value));
-        getBlock().setMetadata("RTS", new FixedMetadataValue(PLUGIN, timeStamp));
-        getBlock().setMetadata("RJC", new FixedMetadataValue(PLUGIN, justCreated));
-        getBlock().setMetadata("RCN", new FixedMetadataValue(PLUGIN, creatorName));
-        getBlock().setMetadata("RLMV", new FixedMetadataValue(PLUGIN, lastMaximumValue));
+        getBlock().setMetadata("RV", new FixedMetadataValue(plugin, value));
+        getBlock().setMetadata("RTS", new FixedMetadataValue(plugin, timeStamp));
+        getBlock().setMetadata("RJC", new FixedMetadataValue(plugin, justCreated));
+        getBlock().setMetadata("RCN", new FixedMetadataValue(plugin, creatorName));
+        getBlock().setMetadata("RLMV", new FixedMetadataValue(plugin, lastMaximumValue));
     }
 
     public static void removeFromMetadata(final Block block) {
-        block.removeMetadata("RV", PLUGIN);
-        block.removeMetadata("RTS", PLUGIN);
-        block.removeMetadata("RJC", PLUGIN);
-        block.removeMetadata("RCN", PLUGIN);
-        block.removeMetadata("RLMV", PLUGIN);
+        block.removeMetadata("RV", plugin);
+        block.removeMetadata("RTS", plugin);
+        block.removeMetadata("RJC", plugin);
+        block.removeMetadata("RCN", plugin);
+        block.removeMetadata("RLMV", plugin);
     }
 
     public Block getBlock() {
@@ -119,7 +119,7 @@ public final class Reinforcement implements Comparable<Reinforcement> {
 
     public void setReinforcementValue(final float value) {
         this.value = value;
-        getBlock().setMetadata("RV", new FixedMetadataValue(PLUGIN, value));
+        getBlock().setMetadata("RV", new FixedMetadataValue(plugin, value));
 
         setLastMaximumValue(Math.max(value, getLastMaximumValue()));
         updateTimeStamp();
@@ -127,22 +127,22 @@ public final class Reinforcement implements Comparable<Reinforcement> {
 
     private void setTimeStamp(final long timeStamp) {
         this.timeStamp = timeStamp;
-        getBlock().setMetadata("RTS", new FixedMetadataValue(PLUGIN, timeStamp));
+        getBlock().setMetadata("RTS", new FixedMetadataValue(plugin, timeStamp));
     }
 
     private void setJustCreated(final boolean justCreated) {
         this.justCreated = justCreated;
-        getBlock().setMetadata("RJC", new FixedMetadataValue(PLUGIN, justCreated));
+        getBlock().setMetadata("RJC", new FixedMetadataValue(plugin, justCreated));
     }
 
     private void setCreatorName(final String creatorName) {
         this.creatorName = creatorName;
-        getBlock().setMetadata("RCN", new FixedMetadataValue(PLUGIN, creatorName));
+        getBlock().setMetadata("RCN", new FixedMetadataValue(plugin, creatorName));
     }
 
     private void setLastMaximumValue(final float lastMaximumValue) {
         this.lastMaximumValue = lastMaximumValue;
-        getBlock().setMetadata("RLMV", new FixedMetadataValue(PLUGIN, lastMaximumValue));
+        getBlock().setMetadata("RLMV", new FixedMetadataValue(plugin, lastMaximumValue));
     }
 
     @Override
