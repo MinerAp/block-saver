@@ -265,12 +265,12 @@ public final class ReinforcementManager {
             return;
         }
 
-        // Checks to see if the maximum RV is less than the actual RV. If so, floors the RV.
-        final int maximumReinforcement = getMaterialReinforcementCoefficient(reinforcement.getBlock().getType());
-
         if (reinforcement == null) {
             return;
         }
+
+        // Checks to see if the maximum RV is less than the actual RV. If so, floors the RV.
+        final int maximumReinforcement = getMaterialReinforcementCoefficient(reinforcement.getBlock().getType());
 
         if (reinforcement.getReinforcementValue() > maximumReinforcement) {
             infoManager.setReinforcement(reinforcement.getLocation(), maximumReinforcement, reinforcement.getCreatorName());
