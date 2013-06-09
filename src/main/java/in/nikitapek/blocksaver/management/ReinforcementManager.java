@@ -163,7 +163,7 @@ public final class ReinforcementManager {
             }
             // If the ItemStack is empty or the type is 0, then the player is using their hand.
             // A check for whether or not hands are allowed to be used is done.
-            else if (tool == null || tool.getTypeId() == 0) {
+            else if (tool.getTypeId() == 0) {
                 return toolList.contains(BlockSaverUtil.HANDS_TOOL_CODE);
             }
             // Finally, a check is performed to see if the tool is valid.
