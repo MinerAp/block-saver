@@ -51,6 +51,7 @@ public final class ReinforcementManager {
     private final int reinforcementHealingTime;
 
     private final TypeSafeMap<Material, Integer> reinforceableBlocks;
+    public final TypeSafeMap<Material, Integer> reinforcementBlocks;
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
@@ -80,6 +81,7 @@ public final class ReinforcementManager {
         this.reinforcementHealingTime = configurationContext.reinforcementHealingTime;
 
         this.reinforceableBlocks = configurationContext.reinforceableBlocks;
+        this.reinforcementBlocks = configurationContext.reinforcementBlocks;
         this.toolRequirements = configurationContext.toolRequirements;
 
         // Loads LogBlock related things in order to be able to record BlockSaver events.
@@ -127,7 +129,7 @@ public final class ReinforcementManager {
     }
 
     public boolean canMaterialReinforce(final Material material) {
-        return reinforceableBlocks.containsKey(material);
+        return reinforcementBlocks.containsKey(material);
     }
 
     private boolean canToolDamageBlock(final Location location, final ItemStack tool) {
@@ -200,7 +202,7 @@ public final class ReinforcementManager {
         final Block block = location.getBlock();
 
         // If the material cannot be used for reinforcement, the reinforcement fails.
-        if (!reinforceableBlocks.containsKey(reinforcementMaterial)) {
+        if (!canMaterialReinforce(reinforcementMaterial)) {
             sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
             return false;
         }
