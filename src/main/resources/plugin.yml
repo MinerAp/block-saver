@@ -6,19 +6,15 @@ author: Indiv0
 description: A plugin for providing block protection capabilities on a server.
 softdepend: [WorldEdit]
 depend: [ProtocolLib]
+dev-url: http://github.com/Indiv0/block-saver/
 
 commands:
   blocksaver:
     description: Controls all functions of the BlockSaver plugin.
     usage: |
-      /<command> [feedback]
-      Example: /<command> feedback - Toggles whether or not a player should receive written feedback for various reinforcement events.
-    permission: blocksaver.blocksaver
-    permission-message: Sorry, you don't have permission to use BlockSaver.
+      /<command> feedback [true|false] - Toggles feedback in chat
 
 permissions:
-  blocksaver.*:
-    description: Controls all BlockSaver permissions
+  blocksaver.blocksaver.feedback:
     children:
       blocksaver.blocksaver: true
-      blocksaver.feedback: true
