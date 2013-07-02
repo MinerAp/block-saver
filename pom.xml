@@ -16,20 +16,38 @@
 	</parent>
 
 	<dependencies>
-		<!-- Bukkit -->
+		<!-- Spigot -->
 		<dependency>
-			<groupId>org.bukkit</groupId>
-			<artifactId>bukkit</artifactId>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>spigot-api</artifactId>
 		</dependency>
 		<!-- Mbapi -->
 		<dependency>
 			<groupId>com.amshulman</groupId>
 			<artifactId>mbapi</artifactId>
-		</dependency>
-		<!-- ProtocolLib -->
-		<dependency>
-			<groupId>com.comphenix.protocol</groupId>
-			<artifactId>ProtocolLib</artifactId>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>production</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-shade-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>shade</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
