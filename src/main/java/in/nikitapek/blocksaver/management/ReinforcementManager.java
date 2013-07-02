@@ -26,7 +26,6 @@ public final class ReinforcementManager {
     private static final byte PITCH_SHIFT = 50;
 
     private final BlockSaverInfoManager infoManager;
-    private final Consumer logBlockConsumer;
 
     private final Effect reinforcementDamageFailEffect;
     private final Effect reinforcementDamageSuccessEffect;
@@ -83,14 +82,6 @@ public final class ReinforcementManager {
         this.reinforceableBlocks = configurationContext.reinforceableBlocks;
         this.reinforcementBlocks = configurationContext.reinforcementBlocks;
         this.toolRequirements = configurationContext.toolRequirements;
-
-        // Loads LogBlock related things in order to be able to record BlockSaver events.
-        final LogBlock logBlockPlugin = (LogBlock) Bukkit.getPluginManager().getPlugin("LogBlock");
-        if (enableLogBlockLogging && logBlockPlugin != null) {
-            logBlockConsumer = logBlockPlugin.getConsumer();
-        } else {
-            logBlockConsumer = null;
-        }
     }
 
     public boolean isReinforceable(final Block block) {
@@ -226,7 +217,7 @@ public final class ReinforcementManager {
         final int coefficient = getMaterialReinforcementCoefficient(block.getType());
 
         // Retrieves the amount the material will reinforce the block by.
-        int additionalReinforcementValue = reinforceableBlocks.get(reinforcementMaterial);
+        int additionalReinforcementValue = reinforcementBlocks.get(reinforcementMaterial);
 
         // If the material being used to reinforce has a reinforcement maximizing coefficient, then we want to set the block to its maximum possible enforcement.
         if (additionalReinforcementValue == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
@@ -249,7 +240,8 @@ public final class ReinforcementManager {
         if (accumulateReinforcementValues) {
             infoManager.setReinforcement(block.getLocation(), additionalReinforcementValue, player.getName());
         } else {
-            infoManager.setReinforcement(block.getLocation(), Math.min(additionalReinforcementValue, coefficient), player.getName());
+            infoManager.setReinforcement(block.getLocation
+                    (), Math.min(additionalReinforcementValue, coefficient), player.getName());
         }
 
         sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
