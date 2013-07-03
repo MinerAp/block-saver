@@ -1,8 +1,6 @@
 package in.nikitapek.blocksaver.management;
 
 import com.amshulman.typesafety.TypeSafeMap;
-import de.diddiz.LogBlock.Consumer;
-import de.diddiz.LogBlock.LogBlock;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
@@ -250,7 +248,8 @@ public final class ReinforcementManager {
 
     public void moveReinforcement(final Block block, final BlockFace direction) {
         final Reinforcement previousReinforcement = infoManager.getReinforcement(block.getLocation());
-        infoManager.setReinforcement(block.getRelative(direction).getLocation(), removeReinforcement(block.getLocation()), previousReinforcement.getCreatorName());
+        infoManager.setReinforcement(block.getRelative(direction).getLocation(), previousReinforcement.getReinforcementValue(), previousReinforcement.getCreatorName());
+        removeReinforcement(block.getLocation());
     }
 
     public void floorReinforcement(final Reinforcement reinforcement) {
@@ -324,11 +323,50 @@ public final class ReinforcementManager {
         //infoManager.writeReinforcementToMetadata(reinforcement);
     }
 
-    public boolean isReinforced(Location location) {
-        final Block block = location.getBlock();
-        final Chunk chunk = location.getChunk();
+    public boolean isReinforced(final Location location) {
+        // If a part of a piston was damaged, retrieves the base of the piston.
+        final Location properLocation = getProperLocation(location);
+        final Block block = properLocation.getBlock();
+        final Chunk chunk = properLocation.getChunk();
 
-        // If a part of the piston was damaged, retrieves the base of the piston.
+
+        // Confirm that the reinforcement list is already tracking the chunk and location.
+        if (!infoManager.getReinforcements().containsKey(chunk) || !infoManager.getReinforcements().get(chunk).contains(properLocation)) {
+            return false;
+        }
+
+        // If the block is being tracked by the reinforcement list, but does not have all the metadata required to be a proper reinforced block, it is removed from the list.
+        if (!block.hasMetadata("RV") || !block.hasMetadata("RTS") || !block.hasMetadata("RJC") || !block.hasMetadata("RCN") || !block.hasMetadata("RLMV")) {
+            removeReinforcement(properLocation);
+            return false;
+        }
+
+        // Removes the reinforcement from the un-reinforceable block.
+        if (!isMaterialReinforceable(block.getType())) {
+            removeReinforcement(properLocation);
+            return false;
+        }
+
+        return true;
+    }
+
+    public void removeReinforcement(final Location location) {
+        final Location properLocation = getProperLocation(location);
+        final Chunk chunk = properLocation.getChunk();
+
+        if (infoManager.getReinforcements().containsKey(chunk)) {
+            infoManager.getReinforcements().get(chunk).remove(properLocation);
+            if (infoManager.getReinforcements().get(chunk).isEmpty()) {
+                infoManager.getReinforcements().remove(chunk);
+            }
+        }
+
+        Reinforcement.removeFromMetadata(properLocation.getBlock());
+    }
+
+    public Location getProperLocation(final Location location) {
+        final Block block = location.getBlock();
+
         if (block.getType().equals(Material.PISTON_EXTENSION)) {
             final MaterialData data = block.getState().getData();
             BlockFace direction = null;
@@ -339,47 +377,11 @@ public final class ReinforcementManager {
             }
 
             if (direction != null) {
-                location = block.getRelative(direction.getOppositeFace()).getLocation();
+                return block.getRelative(direction.getOppositeFace()).getLocation();
             }
         }
 
-        // Confirm that the reinforcement list is already tracking the chunk and location.
-        if (!infoManager.getReinforcements().containsKey(chunk) || !infoManager.getReinforcements().get(chunk).contains(location)) {
-            return false;
-        }
-
-        // If the block is being tracked by the reinforcement list, but does not have all the metadata required to be a proper reinforced block, it is removed from the list.
-        if (!block.hasMetadata("RV") || !block.hasMetadata("RTS") || !block.hasMetadata("RJC") || !block.hasMetadata("RCN") || !block.hasMetadata("RLMV")) {
-            Reinforcement.removeFromMetadata(block);
-            return false;
-        }
-
-        // Removes the reinforcement from the un-reinforceable block.
-        if (!isMaterialReinforceable(block.getType())) {
-            removeReinforcement(block.getLocation());
-            return false;
-        }
-
-        return true;
-    }
-
-    public float removeReinforcement(final Location location) {
-        final Reinforcement reinforcement = infoManager.getReinforcement(location);
-
-        if (reinforcement == null) {
-            return -1;
-        }
-
-        if (infoManager.getReinforcements().containsKey(location.getChunk())) {
-            infoManager.getReinforcements().get(location.getChunk()).remove(location);
-            if (infoManager.getReinforcements().get(location.getChunk()).isEmpty()) {
-                infoManager.getReinforcements().remove(location.getChunk());
-            }
-        }
-
-        final float reinforcementValue = reinforcement.getReinforcementValue();
-        Reinforcement.removeFromMetadata(location.getBlock());
-        return reinforcementValue;
+        return location;
     }
 
     private boolean isFortified(final Reinforcement reinforcement, final String playerName) {
@@ -451,7 +453,8 @@ public final class ReinforcementManager {
                 removeReinforcement(location);
             }
 
-            removeReinforcement(location);
+            // This probably shouldn't be here...
+            //removeReinforcement(location);
             sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, null);
             iter.remove();
         }
@@ -501,9 +504,5 @@ public final class ReinforcementManager {
         if (!enableLogBlockLogging) {
             return;
         }
-    }
-
-    private void logBlockEvent(String playerName, Location location) {
-        logBlockConsumer.queueBlock(playerName, location, location.getBlock().getTypeId(), location.getBlock().getTypeId(), location.getBlock().getData());
     }
 }

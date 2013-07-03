@@ -65,13 +65,19 @@ public final class BlockSaverListener implements Listener {
         }
 
         // If the block is not successfully broken (e.g. the RV is not 0), then the event is cancelled.
-        event.setCancelled(reinforcementManager.attemptToBreakBlock(location, event.getPlayer()));
+        event.setCancelled(!reinforcementManager.attemptToBreakBlock(location, event.getPlayer()));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockInteract(final PlayerInteractEvent event) {
         final Player player = event.getPlayer();
         final Block block = event.getClickedBlock();
+
+        // Confirms that the block is not air.
+        if (block == null) {
+            return;
+        }
+
         final Location location = block.getLocation();
         final ItemStack item = player.getItemInHand();
 
@@ -80,9 +86,11 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        // The player is not allowed to damage the block if he is using an item used for reinforcement, or non-valid tool to break the block.
-        if (!reinforcementManager.canMaterialReinforce(item.getType()) && !reinforcementManager.canPlayerDamageBlock(location, player)) {
-            event.setCancelled(true);
+        // If the player is not attempting a reinforcement, they may be trying to damage a reinforced block, and so a check is performed.
+        if (!reinforcementManager.canMaterialReinforce(item.getType())) {
+            if (!reinforcementManager.canPlayerDamageBlock(location, player)) {
+                event.setCancelled(true);
+            }
             return;
         }
 

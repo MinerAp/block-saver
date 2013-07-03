@@ -62,11 +62,16 @@ public final class BlockSaverInfoManager extends InfoManager {
     private void saveReinforcementsToSet() {
         // Saves all of the reinforcements to the reinforcementSet for serialization.
         reinforcementSet.clear();
-        for (final Entry<Chunk, List<Location>> entry : reinforcements.entrySet()) {
+
+        // This is to prevent a ConcurrentModificationException, because the getReinforcement() method below will erase an invalid reinforcement from the reinforcements Map.
+        final Map<Chunk, List<Location>> reinforcementsCopy = new HashMap < Chunk, List<Location>>();
+        reinforcementsCopy.putAll(reinforcements);
+
+        for (final Entry<Chunk, List<Location>> entry : reinforcementsCopy.entrySet()) {
             for (final Location location : entry.getValue()) {
                 final Reinforcement reinforcement = getReinforcement(location);
                 if (reinforcement != null) {
-                    reinforcementSet.add(getReinforcement(location));
+                    reinforcementSet.add(reinforcement);
                 }
             }
         }
