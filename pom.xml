@@ -27,6 +27,14 @@
 			<artifactId>mbapi</artifactId>
 			<scope>compile</scope>
 		</dependency>
+		<!-- Prism -->
+		<dependency>
+			<groupId>me.botsko</groupId>
+			<artifactId>prism</artifactId>
+			<version>nightly</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/prism-v1.6.jar</systemPath>
+		</dependency>
 	</dependencies>
 
 	<profiles>

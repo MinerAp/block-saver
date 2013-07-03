@@ -21,26 +21,18 @@ import java.util.Map.Entry;
 
 public final class ReinforcementManager {
     private static final byte NO_REINFORCEMENT_VALUE = -1;
-    private static final byte PITCH_SHIFT = 50;
 
+    private final FeedbackManager feedbackManager;
     private final BlockSaverInfoManager infoManager;
-
-    private final Effect reinforcementDamageFailEffect;
-    private final Effect reinforcementDamageSuccessEffect;
-    private final Sound reinforceSuccessSound;
-    private final Sound reinforceFailSound;
-    private final Sound hitFailSound;
 
     private final boolean accumulateReinforcementValues;
     private final boolean tntDamagesReinforcedBlocks;
     private final boolean tntStripReinforcementEntirely;
     private final boolean fireDamagesReinforcedBlocks;
     private final boolean extinguishReinforcementFire;
-    private final boolean useParticleEffects;
     private final boolean allowReinforcementGracePeriod;
     private final boolean allowReinforcementHealing;
     private final boolean leaveBlockAfterDeinforce;
-    private final boolean enableLogBlockLogging;
     private final boolean mobsInteractWithReinforcedBlocks;
     private final boolean enderdragonInteractWithReinforcedBlocks;
     private final double extinguishChance;
@@ -52,25 +44,18 @@ public final class ReinforcementManager {
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
+        this.feedbackManager = configurationContext.feedbackManager;
         this.infoManager = configurationContext.infoManager;
 
         // Retrieves all of the configuration values relevant to Reinforcement managing from configurationContext.
-        this.reinforcementDamageFailEffect = configurationContext.reinforcementDamageFailEffect;
-        this.reinforcementDamageSuccessEffect = configurationContext.reinforcementDamageSuccessEffect;
-        this.reinforceSuccessSound = configurationContext.reinforceSuccessSound;
-        this.reinforceFailSound = configurationContext.reinforceFailSound;
-        this.hitFailSound = configurationContext.hitFailSound;
-
         this.accumulateReinforcementValues = configurationContext.accumulateReinforcementValues;
         this.tntDamagesReinforcedBlocks = configurationContext.tntDamagesReinforcedBlocks;
         this.tntStripReinforcementEntirely = configurationContext.tntStripReinforcementEntirely;
         this.fireDamagesReinforcedBlocks = configurationContext.fireDamagesReinforcedBlocks;
         this.extinguishReinforcementFire = configurationContext.extinguishReinforcementFire;
-        this.useParticleEffects = configurationContext.useParticleEffects;
         this.allowReinforcementGracePeriod = configurationContext.allowReinforcementGracePeriod;
         this.allowReinforcementHealing = configurationContext.allowReinforcementHealing;
         this.leaveBlockAfterDeinforce = configurationContext.leaveBlockAfterDeinforce;
-        this.enableLogBlockLogging = configurationContext.enableLogBlockLogging;
         this.mobsInteractWithReinforcedBlocks = configurationContext.mobsInteractWithReinforcedBlocks;
         this.enderdragonInteractWithReinforcedBlocks = configurationContext.enderdragonInteractWithReinforcedBlocks;
         this.extinguishChance = configurationContext.extinguishChance;
@@ -170,7 +155,7 @@ public final class ReinforcementManager {
 
     public boolean canPlayerDamageBlock(final Location location, final Player player) {
         if (!canToolDamageBlock(location, player.getItemInHand())) {
-            sendFeedback(location, BlockSaverFeedback.HIT_FAIL, player);
+            feedbackManager.sendFeedback(location, BlockSaverFeedback.HIT_FAIL, player);
             return false;
         }
 
@@ -179,10 +164,10 @@ public final class ReinforcementManager {
 
     private boolean canPlayerBreakBlock(final Location location, final Player player) {
         if (canToolDamageBlock(location, player.getItemInHand())) {
-            sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, player);
+            feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, player);
             return true;
         } else {
-            sendFeedback(location, BlockSaverFeedback.DAMAGE_FAIL, player);
+            feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_FAIL, player);
             return false;
         }
     }
@@ -192,12 +177,12 @@ public final class ReinforcementManager {
 
         // If the material cannot be used for reinforcement, the reinforcement fails.
         if (!canMaterialReinforce(reinforcementMaterial)) {
-            sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
+            feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
             return false;
         }
 
         if (!isReinforceable(block)) {
-            sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
+            feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
             return false;
         }
 
@@ -223,7 +208,7 @@ public final class ReinforcementManager {
 
             // If there is no reinforcement value cap, then we cannot set the block to its maximum reinforcement, therefore the reinforcement fails.
             if (accumulateReinforcementValues) {
-                sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
+                feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
                 return false;
             }
         }
@@ -242,7 +227,7 @@ public final class ReinforcementManager {
                     (), Math.min(additionalReinforcementValue, coefficient), player.getName());
         }
 
-        sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
+        feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
         return true;
     }
 
@@ -287,7 +272,7 @@ public final class ReinforcementManager {
         if (damageCause == BlockSaverDamageCause.FIRE) {
             // If fire is not allowed to damage blocks, the block damage fail feedback is provided and the damage fails.
             if (!fireDamagesReinforcedBlocks) {
-                sendFeedback(location, BlockSaverFeedback.DAMAGE_FAIL, null);
+                feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_FAIL, null);
                 return;
             }
 
@@ -310,7 +295,7 @@ public final class ReinforcementManager {
             reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1);
         }
 
-        sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, player);
+        feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, player);
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
         // This uses leq 1 incase TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
@@ -455,54 +440,8 @@ public final class ReinforcementManager {
 
             // This probably shouldn't be here...
             //removeReinforcement(location);
-            sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, null);
+            feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, null);
             iter.remove();
-        }
-    }
-
-    private void sendFeedback(final Location location, final BlockSaverFeedback feedback, final Player player) {
-        switch (feedback) {
-            case REINFORCE_SUCCESS:
-                location.getWorld().playSound(location, reinforceSuccessSound, 1.0f, PITCH_SHIFT);
-                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
-                    player.sendMessage(ChatColor.GRAY + "Reinforced a block.");
-                }
-                break;
-            case REINFORCE_FAIL:
-                location.getWorld().playSound(location, reinforceFailSound, 1.0f, PITCH_SHIFT);
-                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
-                    player.sendMessage(ChatColor.GRAY + "Failed to reinforce a block.");
-                }
-                break;
-            case DAMAGE_SUCCESS:
-                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
-                    player.sendMessage(ChatColor.GRAY + "Damaged a reinforced block.");
-                }
-
-                if (player != null && useParticleEffects) {
-                    BlockSaverUtil.sendParticleEffect(location, infoManager.getReinforcement(location).getReinforcementValue());
-                } else {
-                    location.getWorld().playEffect(location, reinforcementDamageSuccessEffect, 0);
-                }
-                break;
-            case DAMAGE_FAIL:
-                location.getWorld().playEffect(location, reinforcementDamageFailEffect, 0);
-                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
-                    player.sendMessage(ChatColor.GRAY + "Failed to damage a reinforced block.");
-                }
-                break;
-            case HIT_FAIL:
-                location.getWorld().playSound(location, hitFailSound, 1.0f, 0f);
-                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
-                    player.sendMessage(ChatColor.GRAY + "Your tool is insufficient to damage this reinforced block.");
-                }
-                break;
-            default:
-                break;
-        }
-
-        if (!enableLogBlockLogging) {
-            return;
         }
     }
 }

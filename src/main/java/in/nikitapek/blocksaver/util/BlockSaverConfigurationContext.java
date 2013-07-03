@@ -6,6 +6,7 @@ import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.gson.TypeSafeSetTypeAdapter;
 import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
+import in.nikitapek.blocksaver.management.FeedbackManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.serialization.ReinforcementTypeAdapter;
@@ -50,6 +51,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public final int reinforcementHealingTime;
 
     public final BlockSaverInfoManager infoManager;
+    public final FeedbackManager feedbackManager;
 
     public final TypeSafeMap<Material, Integer> reinforceableBlocks;
     public final TypeSafeMap<Material, Integer> reinforcementBlocks;
@@ -186,6 +188,8 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
 
         // Load the BlockSaverInfoManager.
         infoManager = new BlockSaverInfoManager(this);
+        // Load the FeedbackManager
+        feedbackManager = new FeedbackManager(this);
         // Load the ReinforcementManager.
         reinforcementManager = new ReinforcementManager(this);
     }
