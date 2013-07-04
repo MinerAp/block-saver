@@ -19,10 +19,10 @@ public final class BlockSaverAction extends GenericAction {
     private static ReinforcementManager reinforcementManager;
 
     public class ReinforcementActionData {
-        public int block_id;
-        public byte block_subid;
-        public float rv;
-        public String owner;
+        //public int block_id;
+        //public byte block_subid;
+        //public float rv;
+        //public String owner;
     }
 
     protected Reinforcement reinforcement;
@@ -36,7 +36,8 @@ public final class BlockSaverAction extends GenericAction {
     }
 
     public void setReinforcement(Reinforcement reinforcement) {
-        actionData = new ReinforcementActionData();
+        //actionData = new ReinforcementActionData();
+        actionData = null;
 
         if (reinforcement == null) {
             this.setCanceled(true);
@@ -46,9 +47,10 @@ public final class BlockSaverAction extends GenericAction {
         this.reinforcement = reinforcement;
 
         this.block_id = reinforcement.getBlock().getTypeId();
-        this.block_subid = 0;
-        actionData.rv = reinforcement.getReinforcementValue();
-        actionData.owner = reinforcement.getCreatorName();
+        //this.block_subid = 0;
+        this.setLoc(reinforcement.getLocation());
+        //actionData.rv = reinforcement.getReinforcementValue();
+        //actionData.owner = reinforcement.getCreatorName();
     }
 
     public void setData(String data) {
@@ -63,10 +65,10 @@ public final class BlockSaverAction extends GenericAction {
 
         actionData = gson1.fromJson(data, ReinforcementActionData.class);
 
-        if( actionData.block_id > 0 ){
+        /*if( actionData.block_id > 0 ){
             this.block_id = actionData.block_id;
             this.block_subid = actionData.block_subid;
-        }
+        }*/
 
         reinforcement = new Reinforcement(getLoc());
     }
@@ -82,16 +84,6 @@ public final class BlockSaverAction extends GenericAction {
     public Reinforcement getReinforcement() {
         return reinforcement;
     }
-
-    /*public String getNiceName() {
-        if(reinforcement == null)
-        {
-            return "";
-        }
-
-        String fullItemName = ItemUtils.getItemFullNiceName(reinforcement, this.materialAliases);
-        return actionData.amt + " " + fullItemName;
-    }*/
 
     @Override
     public ChangeResult applyRollback(Player player, QueryParameters parameters, boolean is_preview) {

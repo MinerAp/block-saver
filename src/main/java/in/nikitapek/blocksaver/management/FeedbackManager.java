@@ -19,8 +19,8 @@ import org.bukkit.plugin.Plugin;
 
 public class FeedbackManager {
     private static final byte PITCH_SHIFT = 50;
-    private static final String REINFORCE_EVENT = "bs-block-reinforced";
-    private static final String DEINFORCE_EVENT = "bs-block-deinforced";
+    private static final ActionType ENFORCE_EVENT = new ActionType("bs-block-enforce", "player", "reinforced");
+    private static final ActionType DAMAGE_EVENT = new ActionType("bs-block-damage", "player", "damaged");
 
     private final BlockSaverInfoManager infoManager;
     private final MbapiPlugin plugin;
@@ -58,8 +58,8 @@ public class FeedbackManager {
 
         // Register the custom events.
         try {
-            Prism.getActionRegistry().registerCustomAction(plugin, new ActionType(REINFORCE_EVENT, "player", "reinforced"));
-            Prism.getActionRegistry().registerCustomAction(plugin, new ActionType(DEINFORCE_EVENT, "player", "deinforced"));
+            Prism.getActionRegistry().registerCustomAction(plugin, ENFORCE_EVENT);
+            Prism.getActionRegistry().registerCustomAction(plugin, DAMAGE_EVENT);
         } catch (InvalidActionException e) {
             e.printStackTrace();
         }
@@ -73,8 +73,8 @@ public class FeedbackManager {
     private void logCustomEvent(final Reinforcement reinforcement, final Player player) {
         BlockSaverAction action = new BlockSaverAction();
 
+        action.setType(ENFORCE_EVENT);
         action.setLoc(reinforcement.getLocation());
-        action.setActionType("bs-enforce");
         action.setPlayerName(player.getName());
 
         // Required for the ItemStackAction
@@ -85,13 +85,17 @@ public class FeedbackManager {
     }
 
     public void sendFeedback(final Location location, final BlockSaverFeedback feedback, final Player player) {
+        Reinforcement reinforcement = infoManager.getReinforcement(location);
+
         switch (feedback) {
             case REINFORCE_SUCCESS:
                 location.getWorld().playSound(location, reinforceSuccessSound, 1.0f, PITCH_SHIFT);
                 if (player == null) {
                     break;
                 }
-                logReinforcementEvent(REINFORCE_EVENT, player, String.valueOf((int) infoManager.getReinforcement(location).getReinforcementValue()));
+                // Log a reinforcement.
+                //logReinforcementEvent(REINFORCE_EVENT, player, String.valueOf((int) infoManager.getReinforcement(location).getReinforcementValue()));
+                logCustomEvent(reinforcement, player);
                 if (infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
                     player.sendMessage(ChatColor.GRAY + "Reinforced a block.");
                 }
@@ -115,7 +119,6 @@ public class FeedbackManager {
                     location.getWorld().playEffect(location, reinforcementDamageSuccessEffect, 0);
                 }
                 // Log the breaking of a reinforcement.
-                Reinforcement reinforcement = infoManager.getReinforcement(location);
                 if (reinforcement.getReinforcementValue() == 0) {
                     //logReinforcementEvent(DEINFORCE_EVENT, player, "");
                     logCustomEvent(reinforcement, player);
