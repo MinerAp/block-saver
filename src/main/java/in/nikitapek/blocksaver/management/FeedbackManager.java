@@ -1,6 +1,8 @@
 package in.nikitapek.blocksaver.management;
 
 import com.amshulman.mbapi.MbapiPlugin;
+import in.nikitapek.blocksaver.serialization.Reinforcement;
+import in.nikitapek.blocksaver.util.BlockSaverAction;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverFeedback;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
@@ -68,6 +70,20 @@ public class FeedbackManager {
         plugin.getServer().getPluginManager().callEvent(prismEvent);
     }
 
+    private void logCustomEvent(final Reinforcement reinforcement, final Player player) {
+        BlockSaverAction action = new BlockSaverAction();
+
+        action.setLoc(reinforcement.getLocation());
+        action.setActionType("bs-enforce");
+        action.setPlayerName(player.getName());
+
+        // Required for the ItemStackAction
+        action.setReinforcement(reinforcement);
+
+        // Add the recorder queue
+        Prism.actionsRecorder.addToQueue(action);
+    }
+
     public void sendFeedback(final Location location, final BlockSaverFeedback feedback, final Player player) {
         switch (feedback) {
             case REINFORCE_SUCCESS:
@@ -99,8 +115,10 @@ public class FeedbackManager {
                     location.getWorld().playEffect(location, reinforcementDamageSuccessEffect, 0);
                 }
                 // Log the breaking of a reinforcement.
-                if (infoManager.getReinforcement(location).getReinforcementValue() == 0) {
-                    logReinforcementEvent(DEINFORCE_EVENT, player, "");
+                Reinforcement reinforcement = infoManager.getReinforcement(location);
+                if (reinforcement.getReinforcementValue() == 0) {
+                    //logReinforcementEvent(DEINFORCE_EVENT, player, "");
+                    logCustomEvent(reinforcement, player);
                 }
                 break;
             case DAMAGE_FAIL:

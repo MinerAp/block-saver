@@ -186,12 +186,11 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             }
         }
 
-        // Load the BlockSaverInfoManager.
+        // Load the Managers and initialize BlockSaverAction. This must occur in this order.
         infoManager = new BlockSaverInfoManager(this);
-        // Load the FeedbackManager
         feedbackManager = new FeedbackManager(this);
-        // Load the ReinforcementManager.
         reinforcementManager = new ReinforcementManager(this);
+        BlockSaverAction.initialize(reinforcementManager);
     }
 
     public ReinforcementManager getReinforcementManager() {
