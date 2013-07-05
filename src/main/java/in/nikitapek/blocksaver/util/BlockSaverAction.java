@@ -24,12 +24,12 @@ public final class BlockSaverAction extends GenericAction {
         //public int block_id;
         //public byte block_subid;
         //public float rv;
-        //public String owner;
+        public String owner;
     }
 
-    protected Reinforcement reinforcement;
+    private Reinforcement reinforcement;
 
-    protected ReinforcementActionData actionData;
+    private ReinforcementActionData actionData;
 
     private Gson gson1 = new GsonBuilder().disableHtmlEscaping().create();
 
@@ -52,7 +52,7 @@ public final class BlockSaverAction extends GenericAction {
         //this.block_subid = 0;
         this.setLoc(reinforcement.getLocation());
         //actionData.rv = reinforcement.getReinforcementValue();
-        //actionData.owner = reinforcement.getCreatorName();
+        actionData.owner = reinforcement.getCreatorName();
     }
 
     public void setData(String data) {
@@ -60,7 +60,7 @@ public final class BlockSaverAction extends GenericAction {
         setReinforcementFromData();
     }
 
-    protected void setReinforcementFromData() {
+    private void setReinforcementFromData() {
         if(reinforcement != null || data == null){
             return;
         }
@@ -98,7 +98,7 @@ public final class BlockSaverAction extends GenericAction {
         return placeReinforcements(player, parameters, is_preview);
     }
 
-    protected ChangeResult placeReinforcements(Player player, QueryParameters parameters, boolean is_preview) {
+    private ChangeResult placeReinforcements(Player player, QueryParameters parameters, boolean is_preview) {
         ChangeResultType result = null;
 
         if (is_preview) {
@@ -109,44 +109,74 @@ public final class BlockSaverAction extends GenericAction {
             return new ChangeResult(null, null);
         }
 
-        if (!FeedbackManager.ENFORCE_EVENT_NAME.equals(getType().getName())) {
+        if (!FeedbackManager.ENFORCE_EVENT_NAME.equals(getType().getName()) && !FeedbackManager.DAMAGE_EVENT_NAME.equals(getType().getName())) {
             return new ChangeResult(null, null);
         }
 
         PrismProcessType pt = parameters.getProcessType();
 
-        if (!pt.equals(PrismProcessType.ROLLBACK)) {
-            return new ChangeResult(result, null);
+        if (!PrismProcessType.ROLLBACK.equals(pt) && !PrismProcessType.RESTORE.equals(pt)) {
+            return new ChangeResult(null, null);
         }
 
         for (Location location : parameters.getSpecificBlockLocations()) {
-            if (!reinforcementManager.isReinforced(location)) {
-                result = ChangeResultType.APPLIED;
-                continue;
-            }
-
-            Reinforcement reinforcement = new Reinforcement(location);
-
-            Map<String, MatchRule> playerNames = parameters.getPlayerNames();
-            if (playerNames.size() == 0) {
-                reinforcementManager.removeReinforcement(location);
-                result = ChangeResultType.APPLIED;
-                continue;
-            }
-
-            for (Entry<String, MatchRule> entry : playerNames.entrySet()) {
-                String name = entry.getKey();
-                MatchRule rule = entry.getValue();
-                String creator = reinforcement.getCreatorName();
-
-                if ((name.equals(creator) && MatchRule.INCLUDE.equals(rule)) || (!name.equals(creator) && MatchRule.EXCLUDE.equals(rule))) {
-                    reinforcementManager.removeReinforcement(location);
-                    result = ChangeResultType.APPLIED;
-                    break;
-                }
+            if (PrismProcessType.ROLLBACK.equals(pt)) {
+                rollback(location, parameters, result);
+            } else if (PrismProcessType.RESTORE.equals(pt)) {
+                // TODO: Code a restoration method.
+                restore(location, parameters, result);
             }
         }
 
         return new ChangeResult(result, null);
+    }
+
+    private void rollback(Location location, QueryParameters parameters, ChangeResultType result) {
+        if (!reinforcementManager.isReinforced(location)) {
+            result = ChangeResultType.APPLIED;
+            return;
+        }
+
+        Reinforcement reinforcement = new Reinforcement(location);
+
+        Map<String, MatchRule> playerNames = parameters.getPlayerNames();
+        if (playerNames.size() == 0) {
+            reinforcementManager.removeReinforcement(location);
+            result = ChangeResultType.APPLIED;
+            return;
+        }
+
+        for (Entry<String, MatchRule> entry : playerNames.entrySet()) {
+            String name = entry.getKey();
+            MatchRule rule = entry.getValue();
+            String creator = reinforcement.getCreatorName();
+
+            if ((name.equals(creator) && MatchRule.INCLUDE.equals(rule)) || (!name.equals(creator) && MatchRule.EXCLUDE.equals(rule))) {
+                reinforcementManager.removeReinforcement(location);
+                result = ChangeResultType.APPLIED;
+                break;
+            }
+        }
+    }
+
+    private void restore(Location location, QueryParameters parameters, ChangeResultType result) {
+        Map<String, MatchRule> playerNames = parameters.getPlayerNames();
+
+        if (playerNames.size() == 0) {
+            reinforcementManager.reinforce(location, 1, actionData.owner);
+            result = ChangeResultType.APPLIED;
+        }
+
+        for (Entry<String, MatchRule> entry : playerNames.entrySet()) {
+            String name = entry.getKey();
+            MatchRule rule = entry.getValue();
+            String damager = getPlayerName();
+
+            if ((name.equals(damager) && MatchRule.INCLUDE.equals(rule)) || (!name.equals(damager) && MatchRule.EXCLUDE.equals(rule))) {
+                reinforcementManager.reinforce(location, 1, actionData.owner);
+                result = ChangeResultType.APPLIED;
+                break;
+            }
+        }
     }
 }

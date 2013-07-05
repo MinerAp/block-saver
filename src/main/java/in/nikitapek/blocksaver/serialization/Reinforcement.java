@@ -119,6 +119,7 @@ public final class Reinforcement implements Comparable<Reinforcement> {
 
     public void setReinforcementValue(final float value) {
         this.value = value;
+
         getBlock().setMetadata("RV", new FixedMetadataValue(plugin, value));
 
         setLastMaximumValue(Math.max(value, getLastMaximumValue()));

@@ -123,6 +123,20 @@ public final class BlockSaverInfoManager extends InfoManager {
         writeReinforcementToMetadata(reinforcement);
     }
 
+    public void reinforce(final Location location, float value, final String playerName) {
+        if (configurationContext.getReinforcementManager().isReinforced(location)) {
+            value += getReinforcement(location).getReinforcementValue();
+        }
+
+        final int coefficient = configurationContext.getReinforcementManager().getMaterialReinforcementCoefficient(location.getBlock().getType());
+
+        if (!configurationContext.accumulateReinforcementValues && value > coefficient) {
+            value = coefficient;
+        }
+
+        setReinforcement(location, value, playerName);
+    }
+
     public PlayerInfo getPlayerInfo(final String playerName) {
         PlayerInfo info = playerInfo.get(playerName);
         if (info == null) {

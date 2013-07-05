@@ -94,7 +94,7 @@ public final class ReinforcementManager {
         return reinforcementValue < coefficient;
     }
 
-    private int getMaterialReinforcementCoefficient(final Material material) {
+    public int getMaterialReinforcementCoefficient(final Material material) {
         return isMaterialReinforceable(material) ? reinforceableBlocks.get(material) : NO_REINFORCEMENT_VALUE;
     }
 
@@ -174,6 +174,7 @@ public final class ReinforcementManager {
 
     public boolean attemptReinforcement(final Location location, final Material reinforcementMaterial, final Player player) {
         final Block block = location.getBlock();
+        final String playerName = player.getName();
 
         // If the material cannot be used for reinforcement, the reinforcement fails.
         if (!canMaterialReinforce(reinforcementMaterial)) {
@@ -186,25 +187,12 @@ public final class ReinforcementManager {
             return false;
         }
 
-        // Retrieves the reinforcement on the block, if the reinforcement exists.
-        final Reinforcement reinforcement = infoManager.getReinforcement(block.getLocation());
-        final float currentReinforcementValue;
-
-        // If the block is not reinforced, we must designate the coefficient as such.
-        if (reinforcement == null) {
-            currentReinforcementValue = -1;
-        } else {
-            currentReinforcementValue = reinforcement.getReinforcementValue();
-        }
-
-        final int coefficient = getMaterialReinforcementCoefficient(block.getType());
-
         // Retrieves the amount the material will reinforce the block by.
         int additionalReinforcementValue = reinforcementBlocks.get(reinforcementMaterial);
 
         // If the material being used to reinforce has a reinforcement maximizing coefficient, then we want to set the block to its maximum possible enforcement.
         if (additionalReinforcementValue == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
-            additionalReinforcementValue = coefficient;
+            additionalReinforcementValue = getMaterialReinforcementCoefficient(block.getType());
 
             // If there is no reinforcement value cap, then we cannot set the block to its maximum reinforcement, therefore the reinforcement fails.
             if (accumulateReinforcementValues) {
@@ -213,19 +201,7 @@ public final class ReinforcementManager {
             }
         }
 
-        // If the block is currently reinforced, we add the current reinforcement value to the value to reinforce the block by.
-        if (currentReinforcementValue != -1) {
-            additionalReinforcementValue += currentReinforcementValue;
-        }
-
-        // If we are accumulating reinforcement values, the block's reinforcement is increased by the additionalReinforcementValue which is simply the additional protection of the material being used added to the current reinforcement value of the block.
-        // Otherwise, we simply attempt to increase the block's reinforcement by the amount provided by the material.
-        if (accumulateReinforcementValues) {
-            infoManager.setReinforcement(block.getLocation(), additionalReinforcementValue, player.getName());
-        } else {
-            infoManager.setReinforcement(block.getLocation
-                    (), Math.min(additionalReinforcementValue, coefficient), player.getName());
-        }
+        reinforce(location, additionalReinforcementValue, playerName);
 
         feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
         return true;
@@ -299,13 +275,17 @@ public final class ReinforcementManager {
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
         // This uses leq 1 incase TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
-        if (reinforcement.getReinforcementValue() <= 1 || !isFortified(reinforcement, player.getName())) {
+        if (reinforcement.getReinforcementValue() <= 1 || (player != null && !isFortified(reinforcement, player.getName()))) {
             removeReinforcement(location);
             return;
         }
 
         // TODO: Remove this.
         //infoManager.writeReinforcementToMetadata(reinforcement);
+    }
+
+    public void reinforce(final Location location, final float amount, final String playerName) {
+        infoManager.reinforce(location, amount, playerName);
     }
 
     public boolean isReinforced(final Location location) {
