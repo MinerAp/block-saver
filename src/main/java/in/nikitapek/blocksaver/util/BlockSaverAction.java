@@ -21,9 +21,6 @@ public final class BlockSaverAction extends GenericAction {
     private static ReinforcementManager reinforcementManager;
 
     public class ReinforcementActionData {
-        //public int block_id;
-        //public byte block_subid;
-        //public float rv;
         public String owner;
     }
 
@@ -48,9 +45,7 @@ public final class BlockSaverAction extends GenericAction {
         this.reinforcement = reinforcement;
 
         this.block_id = reinforcement.getBlock().getTypeId();
-        //this.block_subid = 0;
         this.setLoc(reinforcement.getLocation());
-        //actionData.rv = reinforcement.getReinforcementValue();
         actionData.owner = reinforcement.getCreatorName();
     }
 
@@ -65,14 +60,6 @@ public final class BlockSaverAction extends GenericAction {
         }
 
         actionData = gson1.fromJson(data, ReinforcementActionData.class);
-
-        /*if( actionData.block_id > 0 ){
-            this.block_id = actionData.block_id;
-            this.block_subid = actionData.block_subid;
-        }*/
-
-        // This causes an NPE when two sequential rollbacks occur on the same block. Not sure if this line is necessary.
-        //reinforcement = new Reinforcement(getLoc());
     }
 
     public void save() {
@@ -89,15 +76,15 @@ public final class BlockSaverAction extends GenericAction {
 
     @Override
     public ChangeResult applyRollback(Player player, QueryParameters parameters, boolean is_preview) {
-        return placeReinforcements(player, parameters, is_preview);
+        return placeReinforcements(parameters, is_preview);
     }
 
     @Override
     public ChangeResult applyRestore(Player player, QueryParameters parameters, boolean is_preview) {
-        return placeReinforcements(player, parameters, is_preview);
+        return placeReinforcements(parameters, is_preview);
     }
 
-    private ChangeResult placeReinforcements(Player player, QueryParameters parameters, boolean is_preview) {
+    private ChangeResult placeReinforcements(QueryParameters parameters, boolean is_preview) {
         ChangeResultType result = null;
 
         if (is_preview) {
@@ -122,7 +109,6 @@ public final class BlockSaverAction extends GenericAction {
             if (PrismProcessType.ROLLBACK.equals(pt)) {
                 result = rollback(location, parameters, result);
             } else if (PrismProcessType.RESTORE.equals(pt)) {
-                // TODO: Code a restoration method.
                 result = restore(location, parameters, result);
             }
         }
@@ -178,6 +164,43 @@ public final class BlockSaverAction extends GenericAction {
     }
 
     private ChangeResultType restore(Location location, QueryParameters parameters, ChangeResultType result) {
+        if (FeedbackManager.ENFORCE_EVENT_NAME.equals(getType().getName())) {
+            Map<String, MatchRule> playerNames = parameters.getPlayerNames();
+            if (playerNames.size() == 0) {
+                reinforcementManager.reinforce(location, actionData.owner);
+                return ChangeResultType.APPLIED;
+            }
+
+            for (Entry<String, MatchRule> entry : playerNames.entrySet()) {
+                String name = entry.getKey();
+                MatchRule rule = entry.getValue();
+                String creator = reinforcement.getCreatorName();
+
+                if ((name.equals(creator) && MatchRule.INCLUDE.equals(rule)) || (!name.equals(creator) && MatchRule.EXCLUDE.equals(rule))) {
+                    reinforcementManager.reinforce(location, actionData.owner);
+                    return ChangeResultType.APPLIED;
+                }
+            }
+        } else {
+            Map<String, MatchRule> playerNames = parameters.getPlayerNames();
+
+            if (playerNames.size() == 0) {
+                reinforcementManager.reinforce(location, -1, getPlayerName());
+                return ChangeResultType.APPLIED;
+            }
+
+            for (Entry<String, MatchRule> entry : playerNames.entrySet()) {
+                String name = entry.getKey();
+                MatchRule rule = entry.getValue();
+                String damager = getPlayerName();
+
+                if ((name.equals(damager) && MatchRule.INCLUDE.equals(rule)) || (!name.equals(damager) && MatchRule.EXCLUDE.equals(rule))) {
+                    reinforcementManager.reinforce(location, -1, damager);
+                    return ChangeResultType.APPLIED;
+                }
+            }
+        }
+
         return result;
     }
 }

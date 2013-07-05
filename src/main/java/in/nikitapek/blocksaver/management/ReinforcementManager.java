@@ -278,6 +278,10 @@ public final class ReinforcementManager {
         //infoManager.writeReinforcementToMetadata(reinforcement);
     }
 
+    public void reinforce(final Location location, final String playerName) {
+        infoManager.reinforce(location, getMaterialReinforcementCoefficient(location.getBlock().getType()), playerName);
+    }
+
     public void reinforce(final Location location, final float amount, final String playerName) {
         infoManager.reinforce(location, amount, playerName);
     }
