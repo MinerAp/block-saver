@@ -163,13 +163,7 @@ public final class ReinforcementManager {
     }
 
     private boolean canPlayerBreakBlock(final Location location, final Player player) {
-        if (canToolDamageBlock(location, player.getItemInHand())) {
-            feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, player);
-            return true;
-        } else {
-            feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_FAIL, player);
-            return false;
-        }
+        return canToolDamageBlock(location, player.getItemInHand());
     }
 
     public boolean attemptReinforcement(final Location location, final Material reinforcementMaterial, final Player player) {
