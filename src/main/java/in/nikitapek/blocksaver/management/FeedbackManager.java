@@ -74,10 +74,10 @@ public class FeedbackManager {
         plugin.getServer().getPluginManager().callEvent(prismEvent);
     }
 
-    private void logCustomEvent(final Reinforcement reinforcement, final Player player) {
+    private void logCustomEvent(final Reinforcement reinforcement, final Player player, final ActionType event) {
         BlockSaverAction action = new BlockSaverAction();
 
-        action.setType(ENFORCE_EVENT);
+        action.setType(event);
         action.setLoc(reinforcement.getLocation());
         action.setPlayerName(player.getName());
 
@@ -97,9 +97,7 @@ public class FeedbackManager {
                 if (player == null) {
                     break;
                 }
-                // Log a reinforcement.
-                //logReinforcementEvent(REINFORCE_EVENT, player, String.valueOf((int) infoManager.getReinforcement(location).getReinforcementValue()));
-                logCustomEvent(reinforcement, player);
+                logCustomEvent(reinforcement, player, ENFORCE_EVENT);
                 if (infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
                     player.sendMessage(ChatColor.GRAY + "Reinforced a block.");
                 }
@@ -122,11 +120,7 @@ public class FeedbackManager {
                 } else {
                     location.getWorld().playEffect(location, reinforcementDamageSuccessEffect, 0);
                 }
-                // Log the breaking of a reinforcement.
-                if (reinforcement.getReinforcementValue() == 0) {
-                    //logReinforcementEvent(DEINFORCE_EVENT, player, "");
-                    logCustomEvent(reinforcement, player);
-                }
+                logCustomEvent(reinforcement, player, DAMAGE_EVENT);
                 break;
             case DAMAGE_FAIL:
                 location.getWorld().playEffect(location, reinforcementDamageFailEffect, 0);
