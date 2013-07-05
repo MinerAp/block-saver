@@ -1,33 +1,18 @@
 package in.nikitapek.blocksaver.management;
 
-import com.amshulman.mbapi.MbapiPlugin;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
-import in.nikitapek.blocksaver.util.BlockSaverAction;
-import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
-import in.nikitapek.blocksaver.util.BlockSaverFeedback;
-import in.nikitapek.blocksaver.util.BlockSaverUtil;
-import me.botsko.prism.Prism;
-import me.botsko.prism.actionlibs.ActionType;
-import me.botsko.prism.events.PrismCustomPlayerActionEvent;
-import me.botsko.prism.exceptions.InvalidActionException;
+import in.nikitapek.blocksaver.util.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 public class FeedbackManager {
-    public static final String ENFORCE_EVENT_NAME = "bs-block-enforce";
-    public static final String DAMAGE_EVENT_NAME = "bs-block-damage";
-
     private static final byte PITCH_SHIFT = 50;
-    private static final ActionType ENFORCE_EVENT = new ActionType(ENFORCE_EVENT_NAME, false, true, true, "BlockSaverAction", "reinforced");
-    private static final ActionType DAMAGE_EVENT = new ActionType(DAMAGE_EVENT_NAME, false, true, true, "BlockSaverAction", "damaged");
 
     private final BlockSaverInfoManager infoManager;
-    private final MbapiPlugin plugin;
-    private final Prism prism;
+    private final BlockSaverPrismBridge prismBridge;
 
     private final Effect reinforcementDamageFailEffect;
     private final Effect reinforcementDamageSuccessEffect;
@@ -36,11 +21,10 @@ public class FeedbackManager {
     private final Sound hitFailSound;
 
     private final boolean useParticleEffects;
-    private final boolean enableLogBlockLogging;
+    private final boolean enableLogging;
 
     public FeedbackManager(final BlockSaverConfigurationContext configurationContext) {
         this.infoManager = configurationContext.infoManager;
-        this.plugin = configurationContext.plugin;
 
         this.reinforcementDamageFailEffect = configurationContext.reinforcementDamageFailEffect;
         this.reinforcementDamageSuccessEffect = configurationContext.reinforcementDamageSuccessEffect;
@@ -48,44 +32,13 @@ public class FeedbackManager {
         this.reinforceFailSound = configurationContext.reinforceFailSound;
         this.hitFailSound = configurationContext.hitFailSound;
         this.useParticleEffects = configurationContext.useParticleEffects;
-        this.enableLogBlockLogging = configurationContext.enableLogBlockLogging;
+        this.enableLogging = configurationContext.enableLogging;
 
-        final Plugin tempPrism = configurationContext.plugin.getServer().getPluginManager().getPlugin("Prism");
-
-        if (tempPrism == null) {
-            prism = null;
-            return;
+        if (enableLogging) {
+            prismBridge = new BlockSaverPrismBridge(configurationContext.plugin);
+        } else {
+            prismBridge = null;
         }
-
-        prism = (Prism) tempPrism;
-
-        // Register the custom events.
-        try {
-            Prism.getActionRegistry().registerCustomAction(plugin, ENFORCE_EVENT);
-            Prism.getActionRegistry().registerCustomAction(plugin, DAMAGE_EVENT);
-            Prism.getHandlerRegistry().registerCustomHandler(plugin, BlockSaverAction.class);
-        } catch (InvalidActionException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void logReinforcementEvent(String event, Player player, String msg) {
-        PrismCustomPlayerActionEvent prismEvent = new PrismCustomPlayerActionEvent(plugin, event, player, msg);
-        plugin.getServer().getPluginManager().callEvent(prismEvent);
-    }
-
-    private void logCustomEvent(final Reinforcement reinforcement, final Player player, final ActionType event) {
-        BlockSaverAction action = new BlockSaverAction();
-
-        action.setType(event);
-        action.setLoc(reinforcement.getLocation());
-        action.setPlayerName(player.getName());
-
-        // Required for the ItemStackAction
-        action.setReinforcement(reinforcement);
-
-        // Add the recorder queue
-        Prism.actionsRecorder.addToQueue(action);
     }
 
     public void sendFeedback(final Location location, final BlockSaverFeedback feedback, final Player player) {
@@ -97,7 +50,9 @@ public class FeedbackManager {
                 if (player == null) {
                     break;
                 }
-                logCustomEvent(reinforcement, player, ENFORCE_EVENT);
+                if (enableLogging) {
+                    prismBridge.logCustomEvent(reinforcement, player, BlockSaverPrismBridge.ENFORCE_EVENT);
+                }
                 if (infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
                     player.sendMessage(ChatColor.GRAY + "Reinforced a block.");
                 }
@@ -120,7 +75,9 @@ public class FeedbackManager {
                 } else {
                     location.getWorld().playEffect(location, reinforcementDamageSuccessEffect, 0);
                 }
-                logCustomEvent(reinforcement, player, DAMAGE_EVENT);
+                if (enableLogging) {
+                    prismBridge.logCustomEvent(reinforcement, player, BlockSaverPrismBridge.DAMAGE_EVENT);
+                }
                 break;
             case DAMAGE_FAIL:
                 location.getWorld().playEffect(location, reinforcementDamageFailEffect, 0);
@@ -136,10 +93,6 @@ public class FeedbackManager {
                 break;
             default:
                 break;
-        }
-
-        if (!enableLogBlockLogging) {
-            return;
         }
     }
 }

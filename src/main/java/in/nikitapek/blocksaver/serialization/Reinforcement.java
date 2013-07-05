@@ -11,9 +11,9 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     private final Location location;
     private float value;
     private long timeStamp;
-    private boolean justCreated;
     private String creatorName;
     private float lastMaximumValue;
+    private long timeCreated;
 
     private static MbapiPlugin plugin;
     private static int gracePeriodTime;
@@ -21,16 +21,16 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     public Reinforcement(final Location location) {
         this.location = location;
         setReinforcementValue(getReinforcementValue());
-        setJustCreated(isJustCreated());
         setCreatorName(getCreatorName());
         setLastMaximumValue(getLastMaximumValue());
+        setCreationTime(getCreationTime());
     }
 
     public Reinforcement(final Location location, final float value, final String creatorName) {
         this.location = location;
         setReinforcementValue(value);
-        setJustCreated(true);
         setCreatorName(creatorName);
+        setCreationTime(System.currentTimeMillis());
     }
 
     public static void initialize(BlockSaverConfigurationContext configurationContext) {
@@ -39,27 +39,23 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     }
 
     public void updateTimeStamp() {
-        if ((System.currentTimeMillis() - getTimeStamp()) >= (gracePeriodTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
-            setJustCreated(false);
-        }
-
         setTimeStamp(System.currentTimeMillis());
     }
 
     public void writeToMetadata() {
         getBlock().setMetadata("RV", new FixedMetadataValue(plugin, value));
         getBlock().setMetadata("RTS", new FixedMetadataValue(plugin, timeStamp));
-        getBlock().setMetadata("RJC", new FixedMetadataValue(plugin, justCreated));
         getBlock().setMetadata("RCN", new FixedMetadataValue(plugin, creatorName));
         getBlock().setMetadata("RLMV", new FixedMetadataValue(plugin, lastMaximumValue));
+        getBlock().setMetadata("RTC", new FixedMetadataValue(plugin, timeCreated));
     }
 
     public static void removeFromMetadata(final Block block) {
         block.removeMetadata("RV", plugin);
         block.removeMetadata("RTS", plugin);
-        block.removeMetadata("RJC", plugin);
         block.removeMetadata("RCN", plugin);
         block.removeMetadata("RLMV", plugin);
+        block.removeMetadata("RTC", plugin);
     }
 
     public Block getBlock() {
@@ -90,12 +86,15 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     }
 
     public boolean isJustCreated() {
-        if (!getBlock().hasMetadata("RJC")) {
-            throw new IllegalArgumentException("An RJC for a non-reinforced block was attempted to be retrieved");
+        return (System.currentTimeMillis() - getCreationTime()) >= (gracePeriodTime * BlockSaverUtil.MILLISECONDS_PER_SECOND);
+    }
+
+    public long getCreationTime() {
+        if (!getBlock().hasMetadata("RCT")) {
+            throw new IllegalArgumentException("An RCT for a non-reinforced block was attempted to be retrieved");
         }
 
-        justCreated = getBlock().getMetadata("RJC").get(0).asBoolean();
-        return justCreated;
+        return getBlock().getMetadata("RCT").get(0).asLong();
     }
 
     public String getCreatorName() {
@@ -131,11 +130,6 @@ public final class Reinforcement implements Comparable<Reinforcement> {
         getBlock().setMetadata("RTS", new FixedMetadataValue(plugin, timeStamp));
     }
 
-    private void setJustCreated(final boolean justCreated) {
-        this.justCreated = justCreated;
-        getBlock().setMetadata("RJC", new FixedMetadataValue(plugin, justCreated));
-    }
-
     private void setCreatorName(final String creatorName) {
         this.creatorName = creatorName;
         getBlock().setMetadata("RCN", new FixedMetadataValue(plugin, creatorName));
@@ -146,6 +140,11 @@ public final class Reinforcement implements Comparable<Reinforcement> {
         getBlock().setMetadata("RLMV", new FixedMetadataValue(plugin, lastMaximumValue));
     }
 
+    public void setCreationTime(final long creationTime) {
+        this.timeCreated = creationTime;
+        getBlock().setMetadata("RCT", new FixedMetadataValue(plugin, creationTime));
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -153,7 +152,7 @@ public final class Reinforcement implements Comparable<Reinforcement> {
 
         Reinforcement that = (Reinforcement) obj;
 
-        if (justCreated != that.justCreated) return false;
+        if (timeCreated != that.timeCreated) return false;
         if (Float.compare(that.lastMaximumValue, lastMaximumValue) != 0) return false;
         if (timeStamp != that.timeStamp) return false;
         if (Float.compare(that.value, value) != 0) return false;
@@ -168,7 +167,7 @@ public final class Reinforcement implements Comparable<Reinforcement> {
         int result = location.hashCode();
         result = 31 * result + (value != +0.0f ? Float.floatToIntBits(value) : 0);
         result = 31 * result + (int) (timeStamp ^ (timeStamp >>> 32));
-        result = 31 * result + (justCreated ? 1 : 0);
+        result = 31 * result + (int) (timeCreated ^ (timeCreated >>> 32));
         result = 31 * result + creatorName.hashCode();
         result = 31 * result + (lastMaximumValue != +0.0f ? Float.floatToIntBits(lastMaximumValue) : 0);
         return result;

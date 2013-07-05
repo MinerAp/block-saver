@@ -5,23 +5,19 @@ import com.google.gson.GsonBuilder;
 import in.nikitapek.blocksaver.management.FeedbackManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
-import me.botsko.prism.actionlibs.MatchRule;
 import me.botsko.prism.actionlibs.QueryParameters;
 import me.botsko.prism.actions.GenericAction;
 import me.botsko.prism.appliers.ChangeResult;
 import me.botsko.prism.appliers.ChangeResultType;
 import me.botsko.prism.appliers.PrismProcessType;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
-
-import java.util.Map;
-import java.util.Map.Entry;
 
 public final class BlockSaverAction extends GenericAction {
     private static ReinforcementManager reinforcementManager;
 
     public class ReinforcementActionData {
         public String owner;
+        public long creationTime;
     }
 
     private Reinforcement reinforcement;
@@ -47,6 +43,7 @@ public final class BlockSaverAction extends GenericAction {
         this.block_id = reinforcement.getBlock().getTypeId();
         this.setLoc(reinforcement.getLocation());
         actionData.owner = reinforcement.getCreatorName();
+        actionData.creationTime = reinforcement.getCreationTime();
     }
 
     public void setData(String data) {
@@ -70,137 +67,120 @@ public final class BlockSaverAction extends GenericAction {
         return this.actionData;
     }
 
-    public Reinforcement getReinforcement() {
-        return reinforcement;
-    }
-
     @Override
     public ChangeResult applyRollback(Player player, QueryParameters parameters, boolean is_preview) {
-        return placeReinforcements(parameters, is_preview);
+        return placeReinforcements(parameters.getProcessType(), is_preview);
     }
 
     @Override
     public ChangeResult applyRestore(Player player, QueryParameters parameters, boolean is_preview) {
-        return placeReinforcements(parameters, is_preview);
+        return placeReinforcements(parameters.getProcessType(), is_preview);
     }
 
-    private ChangeResult placeReinforcements(QueryParameters parameters, boolean is_preview) {
+    private ChangeResult placeReinforcements(PrismProcessType processType, boolean is_preview) {
+        // The result of the action. By default nothing occurs, and so it is null until an action is taken.
         ChangeResultType result = null;
 
+        // If the action is simply a preview, nothing happens.
         if (is_preview) {
             return new ChangeResult(ChangeResultType.PLANNED, null);
         }
 
-        if (!plugin.getConfig().getBoolean("prism.appliers.allow_rollback_items_removed_from_container")) {
+        // If the event is not a BlockSaver ENFORCE or DAMAGE event being applied, then it is of no consequence.
+        if (!BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName()) && !BlockSaverPrismBridge.DAMAGE_EVENT_NAME.equals(getType().getName())) {
             return new ChangeResult(null, null);
         }
 
-        if (!FeedbackManager.ENFORCE_EVENT_NAME.equals(getType().getName()) && !FeedbackManager.DAMAGE_EVENT_NAME.equals(getType().getName())) {
+        // If the process is not a ROLLBACK or a RESTORE (e.g. a DRAIN), then it is of no consequence.
+        if (!PrismProcessType.ROLLBACK.equals(processType) && !PrismProcessType.RESTORE.equals(processType)) {
             return new ChangeResult(null, null);
         }
 
-        PrismProcessType pt = parameters.getProcessType();
-
-        if (!PrismProcessType.ROLLBACK.equals(pt) && !PrismProcessType.RESTORE.equals(pt)) {
-            return new ChangeResult(null, null);
-        }
-
-        for (Location location : parameters.getSpecificBlockLocations()) {
+        // For each location in the parameters list we ROLLBACK or RESTORE the actions. This is probably unnecessary as each process should be called for each location.
+        /*for (Location location : parameters.getSpecificBlockLocations()) {
             if (PrismProcessType.ROLLBACK.equals(pt)) {
                 result = rollback(location, parameters, result);
             } else if (PrismProcessType.RESTORE.equals(pt)) {
                 result = restore(location, parameters, result);
             }
+        }*/
+
+        // If the reinforcement or damage event being rolled back or restored is older than the current existing reinforcement, then it does not need to occur.
+        if (reinforcementManager.isReinforced(getLoc())) {
+            if (new Reinforcement(getLoc()).getCreationTime() > actionData.creationTime) {
+                return new ChangeResult(ChangeResultType.SKIPPED, null);
+            }
+        }
+
+        if (PrismProcessType.ROLLBACK.equals(processType)) {
+            result = rollback(result);
+        } else if (PrismProcessType.RESTORE.equals(processType)) {
+            result = restore(result);
         }
 
         return new ChangeResult(result, null);
     }
 
-    private ChangeResultType rollback(Location location, QueryParameters parameters, ChangeResultType result) {
-        if (FeedbackManager.ENFORCE_EVENT_NAME.equals(getType().getName())) {
-            if (!reinforcementManager.isReinforced(location)) {
+    private ChangeResultType rollback(ChangeResultType result) {
+        // Perform a ROLLBACK for a BlockSaver ENFORCE event (de-enforces the block).
+        if (BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
+            if (!reinforcementManager.isReinforced(getLoc())) {
+                // If the block is not reinforced, then the rollback can be assumed to be completed.
+                // In a practice, this will only occur when something has gone wrong (e.g. an out-of-order rollback) or when the same rollback is being executed twice.
+                // TODO: Confirm whether or not this should be considered APPLIED or SKIPPED.
                 return ChangeResultType.APPLIED;
             }
 
-            Reinforcement reinforcement = new Reinforcement(location);
-
-            Map<String, MatchRule> playerNames = parameters.getPlayerNames();
-            if (playerNames.size() == 0) {
-                reinforcementManager.removeReinforcement(location);
+            // If the block is reinforced, then we must confirm that this is the reinforcement to be removed before we continue.
+            // If the current reinforcement belongs to the person whose enforcement is being rolled back, then it is removed.
+            // Otherwise it remains because it must not be the reinforcement intended to be removed.
+            if (getPlayerName().equals(new Reinforcement(getLoc()).getCreatorName())) {
+                reinforcementManager.removeReinforcement(getLoc());
                 return ChangeResultType.APPLIED;
-            }
-
-            for (Entry<String, MatchRule> entry : playerNames.entrySet()) {
-                String name = entry.getKey();
-                MatchRule rule = entry.getValue();
-                String creator = reinforcement.getCreatorName();
-
-                if ((name.equals(creator) && MatchRule.INCLUDE.equals(rule)) || (!name.equals(creator) && MatchRule.EXCLUDE.equals(rule))) {
-                    reinforcementManager.removeReinforcement(location);
-                    return ChangeResultType.APPLIED;
-                }
             }
         } else {
-            Map<String, MatchRule> playerNames = parameters.getPlayerNames();
-
-            if (playerNames.size() == 0) {
-                reinforcementManager.reinforce(location, 1, actionData.owner);
+            // We restore the reinforcement prior to the damage if one does not exist at that location currently.
+            if (!reinforcementManager.isReinforced(getLoc())) {
+                reinforcementManager.reinforce(getLoc(), 1, actionData.owner);
+                // The restored block must have the same creation time as the destroyed one.
+                new Reinforcement(getLoc()).setCreationTime(actionData.creationTime);
                 return ChangeResultType.APPLIED;
             }
 
-            for (Entry<String, MatchRule> entry : playerNames.entrySet()) {
-                String name = entry.getKey();
-                MatchRule rule = entry.getValue();
-                String damager = getPlayerName();
-
-                if ((name.equals(damager) && MatchRule.INCLUDE.equals(rule)) || (!name.equals(damager) && MatchRule.EXCLUDE.equals(rule))) {
-                    reinforcementManager.reinforce(location, 1, actionData.owner);
-                    return ChangeResultType.APPLIED;
-                }
+            // If the same person owns the reinforcement now as the one who did when it was broken, then the damage event probably occurred on this block, and so must be rolled back.
+            if (actionData.owner.equals(new Reinforcement(getLoc()).getCreatorName())) {
+                reinforcementManager.reinforce(getLoc(), 1, actionData.owner);
+                return ChangeResultType.APPLIED;
             }
         }
 
-        return result;
+        return ChangeResultType.SKIPPED;
     }
 
-    private ChangeResultType restore(Location location, QueryParameters parameters, ChangeResultType result) {
-        if (FeedbackManager.ENFORCE_EVENT_NAME.equals(getType().getName())) {
-            Map<String, MatchRule> playerNames = parameters.getPlayerNames();
-            if (playerNames.size() == 0) {
-                reinforcementManager.reinforce(location, actionData.owner);
+    private ChangeResultType restore(ChangeResultType result) {
+        if (BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
+            // If there is no existing reinforcement, then the restoration can proceed without problems.
+            if (!reinforcementManager.isReinforced(getLoc())) {
+                reinforcementManager.reinforce(getLoc(), actionData.owner);
                 return ChangeResultType.APPLIED;
             }
 
-            for (Entry<String, MatchRule> entry : playerNames.entrySet()) {
-                String name = entry.getKey();
-                MatchRule rule = entry.getValue();
-                String creator = reinforcement.getCreatorName();
-
-                if ((name.equals(creator) && MatchRule.INCLUDE.equals(rule)) || (!name.equals(creator) && MatchRule.EXCLUDE.equals(rule))) {
-                    reinforcementManager.reinforce(location, actionData.owner);
-                    return ChangeResultType.APPLIED;
-                }
-            }
+            // The already existing reinforcement is removed and replaced by the one being restored.
+            reinforcementManager.removeReinforcement(getLoc());
+            reinforcementManager.reinforce(getLoc(), actionData.owner);
+            return ChangeResultType.APPLIED;
         } else {
-            Map<String, MatchRule> playerNames = parameters.getPlayerNames();
-
-            if (playerNames.size() == 0) {
-                reinforcementManager.reinforce(location, -1, getPlayerName());
+            // If there is no existing reinforcement, then the restoration cannot proceed.
+            // In fact, this should never occur.
+            if (!reinforcementManager.isReinforced(getLoc())) {
+                // If the block is not reinforced, then the restoration of damage can be assumed to be completed.
+                // In a practice, this will only occur when something has gone wrong (e.g. an out-of-order restore) or when the same restore is being executed twice.
+                // TODO: Confirm whether or not this should be considered APPLIED or SKIPPED.
                 return ChangeResultType.APPLIED;
             }
 
-            for (Entry<String, MatchRule> entry : playerNames.entrySet()) {
-                String name = entry.getKey();
-                MatchRule rule = entry.getValue();
-                String damager = getPlayerName();
-
-                if ((name.equals(damager) && MatchRule.INCLUDE.equals(rule)) || (!name.equals(damager) && MatchRule.EXCLUDE.equals(rule))) {
-                    reinforcementManager.reinforce(location, -1, damager);
-                    return ChangeResultType.APPLIED;
-                }
-            }
+            reinforcementManager.reinforce(getLoc(), -1, getPlayerName());
+            return ChangeResultType.APPLIED;
         }
-
-        return result;
     }
 }

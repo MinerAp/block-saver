@@ -124,9 +124,9 @@ enderdragonInteractWithReinforcedBlocks: false
 
 #======== Advanced Settings ========#
 
-## Whether or not to log BlockSaver events to LogBlock.
+## Whether or not to integrate BlockSaver into Prism.
 # Default: true
-enableLogBlockLogging: true
+enableLogging: true
 
 
 #======== Reinforceable Blocks List ========#

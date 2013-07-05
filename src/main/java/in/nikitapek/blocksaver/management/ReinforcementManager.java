@@ -299,7 +299,7 @@ public final class ReinforcementManager {
         }
 
         // If the block is being tracked by the reinforcement list, but does not have all the metadata required to be a proper reinforced block, it is removed from the list.
-        if (!block.hasMetadata("RV") || !block.hasMetadata("RTS") || !block.hasMetadata("RJC") || !block.hasMetadata("RCN") || !block.hasMetadata("RLMV")) {
+        if (!block.hasMetadata("RV") || !block.hasMetadata("RTS") || !block.hasMetadata("RCN") || !block.hasMetadata("RLMV") || !block.hasMetadata("RTC")) {
             removeReinforcement(properLocation);
             return false;
         }

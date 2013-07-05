@@ -45,7 +45,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean leaveBlockAfterDeinforce;
     public final boolean mobsInteractWithReinforcedBlocks;
     public final boolean enderdragonInteractWithReinforcedBlocks;
-    public final boolean enableLogBlockLogging;
+    public final boolean enableLogging;
     public final double extinguishChance;
     public final int gracePeriodTime;
     public final int reinforcementHealingTime;
@@ -103,7 +103,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         leaveBlockAfterDeinforce = plugin.getConfig().getBoolean("leaveBlockAfterDeinforce", false);
         mobsInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("mobsInteractWithReinforcedBlocks", false);
         enderdragonInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("enderdragonInteractWithReinforcedBlocks", false);
-        enableLogBlockLogging = plugin.getConfig().getBoolean("enableLogBlockLogging", true);
+        enableLogging = plugin.getConfig().getBoolean("enableLogging", true);
 
         // Validates that the extinguish chance is a value from 0.0 to 1.0.
         extinguishChance = (plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE) < 0 || plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE) > 1) ? EXTINGUISH_CHANCE : plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE);
@@ -190,7 +190,9 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         infoManager = new BlockSaverInfoManager(this);
         feedbackManager = new FeedbackManager(this);
         reinforcementManager = new ReinforcementManager(this);
-        BlockSaverAction.initialize(reinforcementManager);
+        if (enableLogging) {
+            BlockSaverAction.initialize(reinforcementManager);
+        }
     }
 
     public ReinforcementManager getReinforcementManager() {

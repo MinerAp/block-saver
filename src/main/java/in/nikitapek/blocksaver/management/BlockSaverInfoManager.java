@@ -89,14 +89,11 @@ public final class BlockSaverInfoManager extends InfoManager {
 
     public void ensureKeyExists(final Location location) {
         Chunk chunk = location.getChunk();
-        // Makes sure the Chunk key for the reinforcement already exists, before adding the location.
-        // The if statement is commented out to prevent a SOE because of the ensureKeyExists() check in isReinforced().
-        // if (!isReinforced(location)) {
+
         if (!reinforcements.containsKey(chunk)) {
             reinforcements.put(chunk, new ArrayList<Location>());
         }
         reinforcements.get(chunk).add(location);
-        // }
     }
 
     public Reinforcement getReinforcement(final Location location) {
@@ -111,6 +108,12 @@ public final class BlockSaverInfoManager extends InfoManager {
 
     public void setReinforcement(final Location location, final float value, final String playerName) {
         final Reinforcement reinforcement;
+
+        // If the reinforcement is being set a value of 0, then it is just deleted.
+        if (value <= 0) {
+            configurationContext.getReinforcementManager().removeReinforcement(location);
+            return;
+        }
 
         if (configurationContext.getReinforcementManager().isReinforced(location)) {
             reinforcement = getReinforcement(location);
