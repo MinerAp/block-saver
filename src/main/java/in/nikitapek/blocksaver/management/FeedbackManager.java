@@ -18,9 +18,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class FeedbackManager {
+    public static final String ENFORCE_EVENT_NAME = "bs-block-enforce";
+    public static final String DAMAGE_EVENT_NAME = "bs-block-damage";
+
     private static final byte PITCH_SHIFT = 50;
-    private static final ActionType ENFORCE_EVENT = new ActionType("bs-block-enforce", "player", "reinforced");
-    private static final ActionType DAMAGE_EVENT = new ActionType("bs-block-damage", "player", "damaged");
+    private static final ActionType ENFORCE_EVENT = new ActionType(ENFORCE_EVENT_NAME, false, true, true, "BlockSaverAction", "reinforced");
+    private static final ActionType DAMAGE_EVENT = new ActionType(DAMAGE_EVENT_NAME, false, true, true, "BlockSaverAction", "damaged");
 
     private final BlockSaverInfoManager infoManager;
     private final MbapiPlugin plugin;
@@ -60,6 +63,7 @@ public class FeedbackManager {
         try {
             Prism.getActionRegistry().registerCustomAction(plugin, ENFORCE_EVENT);
             Prism.getActionRegistry().registerCustomAction(plugin, DAMAGE_EVENT);
+            Prism.getHandlerRegistry().registerCustomHandler(plugin, BlockSaverAction.class);
         } catch (InvalidActionException e) {
             e.printStackTrace();
         }

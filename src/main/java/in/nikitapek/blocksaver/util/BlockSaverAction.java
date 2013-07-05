@@ -2,6 +2,7 @@ package in.nikitapek.blocksaver.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import in.nikitapek.blocksaver.management.FeedbackManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import me.botsko.prism.actionlibs.MatchRule;
@@ -13,6 +14,7 @@ import me.botsko.prism.appliers.PrismProcessType;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import java.util.Map;
 import java.util.Map.Entry;
 
 public final class BlockSaverAction extends GenericAction {
@@ -70,7 +72,8 @@ public final class BlockSaverAction extends GenericAction {
             this.block_subid = actionData.block_subid;
         }*/
 
-        reinforcement = new Reinforcement(getLoc());
+        // This causes an NPE when two sequential rollbacks occur on the same block. Not sure if this line is necessary.
+        //reinforcement = new Reinforcement(getLoc());
     }
 
     public void save() {
@@ -106,7 +109,7 @@ public final class BlockSaverAction extends GenericAction {
             return new ChangeResult(null, null);
         }
 
-        if (!"bs-enforce".equals(getType().getName())) {
+        if (!FeedbackManager.ENFORCE_EVENT_NAME.equals(getType().getName())) {
             return new ChangeResult(null, null);
         }
 
@@ -117,11 +120,21 @@ public final class BlockSaverAction extends GenericAction {
         }
 
         for (Location location : parameters.getSpecificBlockLocations()) {
-            Reinforcement reinforcement = new Reinforcement(location);
-            if (reinforcement == null) {
+            if (!reinforcementManager.isReinforced(location)) {
+                result = ChangeResultType.APPLIED;
                 continue;
             }
-            for (Entry<String, MatchRule> entry : parameters.getPlayerNames().entrySet()) {
+
+            Reinforcement reinforcement = new Reinforcement(location);
+
+            Map<String, MatchRule> playerNames = parameters.getPlayerNames();
+            if (playerNames.size() == 0) {
+                reinforcementManager.removeReinforcement(location);
+                result = ChangeResultType.APPLIED;
+                continue;
+            }
+
+            for (Entry<String, MatchRule> entry : playerNames.entrySet()) {
                 String name = entry.getKey();
                 MatchRule rule = entry.getValue();
                 String creator = reinforcement.getCreatorName();
