@@ -250,7 +250,7 @@ public final class ReinforcementManager {
             }
         }
 
-        if (damageCause == BlockSaverDamageCause.FIRE) {
+        if (BlockSaverDamageCause.FIRE.equals(damageCause)) {
             // If fire is not allowed to damage blocks, the block damage fail feedback is provided and the damage fails.
             if (!fireDamagesReinforcedBlocks) {
                 feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_FAIL, null);
@@ -261,7 +261,7 @@ public final class ReinforcementManager {
             if (extinguishReinforcementFire && Math.random() > extinguishChance) {
                 for (final BlockFace face : BlockFace.values()) {
                     final Block relative = location.getBlock().getRelative(face);
-                    if (relative.getType() == Material.FIRE) {
+                    if (Material.FIRE.equals(relative.getType())) {
                         relative.setType(Material.AIR);
                     }
                 }
@@ -270,7 +270,7 @@ public final class ReinforcementManager {
 
         // Damage the reinforcement on the block.
         // If the cause of damage is TNT, handle the RV decrease specially.
-        if (damageCause == BlockSaverDamageCause.EXPLOSION) {
+        if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
             reinforcement.setReinforcementValue(reinforcement.getReinforcementValue()-((float) Math.pow(getMaterialReinforcementCoefficient(reinforcement.getBlock().getType()), 2)/100));
         } else {
             reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1);
