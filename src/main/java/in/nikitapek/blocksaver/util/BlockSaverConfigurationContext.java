@@ -103,7 +103,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
 
         // Loads the primary feedback form, ensuring that the provided type of feedback is valid.
         String primaryFeedback = plugin.getConfig().getString("primaryFeedback", "visual");
-        if ("auditory".equals(primaryFeedback) && "visual".equals(primaryFeedback) && "off".equals(primaryFeedback)) {
+        if ("auditory".equals(primaryFeedback) || "visual".equals(primaryFeedback) || "off".equals(primaryFeedback)) {
             this.primaryFeedback = primaryFeedback;
         } else {
             this.primaryFeedback = "visual";
