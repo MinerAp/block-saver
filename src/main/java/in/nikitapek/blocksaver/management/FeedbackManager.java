@@ -20,8 +20,8 @@ public class FeedbackManager {
     private final Sound reinforceFailSound;
     private final Sound hitFailSound;
 
-    private final boolean useParticleEffects;
     private final boolean enableLogging;
+    private final String primaryFeedback;
 
     public FeedbackManager(final BlockSaverConfigurationContext configurationContext) {
         this.infoManager = configurationContext.infoManager;
@@ -31,7 +31,7 @@ public class FeedbackManager {
         this.reinforceSuccessSound = configurationContext.reinforceSuccessSound;
         this.reinforceFailSound = configurationContext.reinforceFailSound;
         this.hitFailSound = configurationContext.hitFailSound;
-        this.useParticleEffects = configurationContext.useParticleEffects;
+        this.primaryFeedback = configurationContext.primaryFeedback;
         this.enableLogging = configurationContext.enableLogging;
 
         if (enableLogging) {
@@ -70,8 +70,10 @@ public class FeedbackManager {
                 if (infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback() && player.hasPermission("blocksaver.feedback.damage.success")) {
                     player.sendMessage(ChatColor.GRAY + "Damaged a reinforced block.");
                 }
-                if (useParticleEffects) {
+                if ("visual".equals(primaryFeedback)) {
                     BlockSaverUtil.sendParticleEffect(location, infoManager.getReinforcement(location).getReinforcementValue());
+                } else if ("auditory".equals(primaryFeedback)) {
+                    BlockSaverUtil.playMusicalEffect(location, (int) infoManager.getReinforcement(location).getReinforcementValue());
                 } else {
                     location.getWorld().playEffect(location, reinforcementDamageSuccessEffect, 0);
                 }

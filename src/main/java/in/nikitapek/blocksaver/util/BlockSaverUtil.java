@@ -1,8 +1,6 @@
 package in.nikitapek.blocksaver.util;
 
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.entity.Firework;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.util.Vector;
@@ -85,5 +83,9 @@ public final class BlockSaverUtil {
                 break;
         }
          **/
+    }
+
+    public static void playMusicalEffect(final Location location, final int reinforcementValue) {
+        location.getWorld().playSound(location, Sound.NOTE_PIANO, 1.0f, reinforcementValue);
     }
 }

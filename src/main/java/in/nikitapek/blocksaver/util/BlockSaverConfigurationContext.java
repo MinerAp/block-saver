@@ -38,7 +38,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean fireDamagesReinforcedBlocks;
     public final boolean extinguishReinforcementFire;
     public final boolean pistonsMoveReinforcedBlocks;
-    public final boolean useParticleEffects;
     public final boolean allowBlockFading;
     public final boolean allowReinforcementGracePeriod;
     public final boolean allowReinforcementHealing;
@@ -49,6 +48,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public final double extinguishChance;
     public final int gracePeriodTime;
     public final int reinforcementHealingTime;
+    public final String primaryFeedback;
 
     public final BlockSaverInfoManager infoManager;
     public final FeedbackManager feedbackManager;
@@ -93,7 +93,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         fireDamagesReinforcedBlocks = plugin.getConfig().getBoolean("fireDamagesReinforcedBlocks", true);
         extinguishReinforcementFire = plugin.getConfig().getBoolean("extinguishReinforcementFire", true);
         pistonsMoveReinforcedBlocks = plugin.getConfig().getBoolean("pistonsMoveReinforcedBlocks", true);
-        useParticleEffects = plugin.getConfig().getBoolean("useParticleEffects", true);
         allowBlockFading = plugin.getConfig().getBoolean("allowBlockFading", false);
         allowReinforcementGracePeriod = plugin.getConfig().getBoolean("allowReinforcementGracePeriod", true);
         allowReinforcementHealing = plugin.getConfig().getBoolean("allowReinforcementHealing", true);
@@ -101,6 +100,14 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         mobsInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("mobsInteractWithReinforcedBlocks", false);
         enderdragonInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("enderdragonInteractWithReinforcedBlocks", false);
         enableLogging = plugin.getConfig().getBoolean("enableLogging", true);
+
+        // Loads the primary feedback form, ensuring that the provided type of feedback is valid.
+        String primaryFeedback = plugin.getConfig().getString("primaryFeedback", "visual");
+        if ("auditory".equals(primaryFeedback) && "visual".equals(primaryFeedback) && "off".equals(primaryFeedback)) {
+            this.primaryFeedback = primaryFeedback;
+        } else {
+            this.primaryFeedback = "visual";
+        }
 
         // Validates that the extinguish chance is a value from 0.0 to 1.0.
         extinguishChance = (plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE) < 0 || plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE) > 1) ? EXTINGUISH_CHANCE : plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE);
