@@ -199,7 +199,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         infoManager = new BlockSaverInfoManager(this);
         feedbackManager = new FeedbackManager(this);
         reinforcementManager = new ReinforcementManager(this);
-        if (enableLogging) {
+        if (feedbackManager.isPrismBridged()) {
             BlockSaverAction.initialize(reinforcementManager);
         }
     }

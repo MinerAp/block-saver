@@ -1,18 +1,22 @@
 package in.nikitapek.blocksaver.management;
 
 import in.nikitapek.blocksaver.serialization.Reinforcement;
-import in.nikitapek.blocksaver.util.*;
+import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
+import in.nikitapek.blocksaver.util.BlockSaverFeedback;
+import in.nikitapek.blocksaver.util.BlockSaverPrismBridge;
+import in.nikitapek.blocksaver.util.BlockSaverUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
+import java.util.logging.Level;
+
 public class FeedbackManager {
     private static final byte PITCH_SHIFT = 50;
 
     private final BlockSaverInfoManager infoManager;
-    private final BlockSaverPrismBridge prismBridge;
 
     private final Effect reinforcementDamageFailEffect;
     private final Effect reinforcementDamageSuccessEffect;
@@ -20,8 +24,11 @@ public class FeedbackManager {
     private final Sound reinforceFailSound;
     private final Sound hitFailSound;
 
-    private final boolean enableLogging;
     private final String primaryFeedback;
+
+    private boolean prismBridged = false;
+
+    private BlockSaverPrismBridge prismBridge;
 
     public FeedbackManager(final BlockSaverConfigurationContext configurationContext) {
         this.infoManager = configurationContext.infoManager;
@@ -32,13 +39,21 @@ public class FeedbackManager {
         this.reinforceFailSound = configurationContext.reinforceFailSound;
         this.hitFailSound = configurationContext.hitFailSound;
         this.primaryFeedback = configurationContext.primaryFeedback;
-        this.enableLogging = configurationContext.enableLogging;
 
-        if (enableLogging) {
-            prismBridge = new BlockSaverPrismBridge(configurationContext.plugin);
-        } else {
-            prismBridge = null;
+        prismBridge = null;
+
+        if (!configurationContext.enableLogging) {
+            return;
         }
+
+        try {
+            prismBridge = new BlockSaverPrismBridge(configurationContext.plugin);
+        } catch (final NoClassDefFoundError ex) {
+            configurationContext.plugin.getLogger().log(Level.WARNING, "\"enableLogging\" true but Prism not found. Logging will not be enabled.");
+            return;
+        }
+
+        prismBridged = true;
     }
 
     public void sendFeedback(final Location location, final BlockSaverFeedback feedback, final Player player) {
@@ -50,7 +65,7 @@ public class FeedbackManager {
                 if (player == null) {
                     break;
                 }
-                if (enableLogging) {
+                if (isPrismBridged()) {
                     prismBridge.logCustomEvent(reinforcement, player, BlockSaverPrismBridge.ENFORCE_EVENT);
                 }
                 if (infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback() && player.hasPermission("blocksaver.feedback.reinforce.success")) {
@@ -77,7 +92,7 @@ public class FeedbackManager {
                 } else {
                     location.getWorld().playEffect(location, reinforcementDamageSuccessEffect, 0);
                 }
-                if (enableLogging) {
+                if (isPrismBridged()) {
                     prismBridge.logCustomEvent(reinforcement, player, BlockSaverPrismBridge.DAMAGE_EVENT);
                 }
                 break;
@@ -102,5 +117,9 @@ public class FeedbackManager {
             default:
                 break;
         }
+    }
+
+    public boolean isPrismBridged() {
+        return prismBridged;
     }
 }
