@@ -2,7 +2,6 @@ package in.nikitapek.blocksaver.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import in.nikitapek.blocksaver.management.FeedbackManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import me.botsko.prism.actionlibs.QueryParameters;
@@ -113,15 +112,15 @@ public final class BlockSaverAction extends GenericAction {
         }
 
         if (PrismProcessType.ROLLBACK.equals(processType)) {
-            result = rollback(result);
+            result = rollback();
         } else if (PrismProcessType.RESTORE.equals(processType)) {
-            result = restore(result);
+            result = restore();
         }
 
         return new ChangeResult(result, null);
     }
 
-    private ChangeResultType rollback(ChangeResultType result) {
+    private ChangeResultType rollback() {
         // Perform a ROLLBACK for a BlockSaver ENFORCE event (de-enforces the block).
         if (BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
             if (!reinforcementManager.isReinforced(getLoc())) {
@@ -157,7 +156,7 @@ public final class BlockSaverAction extends GenericAction {
         return ChangeResultType.SKIPPED;
     }
 
-    private ChangeResultType restore(ChangeResultType result) {
+    private ChangeResultType restore() {
         if (BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
             // If there is no existing reinforcement, then the restoration can proceed without problems.
             if (!reinforcementManager.isReinforced(getLoc())) {
