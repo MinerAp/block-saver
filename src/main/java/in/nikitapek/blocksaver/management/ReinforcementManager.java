@@ -356,15 +356,11 @@ public final class ReinforcementManager {
             return true;
         }
 
-        if (!reinforcement.isJustCreated()) {
-            return true;
-        }
-
         if (!reinforcement.getCreatorName().equals(playerName)) {
             return true;
         }
 
-        if (System.currentTimeMillis() - reinforcement.getTimeStamp() > (gracePeriodTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
+        if (!reinforcement.isJustCreated()) {
             return true;
         }
 

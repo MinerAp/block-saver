@@ -86,15 +86,16 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     }
 
     public boolean isJustCreated() {
-        return (System.currentTimeMillis() - getCreationTime()) >= (gracePeriodTime * BlockSaverUtil.MILLISECONDS_PER_SECOND);
+        return (System.currentTimeMillis() - getCreationTime()) < (gracePeriodTime * BlockSaverUtil.MILLISECONDS_PER_SECOND);
     }
 
     public long getCreationTime() {
-        if (!getBlock().hasMetadata("RCT")) {
-            throw new IllegalArgumentException("An RCT for a non-reinforced block was attempted to be retrieved");
+        if (!getBlock().hasMetadata("RTC")) {
+            throw new IllegalArgumentException("An RTC for a non-reinforced block was attempted to be retrieved");
         }
 
-        return getBlock().getMetadata("RCT").get(0).asLong();
+        timeCreated = getBlock().getMetadata("RTC").get(0).asLong();
+        return timeCreated;
     }
 
     public String getCreatorName() {
@@ -140,9 +141,9 @@ public final class Reinforcement implements Comparable<Reinforcement> {
         getBlock().setMetadata("RLMV", new FixedMetadataValue(plugin, lastMaximumValue));
     }
 
-    public void setCreationTime(final long creationTime) {
-        this.timeCreated = creationTime;
-        getBlock().setMetadata("RCT", new FixedMetadataValue(plugin, creationTime));
+    public void setCreationTime(final long timeCreated) {
+        this.timeCreated = timeCreated;
+        getBlock().setMetadata("RTC", new FixedMetadataValue(plugin, timeCreated));
     }
 
     @Override

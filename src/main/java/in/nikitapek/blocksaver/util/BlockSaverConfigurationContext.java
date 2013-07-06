@@ -62,9 +62,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public BlockSaverConfigurationContext(final MbapiPlugin plugin) {
         super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplementaryTypes.TREESET, SupplementaryTypes.REINFORCEMENT), new ReinforcementTypeAdapter());
 
-        // Load the Reinforcement class. This is to ensure Reinforcement has access to MbapiPlugin and related configuration values.
-        Reinforcement.initialize(this);
-
         reinforceableBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
         reinforcementBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
         toolRequirements = new TypeSafeMapImpl<Material, List<Integer>>(new EnumMap<Material, List<Integer>>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.LIST);
@@ -186,6 +183,8 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             }
         }
 
+        // Load the Reinforcement class. This is to ensure Reinforcement has access to MbapiPlugin and related configuration values.
+        Reinforcement.initialize(this);
         // Load the Managers and initialize BlockSaverAction. This must occur in this order.
         infoManager = new BlockSaverInfoManager(this);
         feedbackManager = new FeedbackManager(this);
