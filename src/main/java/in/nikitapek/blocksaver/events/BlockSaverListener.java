@@ -82,7 +82,7 @@ public final class BlockSaverListener implements Listener {
         final ItemStack item = player.getItemInHand();
 
         // If the player is not left-clicking, then the player is not attempting to reinforce or damage a block.
-        if (!event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
+        if (!Action.LEFT_CLICK_BLOCK.equals(event.getAction())) {
             return;
         }
 
@@ -100,7 +100,7 @@ public final class BlockSaverListener implements Listener {
         }
 
         // The amount of the reinforcement material in the player's hand is decreased.
-        if (!player.getGameMode().equals(GameMode.CREATIVE)) {
+        if (!GameMode.CREATIVE.equals(player.getGameMode())) {
             if (item.getAmount() > 1) {
                 item.setAmount(item.getAmount() - 1);
             } else {
@@ -160,7 +160,7 @@ public final class BlockSaverListener implements Listener {
         final Material material = block.getType();
 
         // This is to ensure TNT-based physics events are not processed.
-        if (!material.equals(Material.SAND) && !material.equals(Material.GRAVEL)) {
+        if (!Material.SAND.equals(material) && !Material.GRAVEL.equals(material)) {
             return;
         }
 
@@ -239,7 +239,7 @@ public final class BlockSaverListener implements Listener {
         final Location location = block.getLocation();
         final Material material = block.getType();
 
-        if (!material.equals(Material.SNOW) && !material.equals(Material.ICE)) {
+        if (!Material.SNOW.equals(material) && !Material.ICE.equals(material)) {
             return;
         }
 
@@ -264,7 +264,7 @@ public final class BlockSaverListener implements Listener {
         }
 
         // If the event is caused by a dragon egg moving to a new location, simply make sure it is not teleporting into a field.
-        if (event.getBlock().getType() == Material.DRAGON_EGG) {
+        if (Material.DRAGON_EGG.equals(event.getBlock().getType())) {
             reinforcementManager.removeReinforcement(location);
             return;
         }
