@@ -4,7 +4,15 @@
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-#
 
 
-#======== Settings ==========#
+#======== Feedback ==========#
+
+## Which feedback mode the plugin should use to represent damage being done to a reinforced block.
+# Notes:
+#   "visual" mode makes the plugin attempt to use color-changing particle effects (dependant on the health of the reinforcement).
+#   "auditory" mode makes the plugin use auditory feedback (which changes based on the block's RV).
+#   "off" mode uses the feedback defined below for damage events.
+# Default: visual
+primaryFeedback: true
 
 ## The name of the effect to be played when a player fails to damage a reinforced block.
 # Note: please use an effect contained within the Effect class.
@@ -32,6 +40,9 @@ reinforceFailSound: BLAZE_HIT
 # Note: please use a sound contained within the Sound class.
 # Default: CREEPER_DEATH
 hitFailSound: CREEPER_DEATH
+
+
+#======== Functionality ========#
 
 ## Whether or not reinforcement values should accumulate indefinitely, as opposed to reaching the limits specified by the Reinforceable Blocks List.
 # Notes:
@@ -76,10 +87,6 @@ extinguishChance: 0.9
 # Default: true
 pistonsMoveReinforcedBlocks: true
 
-## Whether or not the plugin should attempt to use color-changing particle effects (dependant on the health of the reinforcement) for feedback rather than using the effects defined above, where possible.
-# Default: true
-useParticleEffects: true
-
 ## Whether or not blocks should be allowed to "fade" while reinforced (e.g. snow melting, ice melting).
 # Default: false
 allowBlockFading: false
@@ -122,11 +129,25 @@ mobsInteractWithReinforcedBlocks: false
 enderdragonInteractWithReinforcedBlocks: false
 
 
-#======== Advanced Settings ========#
+#======== Advanced ========#
 
 ## Whether or not to integrate BlockSaver into Prism.
 # Default: true
 enableLogging: true
+
+
+#======== Reinforcement Item List ========#
+
+## A list of all the items which can be used to reinforce blocks, and their corresponding reinforcement values.
+# Notes:
+#   Setting a value of -2 will mean the reinforcement will automatically be the maximum value the block can take.
+#   Any other value less than 1 is invalid.
+#   If "accumulateReinforcementValues" is set to true, any material set here with a reinforcement value of -2 will not reinforce blocks.
+reinforcementBlocks:
+  OBSIDIAN: -2
+  IRON_INGOT: 1
+  GOLD_INGOT: 3
+  DIAMOND: 10
 
 
 #======== Reinforceable Blocks List ========#
@@ -236,20 +257,6 @@ reinforceableBlocks:
   WOOD_STEP: 5
   WOOL: 10
   WORKBENCH: 5
-
-
-#======== Reinforcement Item List ========#
-
-## A list of all the items which can be used to reinforce blocks, and their corresponding reinforcement values.
-# Notes:
-#   Setting a value of -2 will mean the reinforcement will automatically be the maximum value the block can take.
-#   Any other value less than 1 is invalid.
-#   If "accumulateReinforcementValues" is set to true, any material set here with a reinforcement value of -2 will not reinforce blocks.
-reinforcementBlocks:
-  OBSIDIAN: -2
-  IRON_INGOT: 1
-  GOLD_INGOT: 3
-  DIAMOND: 10
 
 
 #======== Tool Requirement List ========#
