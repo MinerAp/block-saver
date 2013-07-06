@@ -268,8 +268,8 @@ public final class ReinforcementManager {
         feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, player);
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
-        // This uses leq 1 incase TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
-        if (reinforcement.getReinforcementValue() <= 1 || (player != null && !isFortified(reinforcement, player.getName()))) {
+        // This uses less than 1 incase TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
+        if (reinforcement.getReinforcementValue() < 1 || (player != null && !isFortified(reinforcement, player.getName()))) {
             removeReinforcement(location);
             return;
         }
