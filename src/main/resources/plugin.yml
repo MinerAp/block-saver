@@ -22,7 +22,7 @@ permissions:
   blocksaver.damage:
     description: Allows the player to damage reinforced blocks
   blocksaver.feedback:
-    description: Controls what feedback the player recieves
+    description: Controls what feedback the player receives
   blocksaver.feedback.reinforce.success:
     description: Feedback for a successful reinforcement
   blocksaver.feedback.reinforce.fail:
