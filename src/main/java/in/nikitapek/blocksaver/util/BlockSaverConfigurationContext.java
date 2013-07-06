@@ -110,13 +110,16 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         }
 
         // Validates that the extinguish chance is a value from 0.0 to 1.0.
-        extinguishChance = (plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE) < 0 || plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE) > 1) ? EXTINGUISH_CHANCE : plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE);
+        double extinguishChance = plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE);
+        this.extinguishChance = (extinguishChance < 0 || extinguishChance > 1) ? EXTINGUISH_CHANCE : extinguishChance;
 
         // Validates that the grace period for reinforcement removal is not less than zero.
-        gracePeriodTime = (plugin.getConfig().getInt("gracePeriodTime", 3) < 0) ? 3 : plugin.getConfig().getInt("gracePeriodTime", 3);
+        int gracePeriodTime = plugin.getConfig().getInt("gracePeriodTime", 3);
+        this.gracePeriodTime = (gracePeriodTime < 0) ? 3 : gracePeriodTime;
 
         // Validates that the reinforcement healing time is not less than zero.
-        reinforcementHealingTime = (plugin.getConfig().getInt("reinforcementHealingTime", 5) < 0) ? 5 : plugin.getConfig().getInt("reinforcementHealingTime", 5);
+        int reinforcementHealingTime = plugin.getConfig().getInt("reinforcementHealingTime", 5);
+        this.reinforcementHealingTime = (reinforcementHealingTime < 0) ? 5 : reinforcementHealingTime;
 
         ConfigurationSection configSection;
 
