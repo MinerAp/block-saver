@@ -17,3 +17,21 @@ permissions:
   blocksaver.blocksaver.feedback:
     children:
       blocksaver.blocksaver: true
+  blocksaver.reinforce:
+    description: Allows the reinforcement of blocks
+  blocksaver.damage:
+    description: Allows the player to damage reinforced blocks
+  blocksaver.feedback:
+    description: Controls what feedback the player recieves
+  blocksaver.feedback.reinforce.success:
+    description: Feedback for a successful reinforcement
+  blocksaver.feedback.reinforce.fail:
+    description: Feedback for a failed reinforcement
+  blocksaver.feedback.damage.success:
+    description: Feedback for a successful reinforcement damage
+  blocksaver.feedback.damage.fail:
+    description: Feedback for a failed reinforcement damage
+  blocksaver.feedback.hit:
+    description: Feedback for an improper tool use
+  blocksaver.feedback.permissions:
+    description: Feedback for insufficient permissions

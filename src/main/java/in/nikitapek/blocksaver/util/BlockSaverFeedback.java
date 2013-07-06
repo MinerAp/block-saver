@@ -6,5 +6,6 @@ public enum BlockSaverFeedback {
     DAMAGE_SUCCESS,
     DAMAGE_FAIL,
     HIT_FAIL,
+    PERMISSIONS_FAIL,
     NONE
 }

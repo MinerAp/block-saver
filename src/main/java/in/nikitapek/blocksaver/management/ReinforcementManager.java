@@ -153,17 +153,23 @@ public final class ReinforcementManager {
         return false;
     }
 
-    public boolean canPlayerDamageBlock(final Location location, final Player player) {
+    public boolean canPlayerDamageBlock(final Location location, final Player player, final boolean feedback) {
+        if (!player.hasPermission("blocksaver.damage")) {
+            if (feedback) {
+                feedbackManager.sendFeedback(location, BlockSaverFeedback.PERMISSIONS_FAIL, player);
+            }
+
+            return false;
+        }
+
         if (!canToolDamageBlock(location, player.getItemInHand())) {
-            feedbackManager.sendFeedback(location, BlockSaverFeedback.HIT_FAIL, player);
+            if (feedback) {
+                feedbackManager.sendFeedback(location, BlockSaverFeedback.HIT_FAIL, player);
+            }
             return false;
         }
 
         return true;
-    }
-
-    private boolean canPlayerBreakBlock(final Location location, final Player player) {
-        return canToolDamageBlock(location, player.getItemInHand());
     }
 
     public boolean attemptReinforcement(final Location location, final Material reinforcementMaterial, final Player player) {
@@ -178,6 +184,11 @@ public final class ReinforcementManager {
 
         if (!isReinforceable(block)) {
             feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
+            return false;
+        }
+
+        if (!player.hasPermission("blocksaver.reinforce")) {
+            feedbackManager.sendFeedback(location, BlockSaverFeedback.PERMISSIONS_FAIL, player);
             return false;
         }
 
@@ -372,7 +383,7 @@ public final class ReinforcementManager {
             return false;
         }
 
-        if (!canPlayerBreakBlock(location, player)) {
+        if (!canPlayerDamageBlock(location, player, false)) {
             return false;
         }
 

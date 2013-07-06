@@ -53,13 +53,13 @@ public class FeedbackManager {
                 if (enableLogging) {
                     prismBridge.logCustomEvent(reinforcement, player, BlockSaverPrismBridge.ENFORCE_EVENT);
                 }
-                if (infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
+                if (infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback() && player.hasPermission("blocksaver.feedback.reinforce.success")) {
                     player.sendMessage(ChatColor.GRAY + "Reinforced a block.");
                 }
                 break;
             case REINFORCE_FAIL:
                 location.getWorld().playSound(location, reinforceFailSound, 1.0f, PITCH_SHIFT);
-                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
+                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback() && player.hasPermission("blocksaver.feedback.reinforce.fail")) {
                     player.sendMessage(ChatColor.GRAY + "Failed to reinforce a block.");
                 }
                 break;
@@ -67,7 +67,7 @@ public class FeedbackManager {
                 if (player == null) {
                     break;
                 }
-                if (infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
+                if (infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback() && player.hasPermission("blocksaver.feedback.damage.success")) {
                     player.sendMessage(ChatColor.GRAY + "Damaged a reinforced block.");
                 }
                 if (useParticleEffects) {
@@ -81,14 +81,20 @@ public class FeedbackManager {
                 break;
             case DAMAGE_FAIL:
                 location.getWorld().playEffect(location, reinforcementDamageFailEffect, 0);
-                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
+                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback() && player.hasPermission("blocksaver.feedback.damage.fail")) {
                     player.sendMessage(ChatColor.GRAY + "Failed to damage a reinforced block.");
                 }
                 break;
             case HIT_FAIL:
                 location.getWorld().playSound(location, hitFailSound, 1.0f, 0f);
-                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback()) {
+                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback() && player.hasPermission("blocksaver.feedback.hit")) {
                     player.sendMessage(ChatColor.GRAY + "Your tool is insufficient to damage this reinforced block.");
+                }
+                break;
+            case PERMISSIONS_FAIL:
+                location.getWorld().playSound(location, hitFailSound, 1.0f, 0f);
+                if (player != null && infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback() && player.hasPermission("blocksaver.feedback.permissions")) {
+                    player.sendMessage(ChatColor.GRAY + "You do not have the necessary permissions for this action.");
                 }
                 break;
             default:
