@@ -42,7 +42,7 @@ public final class BlockSaverListener implements Listener {
         this.mobsInteractWithReinforcedBlocks = configurationContext.mobsInteractWithReinforcedBlocks;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockPlace(final BlockPlaceEvent event) {
         // If a block is being placed somewhere where there is already a reinforcement value, the reinforcement value is removed.
         // This is to prevent "reinforcement transfers" to blocks which could not normally obtain reinforcements.
@@ -55,7 +55,7 @@ public final class BlockSaverListener implements Listener {
         reinforcementManager.removeReinforcement(location);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockBreak(final BlockBreakEvent event) {
         final Location location = event.getBlock().getLocation();
 
@@ -68,7 +68,7 @@ public final class BlockSaverListener implements Listener {
         event.setCancelled(!reinforcementManager.attemptToBreakBlock(location, event.getPlayer()));
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockInteract(final PlayerInteractEvent event) {
         final Player player = event.getPlayer();
         final Block block = event.getClickedBlock();
@@ -112,7 +112,7 @@ public final class BlockSaverListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockBurn(final BlockBurnEvent event) {
         final Location location = event.getBlock().getLocation();
 
@@ -128,7 +128,7 @@ public final class BlockSaverListener implements Listener {
         reinforcementManager.damageBlock(location, null, BlockSaverDamageCause.FIRE);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockExplode(final EntityExplodeEvent event) {
         if (event.blockList().isEmpty()) {
             return;
@@ -153,7 +153,7 @@ public final class BlockSaverListener implements Listener {
         reinforcementManager.explodeBlocks(event.blockList(), entityType);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockPhysics(final BlockPhysicsEvent event) {
         final Block block = event.getBlock();
         final Location location = block.getLocation();
@@ -176,7 +176,7 @@ public final class BlockSaverListener implements Listener {
         reinforcementManager.removeReinforcement(location);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
         final Block piston = event.getBlock();
         final BlockFace direction = event.getDirection();
@@ -212,7 +212,7 @@ public final class BlockSaverListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPistonRetract(final BlockPistonRetractEvent event) {
         if (!event.isSticky()) {
             return;
@@ -233,7 +233,7 @@ public final class BlockSaverListener implements Listener {
         reinforcementManager.moveReinforcement(block, direction.getOppositeFace());
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockFade(final BlockFadeEvent event) {
         final Block block = event.getBlock();
         final Location location = block.getLocation();
@@ -255,7 +255,7 @@ public final class BlockSaverListener implements Listener {
         reinforcementManager.removeReinforcement(location);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onWaterPassThrough(final BlockFromToEvent event) {
         final Location location = event.getToBlock().getLocation();
 
@@ -277,7 +277,7 @@ public final class BlockSaverListener implements Listener {
         reinforcementManager.removeReinforcement(location);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onEntityChangeBlock(final EntityChangeBlockEvent event) {
         final Block block = event.getBlock();
         final Location location = block.getLocation();
