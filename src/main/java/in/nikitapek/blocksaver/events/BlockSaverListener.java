@@ -317,5 +317,14 @@ public final class BlockSaverListener implements Listener {
                 event.setCancelled(true);
             }
         }
+
+        // Prevent sand and gravel from falling, if the plugin is configured to do so. Otherwise, their reinforcements are removed.
+        if (EntityType.FALLING_BLOCK.equals(entityType) && (Material.SAND.equals(fromMaterial) || Material.GRAVEL.equals(fromMaterial))) {
+            if (allowReinforcedBlockPhysics) {
+                reinforcementManager.removeReinforcement(location);
+            } else {
+                event.setCancelled(true);
+            }
+        }
     }
 }
