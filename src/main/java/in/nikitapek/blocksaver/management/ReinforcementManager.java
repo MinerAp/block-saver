@@ -284,9 +284,6 @@ public final class ReinforcementManager {
             removeReinforcement(location);
             return;
         }
-
-        // TODO: Remove this.
-        //infoManager.writeReinforcementToMetadata(reinforcement);
     }
 
     public void reinforce(final Location location, final String playerName) {
