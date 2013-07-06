@@ -86,6 +86,14 @@ public final class BlockSaverUtil {
     }
 
     public static void playMusicalEffect(final Location location, final int reinforcementValue) {
-        location.getWorld().playSound(location, Sound.NOTE_PIANO, 1.0f, reinforcementValue);
+        // Because 2 is the highest pitch value (the sound is played at twice the regular speed), then we set pitch to 2 and then lower the pitch depending on how high the RV is.
+        float pitch = (2 - reinforcementValue * 0.1f);
+
+        // Pitch ranges from 0.5 to 2.0 so for RV of 15 or higher the sound does not go lower.
+        if (pitch < 0.5) {
+            pitch = 0.5f;
+        }
+
+        location.getWorld().playSound(location, Sound.NOTE_PIANO, 1.0f, pitch);
     }
 }
