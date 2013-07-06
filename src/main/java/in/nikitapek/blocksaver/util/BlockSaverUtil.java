@@ -20,7 +20,7 @@ public final class BlockSaverUtil {
 
     private BlockSaverUtil() {}
 
-    public static void sendParticleEffect(final Location location, final float reinforcementValue) {
+    public static void sendParticleEffect(final Location location, final int reinforcementValue) {
         //final PacketContainer particle = ProtocolLibrary.getProtocolManager().createPacket(PARTICLE_EFFECT_PACKET);
         //int data = DEFAULT_POTION_EFFECT;
 
@@ -30,7 +30,7 @@ public final class BlockSaverUtil {
         fireworkMeta.setPower(1);
         Color color;
 
-        switch ((int) reinforcementValue) {
+        switch (reinforcementValue) {
             case 0:
                 // If the block is not reinforced, but has just been damaged as a reinforced block (presumably due to the grace period), then we play the "nearly broken" effect.
                 color = Color.RED;
@@ -56,7 +56,7 @@ public final class BlockSaverUtil {
         firework.setFireworkMeta(fireworkMeta);
 
         /**
-        switch ((int) reinforcementValue) {
+        switch (reinforcementValue) {
             case -1:
                 // If the block is not reinforced, but has just been damaged as a reinforced block (presumably due to the grace period), then we play the "nearly broken" effect.
                 data = 9;

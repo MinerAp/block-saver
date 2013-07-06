@@ -71,7 +71,7 @@ public class FeedbackManager {
                     player.sendMessage(ChatColor.GRAY + "Damaged a reinforced block.");
                 }
                 if ("visual".equals(primaryFeedback)) {
-                    BlockSaverUtil.sendParticleEffect(location, infoManager.getReinforcement(location).getReinforcementValue());
+                    BlockSaverUtil.sendParticleEffect(location, (int) infoManager.getReinforcement(location).getReinforcementValue());
                 } else if ("auditory".equals(primaryFeedback)) {
                     BlockSaverUtil.playMusicalEffect(location, (int) infoManager.getReinforcement(location).getReinforcementValue());
                 } else {
