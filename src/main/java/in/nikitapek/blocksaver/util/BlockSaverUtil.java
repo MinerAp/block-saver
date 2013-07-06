@@ -33,7 +33,7 @@ public final class BlockSaverUtil {
         Color color;
 
         switch ((int) reinforcementValue) {
-            case -1:
+            case 0:
                 // If the block is not reinforced, but has just been damaged as a reinforced block (presumably due to the grace period), then we play the "nearly broken" effect.
                 color = Color.RED;
                 break;
