@@ -75,7 +75,8 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             reinforceSuccessSound = Sound.valueOf(plugin.getConfig().getString("reinforceSuccessSound", Sound.ANVIL_USE.toString()));
             reinforceFailSound = Sound.valueOf(plugin.getConfig().getString("reinforceFailSound", Sound.BLAZE_HIT.toString()));
             hitFailSound = Sound.valueOf(plugin.getConfig().getString("hitFailSound", Sound.CREEPER_DEATH.toString()));
-        } catch (final IllegalArgumentException ex) {
+        }
+        catch (final IllegalArgumentException ex) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load one or more Effect values. Reverting to defaults.");
 
             reinforcementDamageFailEffect = Effect.EXTINGUISH;
@@ -174,7 +175,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
                         tools.add(BlockSaverUtil.ALL_TOOL_CODE);
                         toolRequirements.remove(blockMaterial);
                         break;
-                    } else{
+                    } else {
                         Material material = Material.getMaterial(split);
                         if (material != null) {
                             tools.add(material.getId());

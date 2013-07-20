@@ -148,17 +148,25 @@ public final class Reinforcement implements Comparable<Reinforcement> {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
 
         Reinforcement that = (Reinforcement) obj;
 
-        if (timeCreated != that.timeCreated) return false;
-        if (Float.compare(that.lastMaximumValue, lastMaximumValue) != 0) return false;
-        if (timeStamp != that.timeStamp) return false;
-        if (Float.compare(that.value, value) != 0) return false;
-        if (!creatorName.equals(that.creatorName)) return false;
-        if (!location.equals(that.location)) return false;
+        if (timeCreated != that.timeCreated)
+            return false;
+        if (Float.compare(that.lastMaximumValue, lastMaximumValue) != 0)
+            return false;
+        if (timeStamp != that.timeStamp)
+            return false;
+        if (Float.compare(that.value, value) != 0)
+            return false;
+        if (!creatorName.equals(that.creatorName))
+            return false;
+        if (!location.equals(that.location))
+            return false;
 
         return true;
     }

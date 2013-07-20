@@ -34,7 +34,8 @@ public final class BlockSaverPrismBridge {
             Prism.getActionRegistry().registerCustomAction(plugin, ENFORCE_EVENT);
             Prism.getActionRegistry().registerCustomAction(plugin, DAMAGE_EVENT);
             Prism.getHandlerRegistry().registerCustomHandler(plugin, BlockSaverAction.class);
-        } catch (InvalidActionException e) {
+        }
+        catch (InvalidActionException e) {
             e.printStackTrace();
         }
     }

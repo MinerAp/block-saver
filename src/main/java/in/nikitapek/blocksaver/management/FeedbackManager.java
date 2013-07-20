@@ -48,7 +48,8 @@ public class FeedbackManager {
 
         try {
             prismBridge = new BlockSaverPrismBridge(configurationContext.plugin);
-        } catch (final NoClassDefFoundError ex) {
+        }
+        catch (final NoClassDefFoundError ex) {
             configurationContext.plugin.getLogger().log(Level.WARNING, "\"enableLogging\" true but Prism not found. Logging will not be enabled.");
             return;
         }
