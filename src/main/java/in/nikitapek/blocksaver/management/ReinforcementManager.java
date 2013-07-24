@@ -271,7 +271,7 @@ public final class ReinforcementManager {
         // Damage the reinforcement on the block.
         // If the cause of damage is TNT, handle the RV decrease specially.
         if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
-            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue()-((float) Math.pow(getMaterialReinforcementCoefficient(reinforcement.getBlock().getType()), 2)/100));
+            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - ((float) Math.pow(getMaterialReinforcementCoefficient(reinforcement.getBlock().getType()), 2) / 100));
         } else {
             reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1);
         }
@@ -299,7 +299,6 @@ public final class ReinforcementManager {
         final Location properLocation = getProperLocation(location);
         final Block block = properLocation.getBlock();
         final Chunk chunk = properLocation.getChunk();
-
 
         // Confirm that the reinforcement list is already tracking the chunk and location.
         if (!infoManager.getReinforcements().containsKey(chunk) || !infoManager.getReinforcements().get(chunk).contains(properLocation)) {
@@ -421,7 +420,7 @@ public final class ReinforcementManager {
             }
 
             // This probably shouldn't be here...
-            //removeReinforcement(location);
+            // removeReinforcement(location);
             feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, null);
             iter.remove();
         }

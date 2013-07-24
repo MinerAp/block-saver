@@ -64,7 +64,7 @@ public final class BlockSaverInfoManager extends InfoManager {
         reinforcementSet.clear();
 
         // This is to prevent a ConcurrentModificationException, because the getReinforcement() method below will erase an invalid reinforcement from the reinforcements Map.
-        final Map<Chunk, List<Location>> reinforcementsCopy = new HashMap < Chunk, List<Location>>();
+        final Map<Chunk, List<Location>> reinforcementsCopy = new HashMap<Chunk, List<Location>>();
         reinforcementsCopy.putAll(reinforcements);
 
         for (final Entry<Chunk, List<Location>> entry : reinforcementsCopy.entrySet()) {

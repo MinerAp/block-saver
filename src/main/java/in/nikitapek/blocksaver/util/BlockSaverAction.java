@@ -51,7 +51,7 @@ public final class BlockSaverAction extends GenericAction {
     }
 
     private void setReinforcementFromData() {
-        if(reinforcement != null || data == null){
+        if (reinforcement != null || data == null) {
             return;
         }
 
