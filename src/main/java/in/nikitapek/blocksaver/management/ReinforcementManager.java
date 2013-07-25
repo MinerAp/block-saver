@@ -236,7 +236,7 @@ public final class ReinforcementManager {
         }
     }
 
-    public void damageBlock(final Location location, final Player player, BlockSaverDamageCause damageCause) {
+    public void damageBlock(final Location location, final Player player, final BlockSaverDamageCause damageCause) {
         final Reinforcement reinforcement = infoManager.getReinforcement(location);
 
         if (reinforcement == null) {
