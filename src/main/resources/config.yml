@@ -12,7 +12,7 @@
 #   "auditory" mode makes the plugin use auditory feedback (which changes based on the block's RV).
 #   "off" mode uses the feedback defined below for damage events.
 # Default: visual
-primaryFeedback: true
+primaryFeedback: visual
 
 ## The name of the effect to be played when a player fails to damage a reinforced block.
 # Note: please use an effect contained within the Effect class.
