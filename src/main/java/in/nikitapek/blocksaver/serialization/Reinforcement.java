@@ -1,6 +1,6 @@
 package in.nikitapek.blocksaver.serialization;
 
-import com.amshulman.mbapi.MbapiPlugin;
+import in.nikitapek.blocksaver.BlockSaverPlugin;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
 import org.bukkit.Location;
@@ -15,7 +15,7 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     private float lastMaximumValue;
     private long timeCreated;
 
-    private static MbapiPlugin plugin;
+    private static BlockSaverPlugin plugin;
     private static int gracePeriodTime;
 
     public Reinforcement(final Location location) {
@@ -34,7 +34,7 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     }
 
     public static void initialize(BlockSaverConfigurationContext configurationContext) {
-        plugin = configurationContext.plugin;
+        plugin = (BlockSaverPlugin) configurationContext.plugin;
         gracePeriodTime = configurationContext.gracePeriodTime;
     }
 
@@ -115,6 +115,10 @@ public final class Reinforcement implements Comparable<Reinforcement> {
 
         lastMaximumValue = getBlock().getMetadata("RLMV").get(0).asInt();
         return lastMaximumValue;
+    }
+
+    public int getReinforcementValueCoefficient() {
+         return plugin.reinforcementManager.getMaterialReinforcementCoefficient(getBlock().getType());
     }
 
     public void setReinforcementValue(final float value) {
