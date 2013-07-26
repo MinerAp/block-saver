@@ -8,13 +8,21 @@
 	<name>BlockSaver</name>
 	<version>${mbapi.version}.0</version>
 	<description>A plugin to provide block reinforcement for the purposes of block protection.</description>
-    <url>http://dev.bukkit.org/server-mods/blocksaver/</url>
+	<url>http://dev.bukkit.org/server-mods/blocksaver/</url>
 
 	<parent>
 		<groupId>com.amshulman</groupId>
 		<artifactId>bukkit-parent</artifactId>
 		<version>0.12</version>
 	</parent>
+
+	<repositories>
+		<repository>
+			<id>minerap-repo</id>
+			<name>MinerAp</name>
+			<url>https://www.minerap.com/repository/</url>
+		</repository>
+	</repositories>
 
 	<properties>
 		<prism.version>1.6.3</prism.version>
