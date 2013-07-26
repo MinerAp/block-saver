@@ -394,20 +394,24 @@ public final class ReinforcementManager {
     }
 
     public void explodeBlocks(final List<Block> blockList, final EntityType entityType) {
-        // If the exploding entity is not configured to interact with blocks, then the explosion fails.
-        if ((EntityType.WITHER.equals(entityType) || EntityType.WITHER_SKULL.equals(entityType)) && !mobsInteractWithReinforcedBlocks) {
-            return;
-        } else if (EntityType.PRIMED_TNT.equals(entityType) && !tntDamagesReinforcedBlocks) {
-            return;
-        } else if (EntityType.ENDER_DRAGON.equals(entityType) && !enderdragonInteractWithReinforcedBlocks) {
-            return;
-        }
 
         for (final Iterator<Block> iter = blockList.iterator(); iter.hasNext();) {
             final Block block = iter.next();
             final Location location = block.getLocation();
 
             if (!isReinforced(location)) {
+                continue;
+            }
+
+            // If the exploding entity is not configured to interact with blocks, then the explosion fails.
+            if ((EntityType.WITHER.equals(entityType) || EntityType.WITHER_SKULL.equals(entityType)) && !mobsInteractWithReinforcedBlocks) {
+                iter.remove();
+                continue;
+            } else if (EntityType.PRIMED_TNT.equals(entityType) && !tntDamagesReinforcedBlocks) {
+                iter.remove();
+                continue;
+            } else if (EntityType.ENDER_DRAGON.equals(entityType) && !enderdragonInteractWithReinforcedBlocks) {
+                iter.remove();
                 continue;
             }
 
