@@ -94,6 +94,10 @@ public final class ReinforcementManager {
         return reinforcementValue < coefficient;
     }
 
+    public Reinforcement getReinforcement(final Location location) {
+        return infoManager.getReinforcement(location);
+    }
+
     public int getMaterialReinforcementCoefficient(final Material material) {
         return isMaterialReinforceable(material) ? reinforceableBlocks.get(material) : NO_REINFORCEMENT_VALUE;
     }
@@ -206,7 +210,7 @@ public final class ReinforcementManager {
             }
         }
 
-        reinforce(location, additionalReinforcementValue, playerName);
+        reinforce(location, playerName, additionalReinforcementValue);
 
         feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
         return true;
@@ -214,7 +218,7 @@ public final class ReinforcementManager {
 
     public void moveReinforcement(final Block block, final BlockFace direction) {
         final Reinforcement previousReinforcement = infoManager.getReinforcement(block.getLocation());
-        infoManager.setReinforcement(block.getRelative(direction).getLocation(), previousReinforcement.getReinforcementValue(), previousReinforcement.getCreatorName());
+        infoManager.setReinforcement(block.getRelative(direction).getLocation(), previousReinforcement.getCreatorName(), previousReinforcement.getReinforcementValue());
         removeReinforcement(block.getLocation());
     }
 
@@ -232,7 +236,7 @@ public final class ReinforcementManager {
         final int maximumReinforcement = getMaterialReinforcementCoefficient(reinforcement.getBlock().getType());
 
         if (reinforcement.getReinforcementValue() > maximumReinforcement) {
-            infoManager.setReinforcement(reinforcement.getLocation(), maximumReinforcement, reinforcement.getCreatorName());
+            infoManager.setReinforcement(reinforcement.getLocation(), reinforcement.getCreatorName(), maximumReinforcement);
         }
     }
 
@@ -287,27 +291,19 @@ public final class ReinforcementManager {
     }
 
     public void reinforce(final Location location, final String playerName) {
-        infoManager.reinforce(location, getMaterialReinforcementCoefficient(location.getBlock().getType()), playerName);
+        infoManager.reinforce(location, playerName, getMaterialReinforcementCoefficient(location.getBlock().getType()));
     }
 
-    public void reinforce(final Location location, final float amount, final String playerName) {
-        infoManager.reinforce(location, amount, playerName);
+    public void reinforce(final Location location, final String playerName, final float amount) {
+        infoManager.reinforce(location, playerName, amount);
     }
 
     public boolean isReinforced(final Location location) {
         // If a part of a piston was damaged, retrieves the base of the piston.
         final Location properLocation = getProperLocation(location);
         final Block block = properLocation.getBlock();
-        final Chunk chunk = properLocation.getChunk();
 
-        // Confirm that the reinforcement list is already tracking the chunk and location.
-        if (!infoManager.getReinforcements().containsKey(chunk) || !infoManager.getReinforcements().get(chunk).contains(properLocation)) {
-            return false;
-        }
-
-        // If the block is being tracked by the reinforcement list, but does not have all the metadata required to be a proper reinforced block, it is removed from the list.
-        if (!block.hasMetadata("RV") || !block.hasMetadata("RTS") || !block.hasMetadata("RCN") || !block.hasMetadata("RLMV") || !block.hasMetadata("RTC")) {
-            removeReinforcement(properLocation);
+        if (!infoManager.isReinforced(properLocation)) {
             return false;
         }
 
@@ -321,17 +317,7 @@ public final class ReinforcementManager {
     }
 
     public void removeReinforcement(final Location location) {
-        final Location properLocation = getProperLocation(location);
-        final Chunk chunk = properLocation.getChunk();
-
-        if (infoManager.getReinforcements().containsKey(chunk)) {
-            infoManager.getReinforcements().get(chunk).remove(properLocation);
-            if (infoManager.getReinforcements().get(chunk).isEmpty()) {
-                infoManager.getReinforcements().remove(chunk);
-            }
-        }
-
-        Reinforcement.removeFromMetadata(properLocation.getBlock());
+        infoManager.removeReinforcement(getProperLocation(location));
     }
 
     public Location getProperLocation(final Location location) {

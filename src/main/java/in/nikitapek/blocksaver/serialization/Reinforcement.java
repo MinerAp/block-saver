@@ -5,149 +5,88 @@ import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.metadata.FixedMetadataValue;
 
 public final class Reinforcement implements Comparable<Reinforcement> {
-    private final Location location;
-    private float value;
-    private long timeStamp;
-    private String creatorName;
-    private float lastMaximumValue;
-    private long timeCreated;
-
     private static BlockSaverPlugin plugin;
     private static int gracePeriodTime;
+    private static boolean accumulateReinforcementValues;
 
-    public Reinforcement(final Location location) {
-        this.location = location;
-        setReinforcementValue(getReinforcementValue());
-        setCreatorName(getCreatorName());
-        setLastMaximumValue(getLastMaximumValue());
-        setCreationTime(getCreationTime());
-    }
+    private final Location location;
+    private final String creatorName;
+    private long timeCreated;
+    private float value;
+    private float lastMaximumValue;
+    private long timeStamp;
 
-    public Reinforcement(final Location location, final float value, final String creatorName) {
+    public Reinforcement(final Location location, final String creatorName, final float value) {
         this.location = location;
+        this.creatorName = creatorName;
+        this.timeCreated = System.currentTimeMillis();
         setReinforcementValue(value);
-        setCreatorName(creatorName);
-        setCreationTime(System.currentTimeMillis());
     }
 
     public static void initialize(BlockSaverConfigurationContext configurationContext) {
         plugin = (BlockSaverPlugin) configurationContext.plugin;
         gracePeriodTime = configurationContext.gracePeriodTime;
+        accumulateReinforcementValues = configurationContext.accumulateReinforcementValues;
     }
 
-    public void updateTimeStamp() {
-        setTimeStamp(System.currentTimeMillis());
-    }
-
-    public void writeToMetadata() {
-        getBlock().setMetadata("RV", new FixedMetadataValue(plugin, value));
-        getBlock().setMetadata("RTS", new FixedMetadataValue(plugin, timeStamp));
-        getBlock().setMetadata("RCN", new FixedMetadataValue(plugin, creatorName));
-        getBlock().setMetadata("RLMV", new FixedMetadataValue(plugin, lastMaximumValue));
-        getBlock().setMetadata("RTC", new FixedMetadataValue(plugin, timeCreated));
-    }
-
-    public static void removeFromMetadata(final Block block) {
-        block.removeMetadata("RV", plugin);
-        block.removeMetadata("RTS", plugin);
-        block.removeMetadata("RCN", plugin);
-        block.removeMetadata("RLMV", plugin);
-        block.removeMetadata("RTC", plugin);
-    }
-
-    public Block getBlock() {
-        return location.getBlock();
-    }
-
-    public Location getLocation() {
-        return location;
-    }
-
-    public float getReinforcementValue() {
-        if (!getBlock().hasMetadata("RV")) {
-            throw new IllegalArgumentException("An RV for a non-reinforced block was attempted to be retrieved");
-        }
-
-        value = getBlock().getMetadata("RV").get(0).asInt();
-        return value;
-    }
-
-    public long getTimeStamp() {
-        if (!getBlock().hasMetadata("RTS")) {
-            setTimeStamp(System.currentTimeMillis());
-            // throw new IllegalArgumentException("An RTS for a non-reinforced block was attempted to be retrieved");
-        }
-
-        timeStamp = getBlock().getMetadata("RTS").get(0).asLong();
-        return timeStamp;
+    private void updateTimeStamp() {
+        this.timeStamp = System.currentTimeMillis();
     }
 
     public boolean isJustCreated() {
         return (System.currentTimeMillis() - getCreationTime()) < (gracePeriodTime * BlockSaverUtil.MILLISECONDS_PER_SECOND);
     }
 
-    public long getCreationTime() {
-        if (!getBlock().hasMetadata("RTC")) {
-            throw new IllegalArgumentException("An RTC for a non-reinforced block was attempted to be retrieved");
-        }
-
-        timeCreated = getBlock().getMetadata("RTC").get(0).asLong();
-        return timeCreated;
-    }
-
-    public String getCreatorName() {
-        if (!getBlock().hasMetadata("RTS")) {
-            throw new IllegalArgumentException("An RCN for a non-reinforced block was attempted to be retrieved");
-        }
-
-        creatorName = getBlock().getMetadata("RCN").get(0).asString();
-        return creatorName;
-    }
-
-    public float getLastMaximumValue() {
-        if (!getBlock().hasMetadata("RLMV")) {
-            setLastMaximumValue(getReinforcementValue());
-            // throw new IllegalArgumentException("An RLMV for a non-reinforced block was attempted to be retrieved");
-        }
-
-        lastMaximumValue = getBlock().getMetadata("RLMV").get(0).asInt();
-        return lastMaximumValue;
+    public Block getBlock() {
+        return location.getBlock();
     }
 
     public int getReinforcementValueCoefficient() {
-         return plugin.reinforcementManager.getMaterialReinforcementCoefficient(getBlock().getType());
+        return plugin.reinforcementManager.getMaterialReinforcementCoefficient(getBlock().getType());
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public String getCreatorName() {
+        return creatorName;
+    }
+
+    public long getCreationTime() {
+        return timeCreated;
+    }
+
+    public float getReinforcementValue() {
+        return value;
+    }
+
+    public float getLastMaximumValue() {
+        return  lastMaximumValue;
+    }
+
+    public long getTimeStamp() {
+        return timeStamp;
     }
 
     public void setReinforcementValue(final float value) {
-        this.value = value;
+        final int coefficient = getReinforcementValueCoefficient();
 
-        getBlock().setMetadata("RV", new FixedMetadataValue(plugin, value));
+        if (!accumulateReinforcementValues && value > coefficient) {
+            this.value = coefficient;
+        } else {
+            this.value = value;
+        }
 
-        setLastMaximumValue(Math.max(value, getLastMaximumValue()));
+        lastMaximumValue = Math.max(value, lastMaximumValue);
         updateTimeStamp();
     }
 
-    private void setTimeStamp(final long timeStamp) {
-        this.timeStamp = timeStamp;
-        getBlock().setMetadata("RTS", new FixedMetadataValue(plugin, timeStamp));
-    }
-
-    private void setCreatorName(final String creatorName) {
-        this.creatorName = creatorName;
-        getBlock().setMetadata("RCN", new FixedMetadataValue(plugin, creatorName));
-    }
-
-    private void setLastMaximumValue(final float lastMaximumValue) {
-        this.lastMaximumValue = lastMaximumValue;
-        getBlock().setMetadata("RLMV", new FixedMetadataValue(plugin, lastMaximumValue));
-    }
-
+    // TODO: this is only public for rollback functionality. A better system should be put in place to prevent alteration of creation time.
     public void setCreationTime(final long timeCreated) {
         this.timeCreated = timeCreated;
-        getBlock().setMetadata("RTC", new FixedMetadataValue(plugin, timeCreated));
     }
 
     @Override

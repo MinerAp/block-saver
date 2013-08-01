@@ -58,7 +58,7 @@ public class FeedbackManager {
     }
 
     public void sendFeedback(final Location location, final BlockSaverFeedback feedback, final Player player) {
-        Reinforcement reinforcement = infoManager.getReinforcement(location);
+        final Reinforcement reinforcement = infoManager.getReinforcement(location);
 
         switch (feedback) {
             case REINFORCE_SUCCESS:

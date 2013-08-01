@@ -106,7 +106,7 @@ public final class BlockSaverAction extends GenericAction {
 
         // If the reinforcement or damage event being rolled back or restored is older than the current existing reinforcement, then it does not need to occur.
         if (reinforcementManager.isReinforced(getLoc())) {
-            if (new Reinforcement(getLoc()).getCreationTime() > actionData.creationTime) {
+            if (reinforcementManager.getReinforcement(getLoc()).getCreationTime() > actionData.creationTime) {
                 return new ChangeResult(ChangeResultType.SKIPPED, null);
             }
         }
@@ -133,22 +133,22 @@ public final class BlockSaverAction extends GenericAction {
             // If the block is reinforced, then we must confirm that this is the reinforcement to be removed before we continue.
             // If the current reinforcement belongs to the person whose enforcement is being rolled back, then it is removed.
             // Otherwise it remains because it must not be the reinforcement intended to be removed.
-            if (getPlayerName().equals(new Reinforcement(getLoc()).getCreatorName())) {
+            if (getPlayerName().equals(reinforcementManager.getReinforcement(getLoc()).getCreatorName())) {
                 reinforcementManager.removeReinforcement(getLoc());
                 return ChangeResultType.APPLIED;
             }
         } else {
             // We restore the reinforcement prior to the damage if one does not exist at that location currently.
             if (!reinforcementManager.isReinforced(getLoc())) {
-                reinforcementManager.reinforce(getLoc(), 1, actionData.owner);
+                reinforcementManager.reinforce(getLoc(), actionData.owner, 1);
                 // The restored block must have the same creation time as the destroyed one.
-                new Reinforcement(getLoc()).setCreationTime(actionData.creationTime);
+                reinforcementManager.getReinforcement(getLoc()).setCreationTime(actionData.creationTime);
                 return ChangeResultType.APPLIED;
             }
 
             // If the same person owns the reinforcement now as the one who did when it was broken, then the damage event probably occurred on this block, and so must be rolled back.
-            if (actionData.owner.equals(new Reinforcement(getLoc()).getCreatorName())) {
-                reinforcementManager.reinforce(getLoc(), 1, actionData.owner);
+            if (actionData.owner.equals(reinforcementManager.getReinforcement(getLoc()).getCreatorName())) {
+                reinforcementManager.reinforce(getLoc(), actionData.owner, 1);
                 return ChangeResultType.APPLIED;
             }
         }
@@ -178,7 +178,7 @@ public final class BlockSaverAction extends GenericAction {
                 return ChangeResultType.APPLIED;
             }
 
-            reinforcementManager.reinforce(getLoc(), -1, getPlayerName());
+            reinforcementManager.reinforce(getLoc(), getPlayerName(), -1);
             return ChangeResultType.APPLIED;
         }
     }
