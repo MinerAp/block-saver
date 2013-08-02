@@ -9,7 +9,9 @@ import in.nikitapek.blocksaver.util.SupplementaryTypes;
 
 import java.util.HashMap;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 
 import com.amshulman.mbapi.management.InfoManager;
 import com.amshulman.mbapi.storage.TypeSafeStorageMap;
@@ -37,8 +39,10 @@ public final class BlockSaverInfoManager extends InfoManager {
 
         WorldContainer.initialize(storageManager);
         worldContainers = new TypeSafeMapImpl<>(new HashMap<String, WorldContainer>(), SupplementaryTypes.STRING, SupplementaryTypes.WORLD_CONTAINER);
-        worldContainers.put("world", new WorldContainer("world"));
-        worldContainers.put("world_nether", new WorldContainer("world_nether"));
+
+        for (World w : Bukkit.getWorlds()) {
+            worldContainers.put(w.getName(), new WorldContainer(w.getName()));
+        }
     }
 
     @Override
