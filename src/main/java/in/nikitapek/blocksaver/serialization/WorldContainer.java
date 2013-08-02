@@ -21,8 +21,7 @@ public final class WorldContainer {
     public WorldContainer(final String worldName) {
         //world = Bukkit.getWorld(worldName);
         reinforcements = storageManager.getStorageMap(worldName, SupplementaryTypes.REINFORCEMENT);
-        // TODO: This may be necessary.
-        //reinforcementsForWorld.load();
+        reinforcements.loadAll();
     }
 
     public static void initialize(final StorageManager storageManager) {
