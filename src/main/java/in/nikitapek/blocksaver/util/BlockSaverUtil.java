@@ -1,12 +1,15 @@
 package in.nikitapek.blocksaver.util;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.Firework;
 import org.bukkit.inventory.meta.FireworkMeta;
-import org.bukkit.util.Vector;
 
 public final class BlockSaverUtil {
     public static final short MILLISECONDS_PER_SECOND = 1000;
@@ -24,12 +27,11 @@ public final class BlockSaverUtil {
     private BlockSaverUtil() {}
 
     public static void sendParticleEffect(final Location location, final int reinforcementValue, final int reinforcementValueCoefficient) {
-        //final PacketContainer particle = ProtocolLibrary.getProtocolManager().createPacket(PARTICLE_EFFECT_PACKET);
-        //int data = DEFAULT_POTION_EFFECT;
+        World world = location.getWorld();
 
-        Firework firework = location.getWorld().spawn(location, Firework.class);
-        firework.setVelocity(new Vector(0, -60, 0));
+        Firework firework = world.spawn(new Location(world, location.getBlockX() + 0.5d, location.getBlockY() + 0.5d, location.getBlockZ() + 0.5d), Firework.class);
         FireworkMeta fireworkMeta = firework.getFireworkMeta();
+        fireworkMeta.clearEffects();
         fireworkMeta.setPower(1);
         Color color;
 
@@ -60,37 +62,27 @@ public final class BlockSaverUtil {
                 break;
         }
 
-        fireworkMeta.addEffects(FireworkEffect.builder().withColor(color).with(FireworkEffect.Type.BALL_LARGE).build());
+        fireworkMeta.addEffects(FireworkEffect.builder().withColor(color).with(FireworkEffect.Type.BALL).build());
         firework.setFireworkMeta(fireworkMeta);
 
-        /**
-        switch (reinforcementValue) {
-            case -1:
-                // If the block is not reinforced, but has just been damaged as a reinforced block (presumably due to the grace period), then we play the "nearly broken" effect.
-                data = 9;
-                break;
-            case 1:
-                data = 9;
-                break;
-            case 2:
-                data = 5;
-                break;
-            case 3:
-                data = 3;
-                break;
-            case 4:
-                data = 4;
-                break;
-            case 5:
-                data = 7;
-                break;
-            case 6:
-                data = 0;
-                break;
-            default:
-                break;
+        try {
+            Object nms_world = getMethod(world.getClass(), "getHandle").invoke(world);
+            getMethod(nms_world.getClass(), "broadcastEntityEffect").invoke(nms_world, new Object[] { getMethod(firework.getClass(), "getHandle").invoke(firework), (byte) 17 });
+            firework.remove();
         }
-         **/
+        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static Method getMethod(Class<?> cl, String method) {
+        for (Method m : cl.getMethods()) {
+            if (m.getName().equals(method)) {
+                return m;
+            }
+        }
+        return null;
     }
 
     public static void playMusicalEffect(final Location location, final int reinforcementValue) {
