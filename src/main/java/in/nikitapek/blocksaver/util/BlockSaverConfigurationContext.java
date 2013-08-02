@@ -1,25 +1,27 @@
 package in.nikitapek.blocksaver.util;
 
-import com.amshulman.mbapi.MbapiPlugin;
-import com.amshulman.mbapi.util.ConfigurationContext;
-import com.amshulman.typesafety.TypeSafeMap;
-import com.amshulman.typesafety.gson.TypeSafeSetTypeAdapter;
-import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.FeedbackManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.serialization.ReinforcementTypeAdapter;
+
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.logging.Level;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.logging.Level;
+import com.amshulman.mbapi.MbapiPlugin;
+import com.amshulman.mbapi.util.ConfigurationContext;
+import com.amshulman.typesafety.TypeSafeMap;
+import com.amshulman.typesafety.gson.TypeSafeSetTypeAdapter;
+import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 
 public final class BlockSaverConfigurationContext extends ConfigurationContext {
     private final static double EXTINGUISH_CHANCE = 0.9;

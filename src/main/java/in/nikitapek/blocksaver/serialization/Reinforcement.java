@@ -3,6 +3,7 @@ package in.nikitapek.blocksaver.serialization;
 import in.nikitapek.blocksaver.BlockSaverPlugin;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
+
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 
