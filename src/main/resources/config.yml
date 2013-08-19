@@ -129,6 +129,14 @@ mobsInteractWithReinforcedBlocks: false
 enderdragonInteractWithReinforcedBlocks: false
 
 
+#======== Worlds ========#
+
+## List of worlds protected by BlockSaver.
+worlds:
+  - world
+  - world_nether
+
+
 #======== Advanced ========#
 
 ## Whether or not to integrate BlockSaver into Prism.

@@ -1,5 +1,7 @@
 package in.nikitapek.blocksaver.util;
 
+import com.amshulman.typesafety.TypeSafeSet;
+import com.amshulman.typesafety.impl.TypeSafeSetImpl;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.FeedbackManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
@@ -8,13 +10,11 @@ import in.nikitapek.blocksaver.serialization.ReinforcementTypeAdapter;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Effect;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.amshulman.mbapi.MbapiPlugin;
@@ -55,6 +55,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public final BlockSaverInfoManager infoManager;
     public final FeedbackManager feedbackManager;
 
+    public final TypeSafeSet<String> worlds;
     public final TypeSafeMap<Material, Integer> reinforceableBlocks;
     public final TypeSafeMap<Material, Integer> reinforcementBlocks;
     public final TypeSafeMap<Material, List<Integer>> toolRequirements;
@@ -64,6 +65,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public BlockSaverConfigurationContext(final MbapiPlugin plugin) {
         super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplementaryTypes.TREESET, SupplementaryTypes.REINFORCEMENT), new ReinforcementTypeAdapter());
 
+        worlds = new TypeSafeSetImpl<>(new HashSet<String>(), SupplementaryTypes.STRING);
         reinforceableBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
         reinforcementBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
         toolRequirements = new TypeSafeMapImpl<Material, List<Integer>>(new EnumMap<Material, List<Integer>>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.LIST);
@@ -125,6 +127,16 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         this.reinforcementHealingTime = (reinforcementHealingTime < 0) ? 5 : reinforcementHealingTime;
 
         ConfigurationSection configSection;
+
+        // Attempts to read the configurationSection containing the worlds protected by the plugin.
+        List<String> worldList = (List<String>) plugin.getConfig().getList("worlds");
+        if (worldList == null) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to load protected worlds list.");
+        } else {
+            for (final String world : worldList) {
+                worlds.add(world);
+            }
+        }
 
         // Attempts to read the configurationSection containing the keys and values storing the block reinforcement coefficients.
         configSection = plugin.getConfig().getConfigurationSection("reinforceableBlocks");

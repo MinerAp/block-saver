@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 
 import com.google.gson.reflect.TypeToken;
+import org.bukkit.World;
 
 public final class SupplementaryTypes {
     @SuppressWarnings("rawtypes")
