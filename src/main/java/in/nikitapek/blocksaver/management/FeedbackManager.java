@@ -91,8 +91,6 @@ public class FeedbackManager {
                     BlockSaverUtil.sendParticleEffect(location, (int) reinforcement.getReinforcementValue(), reinforcement.getReinforcementValueCoefficient());
                 } else if ("auditory".equals(primaryFeedback)) {
                     BlockSaverUtil.playMusicalEffect(location, (int) reinforcement.getReinforcementValue());
-                } else {
-                    location.getWorld().playEffect(location, reinforcementDamageSuccessEffect, 0);
                 }
                 if (isPrismBridged()) {
                     prismBridge.logCustomEvent(reinforcement, player, BlockSaverPrismBridge.DAMAGE_EVENT);
