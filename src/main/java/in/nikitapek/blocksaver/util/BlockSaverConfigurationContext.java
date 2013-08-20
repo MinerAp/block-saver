@@ -144,7 +144,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             plugin.getLogger().log(Level.SEVERE, "Failed to load reinforceable blocks list.");
         } else {
             for (final String materialName : configSection.getKeys(false)) {
-                final Material material = Material.getMaterial(materialName);
+                final Material material = loadMaterial(materialName);
                 final int value = configSection.getInt(materialName);
 
                 if (material != null && value > 0) {
@@ -163,7 +163,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
                 final int value = configSection.getInt(materialName);
 
                 if (value > 0 || value == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
-                    reinforcementBlocks.put(Material.getMaterial(materialName), value);
+                    reinforcementBlocks.put(loadMaterial(materialName), value);
                 } else {
                     plugin.getLogger().log(Level.WARNING, materialName + "has an invalid reinforcement value.");
                 }
@@ -175,7 +175,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             plugin.getLogger().log(Level.SEVERE, "Failed to load tool requirements list.");
         } else {
             for (final String materialName : configSection.getKeys(false)) {
-                final Material blockMaterial = Material.getMaterial(materialName);
+                final Material blockMaterial = loadMaterial(materialName);
                 final List<Integer> tools = new ArrayList<Integer>();
 
                 for (final String split : configSection.getString(materialName).split(",")) {
@@ -190,7 +190,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
                         toolRequirements.remove(blockMaterial);
                         break;
                     } else {
-                        Material material = Material.getMaterial(split);
+                        Material material = loadMaterial(split);
                         if (material != null) {
                             tools.add(material.getId());
                         }
@@ -204,7 +204,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
                     Bukkit.getLogger().log(Level.WARNING, "Tool requirements for the block " + blockMaterial.name() + " have been loaded more than once.");
                 }
 
-                toolRequirements.put(Material.getMaterial(materialName), tools);
+                toolRequirements.put(loadMaterial(materialName), tools);
             }
         }
 
@@ -217,6 +217,18 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         if (feedbackManager.isPrismBridged()) {
             BlockSaverAction.initialize(reinforcementManager);
         }
+    }
+
+    private Material loadMaterial(String materialName) {
+        int materialId;
+
+        try {
+            materialId = Integer.parseInt(materialName);
+        } catch(NumberFormatException e) {
+            return Material.getMaterial(materialName);
+        }
+
+        return Material.getMaterial(materialId);
     }
 
     public ReinforcementManager getReinforcementManager() {
