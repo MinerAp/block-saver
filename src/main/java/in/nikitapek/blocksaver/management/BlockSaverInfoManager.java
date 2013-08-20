@@ -119,7 +119,7 @@ public final class BlockSaverInfoManager extends InfoManager {
         return worldContainers.keySet();
     }
 
-    private boolean isWorldLoaded(String worldName) {
+    public boolean isWorldLoaded(String worldName) {
         return getLoadedWorlds().contains(worldName);
     }
 

@@ -57,6 +57,10 @@ public final class BlockSaverListener implements Listener {
         // This is to prevent "reinforcement transfers" to blocks which could not normally obtain reinforcements.
         final Location location = event.getBlock().getLocation();
 
+        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+            return;
+        }
+
         if (!reinforcementManager.isReinforced(location)) {
             return;
         }
@@ -67,6 +71,10 @@ public final class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockBreak(final BlockBreakEvent event) {
         final Location location = event.getBlock().getLocation();
+
+        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+            return;
+        }
 
         // If the block is not reinforced, this plugin does not stop the block break event.
         if (!reinforcementManager.isReinforced(location)) {
@@ -89,6 +97,10 @@ public final class BlockSaverListener implements Listener {
 
         final Location location = block.getLocation();
         final ItemStack item = player.getItemInHand();
+
+        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+            return;
+        }
 
         // If the player is not left-clicking, then the player is not attempting to reinforce or damage a block.
         if (!Action.LEFT_CLICK_BLOCK.equals(event.getAction())) {
@@ -125,6 +137,10 @@ public final class BlockSaverListener implements Listener {
     public void onBlockBurn(final BlockBurnEvent event) {
         final Location location = event.getBlock().getLocation();
 
+        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+            return;
+        }
+
         // If the block is not reinforced, it is allowed to burn normally.
         if (!reinforcementManager.isReinforced(location)) {
             return;
@@ -139,6 +155,10 @@ public final class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockExplode(final EntityExplodeEvent event) {
+        if (!reinforcementManager.isWorldActive(event.getLocation().getWorld().getName())) {
+            return;
+        }
+
         if (event.blockList().isEmpty()) {
             return;
         }
@@ -168,6 +188,10 @@ public final class BlockSaverListener implements Listener {
         final Location location = block.getLocation();
         final Material material = block.getType();
 
+        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+            return;
+        }
+
         // This is to ensure TNT-based physics events are not processed.
         if (!Material.SAND.equals(material) && !Material.GRAVEL.equals(material)) {
             return;
@@ -187,6 +211,10 @@ public final class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
+        if (!reinforcementManager.isWorldActive(event.getBlock().getLocation().getWorld().getName())) {
+            return;
+        }
+
         final Block piston = event.getBlock();
         final BlockFace direction = event.getDirection();
         final ListIterator<Block> iter = event.getBlocks().listIterator(event.getBlocks().size());
@@ -223,6 +251,10 @@ public final class BlockSaverListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPistonRetract(final BlockPistonRetractEvent event) {
+        if (!reinforcementManager.isWorldActive(event.getBlock().getLocation().getWorld().getName())) {
+            return;
+        }
+
         if (!event.isSticky()) {
             return;
         }
@@ -248,6 +280,10 @@ public final class BlockSaverListener implements Listener {
         final Location location = block.getLocation();
         final Material material = block.getType();
 
+        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+            return;
+        }
+
         if (!Material.SNOW.equals(material) && !Material.ICE.equals(material)) {
             return;
         }
@@ -267,6 +303,10 @@ public final class BlockSaverListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onWaterPassThrough(final BlockFromToEvent event) {
         final Location location = event.getToBlock().getLocation();
+
+        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+            return;
+        }
 
         if (!reinforcementManager.isReinforced(location)) {
             return;
@@ -293,6 +333,10 @@ public final class BlockSaverListener implements Listener {
         final Material fromMaterial = block.getType();
         final EntityType entityType = event.getEntityType();
         final Material toMaterial = event.getTo();
+
+        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+            return;
+        }
 
         if (!reinforcementManager.isReinforced(location)) {
             return;

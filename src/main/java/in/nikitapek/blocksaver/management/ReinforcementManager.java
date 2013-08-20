@@ -418,4 +418,8 @@ public final class ReinforcementManager {
             iter.remove();
         }
     }
+
+    public boolean isWorldActive(String worldName) {
+        return infoManager.isWorldLoaded(worldName);
+    }
 }
