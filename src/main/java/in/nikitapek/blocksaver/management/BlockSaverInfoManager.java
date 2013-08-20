@@ -72,24 +72,37 @@ public final class BlockSaverInfoManager extends InfoManager {
     }
 
     public Reinforcement getReinforcement(final Location location) {
-        final Reinforcement reinforcement = worldContainers.get(location.getWorld().getName()).getReinforcement(location);
+        String worldName = location.getWorld().getName();
+        if (!isWorldLoaded(worldName)) {
+            return null;
+        }
+
+        final Reinforcement reinforcement = worldContainers.get(worldName).getReinforcement(location);
         // TODO: Remove this possibly unecessary double-check.
         configurationContext.getReinforcementManager().floorReinforcement(reinforcement);
         return reinforcement;
     }
 
     public void setReinforcement(final Location location, final String playerName, final float value) {
-        worldContainers.get(location.getWorld().getName()).setReinforcement(location, playerName, value);
+        String worldName = location.getWorld().getName();
+        if (!isWorldLoaded(worldName)) {
+            return;
+        }
+
+        worldContainers.get(worldName).setReinforcement(location, playerName, value);
     }
 
     public void reinforce(final Location location, final String playerName, float value) {
-        final WorldContainer worldContainer = worldContainers.get(location.getWorld().getName());
+        String worldName = location.getWorld().getName();
+        if (!isWorldLoaded(worldName)) {
+            return;
+        }
 
         if (configurationContext.getReinforcementManager().isReinforced(location)) {
             value += getReinforcement(location).getReinforcementValue();
         }
 
-        worldContainer.setReinforcement(location, playerName, value);
+        worldContainers.get(worldName).setReinforcement(location, playerName, value);
     }
 
     public PlayerInfo getPlayerInfo(final String playerName) {
@@ -106,6 +119,10 @@ public final class BlockSaverInfoManager extends InfoManager {
         return worldContainers.keySet();
     }
 
+    private boolean isWorldLoaded(String worldName) {
+        return getLoadedWorlds().contains(worldName);
+    }
+
     public void removeReinforcement(final Location location) {
         setReinforcement(location, "", 0);
     }
@@ -114,7 +131,7 @@ public final class BlockSaverInfoManager extends InfoManager {
         final String worldName = location.getWorld().getName();
 
         // Confirm that the reinforcement list is already tracking the chunk and location.
-        if (!getLoadedWorlds().contains(worldName)) {
+        if (!isWorldLoaded(worldName)) {
             return false;
         }
         if (!worldContainers.get(worldName).isReinforced(location)) {
