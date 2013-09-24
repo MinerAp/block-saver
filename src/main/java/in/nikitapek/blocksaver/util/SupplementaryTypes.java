@@ -5,6 +5,7 @@ import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.serialization.WorldContainer;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -26,6 +27,7 @@ public final class SupplementaryTypes {
     public static final Type REINFORCEMENT = new TypeToken<Reinforcement>() {}.getType();
     public static final Type STRING = new TypeToken<String>() {}.getType();
     public static final Type WORLD_CONTAINER = new TypeToken<WorldContainer>() {}.getType();
+    public static final Type HASH_MAP = new TypeToken<HashMap>() {}.getType();
 
     private SupplementaryTypes() {}
 }

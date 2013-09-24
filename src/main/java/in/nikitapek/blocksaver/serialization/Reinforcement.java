@@ -13,11 +13,10 @@ public final class Reinforcement implements Comparable<Reinforcement> {
     private static boolean accumulateReinforcementValues;
 
     private final Location location;
-    private final String creatorName;
-    private long timeCreated;
-    private float value;
-    private float lastMaximumValue;
-    private long timeStamp;
+    private transient final String creatorName;
+    private transient long timeCreated;
+    private transient float value;
+    private transient long timeStamp;
 
     public Reinforcement(final Location location, final String creatorName, final float value) {
         this.location = location;
@@ -64,10 +63,6 @@ public final class Reinforcement implements Comparable<Reinforcement> {
         return value;
     }
 
-    public float getLastMaximumValue() {
-        return  lastMaximumValue;
-    }
-
     public long getTimeStamp() {
         return timeStamp;
     }
@@ -81,7 +76,6 @@ public final class Reinforcement implements Comparable<Reinforcement> {
             this.value = value;
         }
 
-        lastMaximumValue = Math.max(value, lastMaximumValue);
         updateTimeStamp();
     }
 
@@ -100,8 +94,6 @@ public final class Reinforcement implements Comparable<Reinforcement> {
         Reinforcement that = (Reinforcement) obj;
 
         if (timeCreated != that.timeCreated)
-            return false;
-        if (Float.compare(that.lastMaximumValue, lastMaximumValue) != 0)
             return false;
         if (timeStamp != that.timeStamp)
             return false;
@@ -122,7 +114,6 @@ public final class Reinforcement implements Comparable<Reinforcement> {
         result = 31 * result + (int) (timeStamp ^ (timeStamp >>> 32));
         result = 31 * result + (int) (timeCreated ^ (timeCreated >>> 32));
         result = 31 * result + creatorName.hashCode();
-        result = 31 * result + (lastMaximumValue != +0.0f ? Float.floatToIntBits(lastMaximumValue) : 0);
         return result;
     }
 

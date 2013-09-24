@@ -6,14 +6,14 @@
 	<groupId>in.nikitapek</groupId>
 	<artifactId>block-saver</artifactId>
 	<name>BlockSaver</name>
-	<version>${mbapi.version}.3-SNAPSHOT</version>
+	<version>1.14.0</version>
 	<description>A plugin to provide block reinforcement for the purposes of block protection.</description>
 	<url>http://dev.bukkit.org/server-mods/blocksaver/</url>
 
 	<parent>
 		<groupId>com.amshulman</groupId>
 		<artifactId>bukkit-parent</artifactId>
-		<version>0.14</version>
+		<version>0.15</version>
 	</parent>
 
 	<distributionManagement>
@@ -52,6 +52,7 @@
 			<groupId>com.amshulman</groupId>
 			<artifactId>mbapi</artifactId>
 			<scope>compile</scope>
+			<version>1.14</version>
 		</dependency>
 		<!-- Prism -->
 		<dependency>

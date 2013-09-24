@@ -2,8 +2,7 @@ package in.nikitapek.blocksaver.serialization;
 
 import in.nikitapek.blocksaver.util.SupplementaryTypes;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
 
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -14,13 +13,11 @@ import com.amshulman.mbapi.storage.TypeSafeStorageMap;
 public final class WorldContainer {
     private static StorageManager storageManager;
 
-    private final TypeSafeStorageMap<Reinforcement> reinforcements;
-    private final Set<Chunk> loadedChunks = new HashSet<>();
-    //private final World world;
+    private final TypeSafeStorageMap<HashMap<Chunk, HashMap<Location, Reinforcement>>> reinforcements;
+    //private final Set<Chunk> loadedChunks = new HashSet<>();
 
     public WorldContainer(final String worldName) {
-        //world = Bukkit.getWorld(worldName);
-        reinforcements = storageManager.getStorageMap(worldName, SupplementaryTypes.REINFORCEMENT);
+        reinforcements = storageManager.getStorageMap(worldName, SupplementaryTypes.HASH_MAP);
         reinforcements.loadAll();
     }
 
@@ -31,16 +28,32 @@ public final class WorldContainer {
     public void removeReinforcement(final Location location) {
         final Chunk chunk = location.getChunk();
 
-        reinforcements.remove(toString(location));
+        //getReinforcementMap(location.getChunk()).remove(location);
+        //reinforcements.remove(toString(location));
 
         // TODO: This is a performance bottleneck. It is meant to ensure that chunks are removed from the loadedChunks list after a Reinforcement is removed.
+        final String regionName = getRegionFromChunk(chunk);
+        HashMap<Chunk, HashMap<Location, Reinforcement>> chunkMap = reinforcements.get(regionName);
+        HashMap<Location, Reinforcement> reinforcementMap = chunkMap.get(chunk);
+
+        reinforcementMap.remove(location);
+
+        if (reinforcementMap.isEmpty()) {
+            chunkMap.remove(chunk);
+
+            if (chunkMap.isEmpty()) {
+                reinforcements.remove(regionName);
+            }
+        }
+
+        /*
         for (Reinforcement reinforcement : reinforcements.values()) {
             if (reinforcement.getLocation().getChunk().equals(chunk)) {
                 return;
             }
-        }
+        } */
 
-        loadedChunks.remove(chunk);
+        //loadedChunks.remove(chunk);
     }
 
     public void saveAll() {
@@ -61,19 +74,60 @@ public final class WorldContainer {
         if (isReinforced(location)) {
             getReinforcement(location).setReinforcementValue(value);
         } else {
-            reinforcements.put(toString(location), new Reinforcement(location, playerName, value));
+            ensureMapExists(location);
+            HashMap<Location, Reinforcement> reinforcementMap = getReinforcementMap(location.getChunk());
+            reinforcementMap.put(location, new Reinforcement(location, playerName, value));
         }
     }
 
     public Reinforcement getReinforcement(final Location location) {
-        return reinforcements.get(toString(location));
+        HashMap<Location, Reinforcement> reinforcementMap = getReinforcementMap(location.getChunk());
+
+        if (reinforcementMap == null) {
+            return null;
+        }
+
+        return reinforcementMap.get(location);
     }
 
     public boolean isReinforced(final Location location) {
-        return reinforcements.containsKey(toString(location));
+        HashMap<Location, Reinforcement> reinforcementMap = getReinforcementMap(location.getChunk());
+
+        if (reinforcementMap == null) {
+            return false;
+        }
+
+        return reinforcementMap.containsKey(location);
+        //reinforcements.containsKey(toString(location));
     }
 
-    private String toString(final Location location) {
-        return location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ();
+    private String getRegionFromChunk(final Chunk chunk) {
+        return (chunk.getX() >> 5) + "." + (chunk.getX() >> 5);
+    }
+
+    private HashMap<Location, Reinforcement> getReinforcementMap(Chunk chunk) {
+        HashMap<Chunk, HashMap<Location, Reinforcement>> chunkMap = reinforcements.get(getRegionFromChunk(chunk));
+
+        if (chunkMap == null) {
+            return null;
+        }
+
+        return chunkMap.get(chunk);
+    }
+
+    private void ensureMapExists(Location location) {
+        HashMap<Chunk, HashMap<Location, Reinforcement>> chunkMap = reinforcements.get(getRegionFromChunk(location.getChunk()));
+
+        if (chunkMap == null) {
+            chunkMap = new HashMap<>();
+            reinforcements.put(getRegionFromChunk(location.getChunk()), chunkMap);
+        }
+
+        HashMap<Location, Reinforcement> reinforcementMap = chunkMap.get(location);
+
+        if (reinforcementMap == null) {
+            reinforcementMap = new HashMap<>();
+            chunkMap.put(location.getChunk(), reinforcementMap);
+        }
     }
 }

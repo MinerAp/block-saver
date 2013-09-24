@@ -253,7 +253,7 @@ public final class ReinforcementManager {
         // Heals the block if the plugin is configured to do so and the required amount of time has elapsed.
         if (allowReinforcementHealing) {
             if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
-                reinforcement.setReinforcementValue(reinforcement.getLastMaximumValue());
+                reinforcement.setReinforcementValue(reinforcement.getReinforcementValueCoefficient());
             }
         }
 
