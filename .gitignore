@@ -12,3 +12,4 @@ lib/
 # Maven
 dependency-reduced-pom.xml
 bin/
+.idea/
