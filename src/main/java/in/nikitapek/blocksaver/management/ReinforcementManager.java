@@ -393,7 +393,7 @@ public final class ReinforcementManager {
             }
 
             // If the exploding entity is not configured to interact with blocks, then the explosion fails.
-            if ((EntityType.WITHER.equals(entityType) || EntityType.WITHER_SKULL.equals(entityType)) && !mobsInteractWithReinforcedBlocks) {
+            if ((EntityType.CREEPER.equals(entityType) || EntityType.WITHER.equals(entityType) || EntityType.WITHER_SKULL.equals(entityType)) && !mobsInteractWithReinforcedBlocks) {
                 iter.remove();
                 continue;
             } else if (EntityType.PRIMED_TNT.equals(entityType) && !tntDamagesReinforcedBlocks) {
