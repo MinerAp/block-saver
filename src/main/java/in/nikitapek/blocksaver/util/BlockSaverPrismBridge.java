@@ -16,20 +16,10 @@ public final class BlockSaverPrismBridge {
     public static final ActionType ENFORCE_EVENT = new ActionType(ENFORCE_EVENT_NAME, false, true, true, "BlockSaverAction", "reinforced");
     public static final ActionType DAMAGE_EVENT = new ActionType(DAMAGE_EVENT_NAME, false, true, true, "BlockSaverAction", "damaged");
 
-    private final MbapiPlugin plugin;
-    private final Prism prism;
-
     public BlockSaverPrismBridge(MbapiPlugin plugin) {
-        this.plugin = plugin;
-
-        final Plugin tempPrism = plugin.getServer().getPluginManager().getPlugin("Prism");
-
-        if (tempPrism == null) {
-            prism = null;
+        if (plugin.getServer().getPluginManager().getPlugin("Prism") == null) {
             return;
         }
-
-        prism = (Prism) tempPrism;
 
         // Register the custom events.
         try {
