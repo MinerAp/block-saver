@@ -208,10 +208,11 @@ public final class ReinforcementManager {
         return true;
     }
 
-    public boolean attemptReinforcement(final Location location, final ItemStack item, final Player player) {
+    public boolean attemptReinforcement(final Location location, final Player player) {
         final Block block = location.getBlock();
         final String playerName = player.getName();
-        final Material material = item.getType();
+        final Material material = getReinforcingMaterial(player);
+        final ItemStack item = player.getInventory().getItem(player.getInventory().first(material));
 
         // If the material cannot be used for reinforcement, the reinforcement fails.
         if (!canMaterialReinforce(material)) {
