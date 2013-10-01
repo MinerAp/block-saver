@@ -6,7 +6,6 @@ import me.botsko.prism.actionlibs.ActionType;
 import me.botsko.prism.exceptions.InvalidActionException;
 
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 import com.amshulman.mbapi.MbapiPlugin;
 
