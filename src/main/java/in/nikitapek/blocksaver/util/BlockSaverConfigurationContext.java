@@ -47,6 +47,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean mobsInteractWithReinforcedBlocks;
     public final boolean enderdragonInteractWithReinforcedBlocks;
     public final boolean enableLogging;
+    public final boolean integrateWorldEdit;
     public final double extinguishChance;
     public final int gracePeriodTime;
     public final int reinforcementHealingTime;
@@ -105,6 +106,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         mobsInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("mobsInteractWithReinforcedBlocks", false);
         enderdragonInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("enderdragonInteractWithReinforcedBlocks", false);
         enableLogging = plugin.getConfig().getBoolean("enableLogging", true);
+        integrateWorldEdit = plugin.getConfig().getBoolean("integrateWorldEdit", true);
 
         // Loads the primary feedback form, ensuring that the provided type of feedback is valid.
         String primaryFeedback = plugin.getConfig().getString("primaryFeedback", "visual");

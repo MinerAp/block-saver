@@ -35,6 +35,10 @@
 			<name>MinerAp</name>
 			<url>https://www.minerap.com/repository/</url>
 		</repository>
+		<repository>
+			<id>sk89q-repo</id>
+			<url>http://maven.sk89q.com/repo/</url>
+		</repository>
 	</repositories>
 
 	<properties>
@@ -59,6 +63,13 @@
 			<groupId>me.botsko</groupId>
 			<artifactId>prism</artifactId>
 			<version>${prism.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- WorldEdit -->
+		<dependency>
+			<groupId>com.sk89q</groupId>
+			<artifactId>worldedit</artifactId>
+			<version>5.5.8</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
