@@ -13,9 +13,6 @@ import org.bukkit.Bukkit;
 import java.util.logging.Level;
 
 public final class CommandBlockSaver extends DelegatingCommand {
-    private BlockSaverWorldEditBridge worldEditBridge;
-    private boolean worldEditBridged = false;
-
     public CommandBlockSaver(final BlockSaverConfigurationContext configurationContext) {
         super(configurationContext, Commands.BLOCKSAVER, 1, 1);
         registerSubcommand(new CommandFeedback(configurationContext));

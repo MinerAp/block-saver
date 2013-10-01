@@ -25,7 +25,7 @@ public final class CommandReinforce extends PlayerOnlyCommand {
     private final ReinforcementManager reinforcementManager;
 
     public CommandReinforce(final BlockSaverConfigurationContext configurationContext) {
-        super(configurationContext, BlockSaverCommands.AUTOENFORCE, 0, 0);
+        super(configurationContext, BlockSaverCommands.REINFORCE, 0, 0);
         infoManager = configurationContext.infoManager;
         reinforcementManager = configurationContext.getReinforcementManager();
     }

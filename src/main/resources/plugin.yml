@@ -11,8 +11,8 @@ commands:
   blocksaver:
     description: Controls all functions of the BlockSaver plugin.
     usage: |
-      /<command> feedback [true|false] - Toggles feedback in chat
-      /<command> autoenforce [true|false] - Toggles aut-reinforcement mode
+      /<command> feedback - Toggles feedback in chat
+      /<command> autoenforce - Toggles aut-reinforcement mode
 
 permissions:
   blocksaver.blocksaver.feedback:
