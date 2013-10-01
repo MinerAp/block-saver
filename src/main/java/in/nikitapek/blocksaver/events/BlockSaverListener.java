@@ -108,7 +108,7 @@ public final class BlockSaverListener implements Listener {
         }
 
         // If the player is not attempting a reinforcement, they may be trying to damage a reinforced block, and so a check is performed.
-        if (!reinforcementManager.canMaterialReinforce(item.getType())) {
+        if (!reinforcementManager.canPlayerReinforce(player)) {
             if (!reinforcementManager.canPlayerDamageBlock(location, player, true)) {
                 event.setCancelled(true);
             }
@@ -119,18 +119,7 @@ public final class BlockSaverListener implements Listener {
         event.setCancelled(true);
 
         // An attempt is made to reinforce the block the player clicks, which, if not successful, exits the event.
-        if (!reinforcementManager.attemptReinforcement(location, item.getType(), player)) {
-            return;
-        }
-
-        // The amount of the reinforcement material in the player's hand is decreased.
-        if (!GameMode.CREATIVE.equals(player.getGameMode())) {
-            if (item.getAmount() > 1) {
-                item.setAmount(item.getAmount() - 1);
-            } else {
-                player.getInventory().remove(item);
-            }
-        }
+        reinforcementManager.attemptReinforcement(location, player);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
