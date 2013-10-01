@@ -10,11 +10,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
@@ -113,6 +115,33 @@ public final class ReinforcementManager {
         return reinforcementBlocks.containsKey(material);
     }
 
+    public boolean canPlayerReinforce(final Player player) {
+        return !Material.AIR.equals(getReinforcingMaterial(player));
+    }
+
+    private Material getReinforcingMaterial(final Player player) {
+        // If the player is not in reinforcement mode, then we only check the item in their hand.
+        if (!infoManager.getPlayerInfo(player.getName()).isInReinforcementMode) {
+            Material itemInHandMaterial = player.getItemInHand().getType();
+            if (canMaterialReinforce(itemInHandMaterial)) {
+                return itemInHandMaterial;
+            } else {
+                return Material.AIR;
+            }
+        }
+
+        // Otherwise, loop through all the reinforcement items and check if the player has one of these.
+        for (Material material : reinforcementBlocks.getMap().keySet()) {
+            int index = player.getInventory().first(material);
+
+            if (index != -1) {
+                return material;
+            }
+        }
+
+        return Material.AIR;
+    }
+
     private boolean canToolDamageBlock(final Location location, final ItemStack tool) {
         final Material blockMaterial = location.getBlock().getType();
 
@@ -179,12 +208,13 @@ public final class ReinforcementManager {
         return true;
     }
 
-    public boolean attemptReinforcement(final Location location, final Material reinforcementMaterial, final Player player) {
+    public boolean attemptReinforcement(final Location location, final ItemStack item, final Player player) {
         final Block block = location.getBlock();
         final String playerName = player.getName();
+        final Material material = item.getType();
 
         // If the material cannot be used for reinforcement, the reinforcement fails.
-        if (!canMaterialReinforce(reinforcementMaterial)) {
+        if (!canMaterialReinforce(material)) {
             feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
             return false;
         }
@@ -200,7 +230,7 @@ public final class ReinforcementManager {
         }
 
         // Retrieves the amount the material will reinforce the block by.
-        int additionalReinforcementValue = reinforcementBlocks.get(reinforcementMaterial);
+        int additionalReinforcementValue = reinforcementBlocks.get(material);
 
         // If the material being used to reinforce has a reinforcement maximizing coefficient, then we want to set the block to its maximum possible enforcement.
         if (additionalReinforcementValue == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
@@ -216,6 +246,15 @@ public final class ReinforcementManager {
         reinforce(location, playerName, additionalReinforcementValue);
 
         feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
+
+        // The amount of the reinforcement material in the player's hand is decreased.
+        if (!GameMode.CREATIVE.equals(player.getGameMode())) {
+            if (item.getAmount() > 1) {
+                item.setAmount(item.getAmount() - 1);
+            } else {
+                player.getInventory().remove(item);
+            }
+        }
         return true;
     }
 
