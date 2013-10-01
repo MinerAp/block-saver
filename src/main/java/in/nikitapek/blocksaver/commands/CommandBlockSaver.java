@@ -14,7 +14,7 @@ public final class CommandBlockSaver extends DelegatingCommand {
     }
 
     public enum BlockSaverCommands implements PermissionsEnum {
-        FEEDBACK, RMODE;
+        FEEDBACK, AUTOENFORCE;
 
         private static final String PREFIX;
 

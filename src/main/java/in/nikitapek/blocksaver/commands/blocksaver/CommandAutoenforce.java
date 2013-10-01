@@ -11,14 +11,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public final class CommandRmode extends PlayerOnlyCommand {
-    private static final String REINFORCEMENT_MODE_ENABLED = ChatColor.GRAY + "You are now in auto-reinforcement mode.";
-    private static final String REINFORCEMENT_MODE_DISABLED = ChatColor.GRAY + "You are no longer in auto-reinforcement mode.";
+public final class CommandAutoenforce extends PlayerOnlyCommand {
+    private static final String AUTOENFORCE_ENABLED = ChatColor.GRAY + "You are now in auto-reinforcement mode.";
+    private static final String AUTOENFORCE_DISABLED = ChatColor.GRAY + "You are no longer in auto-reinforcement mode.";
 
     private final BlockSaverInfoManager infoManager;
 
-    public CommandRmode(final BlockSaverConfigurationContext configurationContext) {
-        super(configurationContext, BlockSaverCommands.RMODE, 0, 0);
+    public CommandAutoenforce(final BlockSaverConfigurationContext configurationContext) {
+        super(configurationContext, BlockSaverCommands.AUTOENFORCE, 0, 0);
         infoManager = configurationContext.infoManager;
     }
 
@@ -29,9 +29,9 @@ public final class CommandRmode extends PlayerOnlyCommand {
         playerInfo.isInReinforcementMode = !playerInfo.isInReinforcementMode;
 
         if (playerInfo.isReceivingTextFeedback) {
-            player.sendMessage(REINFORCEMENT_MODE_ENABLED);
+            player.sendMessage(AUTOENFORCE_ENABLED);
         } else {
-            player.sendMessage(REINFORCEMENT_MODE_DISABLED);
+            player.sendMessage(AUTOENFORCE_DISABLED);
         }
 
         return true;

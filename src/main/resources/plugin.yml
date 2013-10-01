@@ -12,13 +12,13 @@ commands:
     description: Controls all functions of the BlockSaver plugin.
     usage: |
       /<command> feedback [true|false] - Toggles feedback in chat
-      /<command> rmode [true|false] - Toggles reinforcement mode
+      /<command> autoenforce [true|false] - Toggles aut-reinforcement mode
 
 permissions:
   blocksaver.blocksaver.feedback:
     children:
       blocksaver.blocksaver: true
-  blocksaver.blocksaver.rmode:
+  blocksaver.blocksaver.autoenforce:
     children:
       blocksaver.blocksaver: true
   blocksaver.reinforce:
