@@ -61,11 +61,15 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        if (!reinforcementManager.isReinforced(location)) {
-            return;
+        if (reinforcementManager.isReinforced(location)) {
+            reinforcementManager.removeReinforcement(location);
         }
 
-        reinforcementManager.removeReinforcement(location);
+        // If the player has placed a block and is currently in auto-reinforce mode, an attempt is made to reinforce the newly placed block.
+        final Player player = event.getPlayer();
+        if (reinforcementManager.canPlayerReinforce(player)) {
+            reinforcementManager.attemptReinforcement(location, player);
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -107,7 +111,7 @@ public final class BlockSaverListener implements Listener {
         }
 
         // If the player is not attempting a reinforcement, they may be trying to damage a reinforced block, and so a check is performed.
-        if (!reinforcementManager.canPlayerReinforce(player)) {
+        if (!reinforcementManager.canMaterialReinforce(player.getItemInHand().getType())) {
             if (!reinforcementManager.canPlayerDamageBlock(location, player, true)) {
                 event.setCancelled(true);
             }
