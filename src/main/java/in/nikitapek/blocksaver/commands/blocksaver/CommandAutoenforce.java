@@ -29,9 +29,11 @@ public final class CommandAutoenforce extends PlayerOnlyCommand {
         playerInfo.isInReinforcementMode = !playerInfo.isInReinforcementMode;
 
         if (playerInfo.isReceivingTextFeedback) {
-            player.sendMessage(AUTOENFORCE_ENABLED);
-        } else {
-            player.sendMessage(AUTOENFORCE_DISABLED);
+            if (playerInfo.isInReinforcementMode) {
+                player.sendMessage(AUTOENFORCE_ENABLED);
+            } else {
+                player.sendMessage(AUTOENFORCE_DISABLED);
+            }
         }
 
         return true;
