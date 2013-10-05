@@ -68,7 +68,7 @@ public class FeedbackManager {
                     break;
                 }
                 if (isPrismBridged()) {
-                    prismBridge.logCustomEvent(reinforcement, player, BlockSaverPrismBridge.ENFORCE_EVENT);
+                    BlockSaverPrismBridge.logCustomEvent(reinforcement, location, player, BlockSaverPrismBridge.ENFORCE_EVENT);
                 }
                 if (infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback && player.hasPermission("blocksaver.feedback.reinforce.success")) {
                     player.sendMessage(ChatColor.GRAY + "Reinforced a block.");
@@ -88,12 +88,12 @@ public class FeedbackManager {
                     player.sendMessage(ChatColor.GRAY + "Damaged a reinforced block.");
                 }
                 if ("visual".equals(primaryFeedback)) {
-                    BlockSaverUtil.sendParticleEffect(location, (int) reinforcement.getReinforcementValue(), reinforcement.getReinforcementValueCoefficient());
+                    BlockSaverUtil.sendParticleEffect(location, (int) reinforcement.getReinforcementValue(), infoManager.getReinforcementManager().getMaterialReinforcementCoefficient(location.getBlock().getType()));
                 } else if ("auditory".equals(primaryFeedback)) {
                     BlockSaverUtil.playMusicalEffect(location, (int) reinforcement.getReinforcementValue());
                 }
                 if (isPrismBridged()) {
-                    prismBridge.logCustomEvent(reinforcement, player, BlockSaverPrismBridge.DAMAGE_EVENT);
+                    BlockSaverPrismBridge.logCustomEvent(reinforcement, location, player, BlockSaverPrismBridge.DAMAGE_EVENT);
                 }
                 break;
             case DAMAGE_FAIL:

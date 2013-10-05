@@ -5,6 +5,7 @@ import me.botsko.prism.Prism;
 import me.botsko.prism.actionlibs.ActionType;
 import me.botsko.prism.exceptions.InvalidActionException;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import com.amshulman.mbapi.MbapiPlugin;
@@ -31,15 +32,15 @@ public final class BlockSaverPrismBridge {
         }
     }
 
-    public void logCustomEvent(final Reinforcement reinforcement, final Player player, final ActionType event) {
+    public static void logCustomEvent(final Reinforcement reinforcement, final Location location, final Player player, final ActionType event) {
         BlockSaverAction action = new BlockSaverAction();
 
         action.setType(event);
-        action.setLoc(reinforcement.getLocation());
+        action.setLoc(location);
         action.setPlayerName(player.getName());
 
         // Required for the ItemStackAction
-        action.setReinforcement(reinforcement);
+        action.setReinforcement(location, reinforcement);
 
         // Add the recorder queue
         Prism.actionsRecorder.addToQueue(action);

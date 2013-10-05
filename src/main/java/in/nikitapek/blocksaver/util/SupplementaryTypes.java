@@ -6,18 +6,20 @@ import in.nikitapek.blocksaver.serialization.WorldContainer;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.TreeSet;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 
+import com.amshulman.mbapi.storage.TypeSafeUnifiedStorageMap;
+import com.amshulman.typesafety.util.ParameterizedTypeImpl;
 import com.google.gson.reflect.TypeToken;
-import org.bukkit.World;
 
+@SuppressWarnings("rawtypes")
 public final class SupplementaryTypes {
-    @SuppressWarnings("rawtypes")
-    public static final Type TREESET = new TypeToken<TreeSet>() {}.getType();
+    public static final Type HASHSET = new TypeToken<HashSet>() {}.getType();
+    public static final Type HASHMAP = new TypeToken<HashMap>() {}.getType();
 
     public static final Type INTEGER = new TypeToken<Integer>() {}.getType();
     public static final Type LIST = new TypeToken<List<?>>() {}.getType();
@@ -27,7 +29,16 @@ public final class SupplementaryTypes {
     public static final Type REINFORCEMENT = new TypeToken<Reinforcement>() {}.getType();
     public static final Type STRING = new TypeToken<String>() {}.getType();
     public static final Type WORLD_CONTAINER = new TypeToken<WorldContainer>() {}.getType();
-    public static final Type HASH_MAP = new TypeToken<HashMap>() {}.getType();
+
+    public static final Type REINFORCEMENT_STORAGE;
+
+    static {
+        ParameterizedTypeImpl t = new ParameterizedTypeImpl(new TypeToken<TypeSafeUnifiedStorageMap>() {}.getType());
+        t.addParamType(new TypeToken<Location>() {}.getType());
+        t.addParamType(new TypeToken<Reinforcement>() {}.getType());
+
+        REINFORCEMENT_STORAGE = t;
+    }
 
     private SupplementaryTypes() {}
 }
