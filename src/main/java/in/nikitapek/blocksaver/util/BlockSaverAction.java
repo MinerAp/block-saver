@@ -8,6 +8,7 @@ import me.botsko.prism.appliers.ChangeResult;
 import me.botsko.prism.appliers.ChangeResultType;
 import me.botsko.prism.appliers.PrismProcessType;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import com.google.gson.Gson;
@@ -31,7 +32,7 @@ public final class BlockSaverAction extends GenericAction {
         BlockSaverAction.reinforcementManager = reinforcementManager;
     }
 
-    public void setReinforcement(Reinforcement reinforcement) {
+    public void setReinforcement(Location location, Reinforcement reinforcement) {
         actionData = new ReinforcementActionData();
 
         if (reinforcement == null) {
@@ -41,8 +42,8 @@ public final class BlockSaverAction extends GenericAction {
 
         this.reinforcement = reinforcement;
 
-        this.block_id = reinforcement.getBlock().getTypeId();
-        this.setLoc(reinforcement.getLocation());
+        this.block_id = location.getBlock().getTypeId();
+        this.setLoc(location);
         actionData.owner = reinforcement.getCreatorName();
         actionData.creationTime = reinforcement.getCreationTime();
     }

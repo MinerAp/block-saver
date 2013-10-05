@@ -1,11 +1,10 @@
 package in.nikitapek.blocksaver.util;
 
-import com.amshulman.typesafety.TypeSafeSet;
-import com.amshulman.typesafety.impl.TypeSafeSetImpl;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.FeedbackManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
+import in.nikitapek.blocksaver.serialization.LocationTypeAdapter;
 import in.nikitapek.blocksaver.serialization.ReinforcementTypeAdapter;
 
 import java.util.ArrayList;
@@ -14,14 +13,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Effect;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.amshulman.mbapi.MbapiPlugin;
 import com.amshulman.mbapi.util.ConfigurationContext;
 import com.amshulman.typesafety.TypeSafeMap;
+import com.amshulman.typesafety.TypeSafeSet;
+import com.amshulman.typesafety.gson.TypeSafeMapTypeAdapter;
 import com.amshulman.typesafety.gson.TypeSafeSetTypeAdapter;
 import com.amshulman.typesafety.impl.TypeSafeMapImpl;
+import com.amshulman.typesafety.impl.TypeSafeSetImpl;
 
 public final class BlockSaverConfigurationContext extends ConfigurationContext {
     private final static double EXTINGUISH_CHANCE = 0.9;
@@ -64,7 +69,10 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     private final ReinforcementManager reinforcementManager;
 
     public BlockSaverConfigurationContext(final MbapiPlugin plugin) {
-        super(plugin, new TypeSafeSetTypeAdapter<Reinforcement>(SupplementaryTypes.TREESET, SupplementaryTypes.REINFORCEMENT), new ReinforcementTypeAdapter());
+        super(plugin, 
+                new TypeSafeMapTypeAdapter<>(SupplementaryTypes.HASHMAP, SupplementaryTypes.LOCATION, SupplementaryTypes.REINFORCEMENT),
+                new TypeSafeSetTypeAdapter<Reinforcement>(SupplementaryTypes.HASHSET, SupplementaryTypes.REINFORCEMENT), 
+                new LocationTypeAdapter());
 
         worlds = new TypeSafeSetImpl<>(new HashSet<String>(), SupplementaryTypes.STRING);
         reinforceableBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
@@ -131,6 +139,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         ConfigurationSection configSection;
 
         // Attempts to read the configurationSection containing the worlds protected by the plugin.
+        @SuppressWarnings("unchecked")
         List<String> worldList = (List<String>) plugin.getConfig().getList("worlds");
         if (worldList == null) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load protected worlds list.");
@@ -221,7 +230,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         }
     }
 
-    private Material loadMaterial(String materialName) {
+    private static Material loadMaterial(String materialName) {
         int materialId;
 
         try {

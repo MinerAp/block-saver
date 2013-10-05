@@ -6,7 +6,6 @@ import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
 
 import java.util.ListIterator;
 
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -30,7 +29,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
 
 public final class BlockSaverListener implements Listener {
     private final ReinforcementManager reinforcementManager;

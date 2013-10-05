@@ -6,15 +6,17 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 
 import com.amshulman.mbapi.storage.StorageManager;
-import com.amshulman.mbapi.storage.TypeSafeStorageMap;
+import com.amshulman.mbapi.storage.TypeSafeDistributedStorageMap;
+import com.amshulman.mbapi.storage.TypeSafeUnifiedStorageMap;
 
 public final class WorldContainer {
     private static StorageManager storageManager;
 
-    private final TypeSafeStorageMap<TypeSafeStorageMap<TypeSafeStorageMap<Reinforcement>>> reinforcements;
+    private final TypeSafeDistributedStorageMap<TypeSafeUnifiedStorageMap<Location, Reinforcement>> reinforcements;
 
     public WorldContainer(final String worldName) {
-        reinforcements = storageManager.getStorageMap(worldName, SupplementaryTypes.HASH_MAP);
+        reinforcements = storageManager.getDistributedStorageMap(worldName, SupplementaryTypes.REINFORCEMENT_STORAGE);
+        LocationTypeAdapter.currentWorld = worldName;
         reinforcements.loadAll();
     }
 
@@ -25,22 +27,9 @@ public final class WorldContainer {
     public void removeReinforcement(final Location location) {
         final Chunk chunk = location.getChunk();
         final String regionName = getRegionNameFromChunk(chunk);
-        final String chunkName = getChunkName(chunk);
-        final String locationName = getLocationName(location);
 
-        TypeSafeStorageMap<TypeSafeStorageMap<Reinforcement>> chunkMap = reinforcements.get(regionName);
-        TypeSafeStorageMap<Reinforcement> reinforcementMap = chunkMap.get(chunkName);
-
-        reinforcementMap.remove(locationName);
-
-        // TODO: This is a performance bottleneck. It is garbage collection meant to ensure that stray nodes get removed when a reinforcement is removed.
-        if (reinforcementMap.isEmpty()) {
-            chunkMap.remove(chunkName);
-
-            if (chunkMap.isEmpty()) {
-                reinforcements.remove(regionName);
-            }
-        }
+        TypeSafeUnifiedStorageMap<Location, Reinforcement> reinforcementMap = reinforcements.get(regionName);
+        reinforcementMap.remove(location);
     }
 
     public void saveAll() {
@@ -51,7 +40,7 @@ public final class WorldContainer {
         reinforcements.unloadAll();
     }
 
-    public void setReinforcement(final Location location, final String playerName, final float value) {
+    public void setReinforcement(final Location location, final String playerName, final float value, final float coefficient) {
         // If the reinforcement is being set a value of 0, then it is just deleted.
         if (value <= 0) {
             removeReinforcement(location);
@@ -59,74 +48,45 @@ public final class WorldContainer {
         }
 
         if (isReinforced(location)) {
-            getReinforcement(location).setReinforcementValue(value);
+            getReinforcement(location).setReinforcementValue(value, coefficient);
         } else {
             ensureMapExists(location);
-            TypeSafeStorageMap<Reinforcement> reinforcementMap = getReinforcementMap(location.getChunk());
-            reinforcementMap.put(getLocationName(location), new Reinforcement(location, playerName, value));
+            TypeSafeUnifiedStorageMap<Location, Reinforcement> reinforcementMap = getReinforcementMap(location);
+            reinforcementMap.put(location, new Reinforcement(playerName, value));
         }
     }
 
     public Reinforcement getReinforcement(final Location location) {
-        TypeSafeStorageMap<Reinforcement> reinforcementMap = getReinforcementMap(location.getChunk());
+        TypeSafeUnifiedStorageMap<Location, Reinforcement> reinforcementMap = getReinforcementMap(location);
 
         if (reinforcementMap == null) {
             return null;
         }
 
-        return reinforcementMap.get(getLocationName(location));
+        return reinforcementMap.get(location);
     }
 
     public boolean isReinforced(final Location location) {
-        TypeSafeStorageMap<Reinforcement> reinforcementMap = getReinforcementMap(location.getChunk());
+        TypeSafeUnifiedStorageMap<Location, Reinforcement> reinforcementMap = getReinforcementMap(location);
 
         if (reinforcementMap == null) {
             return false;
         }
 
-        return reinforcementMap.containsKey(getLocationName(location));
+        return reinforcementMap.containsKey(location);
     }
 
-    private String getRegionNameFromChunk(final Chunk chunk) {
+    private static String getRegionNameFromChunk(final Chunk chunk) {
         return (chunk.getX() >> 5) + "." + (chunk.getZ() >> 5);
     }
 
-    private String getChunkName(final Chunk chunk) {
-        return chunk.getX() + "." + chunk.getZ();
-    }
-
-    private String getLocationName(final Location location) {
-        return location.getX() + "." + location.getY() + "." + location.getZ();
-    }
-
-    private TypeSafeStorageMap<Reinforcement> getReinforcementMap(Chunk chunk) {
-        TypeSafeStorageMap<TypeSafeStorageMap<Reinforcement>> chunkMap = reinforcements.get(getRegionNameFromChunk(chunk));
-
-        if (chunkMap == null) {
-            return null;
-        }
-
-        return chunkMap.get(getChunkName(chunk));
+    private TypeSafeUnifiedStorageMap<Location, Reinforcement> getReinforcementMap(Location location) {
+        return reinforcements.get(getRegionNameFromChunk(location.getChunk()));
     }
 
     private void ensureMapExists(Location location) {
-        final Chunk chunk = location.getChunk();
-        final String regionName = getRegionNameFromChunk(chunk);
-        final String chunkName = getChunkName(chunk);
-        final String locationName = getLocationName(location);
-
-        TypeSafeStorageMap<TypeSafeStorageMap<Reinforcement>> chunkMap = reinforcements.get(regionName);
-
-        if (chunkMap == null) {
-            chunkMap = new TypeSafeStorageMap<>();
-            reinforcements.put(chunkName, chunkMap);
-        }
-
-        TypeSafeStorageMap<Reinforcement> reinforcementMap = chunkMap.get(locationName);
-
-        if (reinforcementMap == null) {
-            reinforcementMap = new TypeSafeStorageMap<>();
-            chunkMap.put(locationName, reinforcementMap);
+        if (getReinforcementMap(location) == null) {
+            reinforcements.putTypeSafeUnifiedStorageMap(getRegionNameFromChunk(location.getChunk()), SupplementaryTypes.LOCATION, SupplementaryTypes.REINFORCEMENT);
         }
     }
 }

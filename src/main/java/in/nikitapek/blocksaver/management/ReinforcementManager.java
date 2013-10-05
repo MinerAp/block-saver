@@ -16,7 +16,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
@@ -51,6 +50,7 @@ public final class ReinforcementManager {
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
         this.feedbackManager = configurationContext.feedbackManager;
         this.infoManager = configurationContext.infoManager;
+        infoManager.setReinforcementManager(this);
 
         // Retrieves all of the configuration values relevant to Reinforcement managing from configurationContext.
         this.accumulateReinforcementValues = configurationContext.accumulateReinforcementValues;
@@ -265,7 +265,7 @@ public final class ReinforcementManager {
         removeReinforcement(block.getLocation());
     }
 
-    public void floorReinforcement(final Reinforcement reinforcement) {
+    public void floorReinforcement(final Reinforcement reinforcement, final Location location) {
         // If blocks are allowed to accumulate RV, then there is no need to floor the RV.
         if (accumulateReinforcementValues) {
             return;
@@ -276,10 +276,10 @@ public final class ReinforcementManager {
         }
 
         // Checks to see if the maximum RV is less than the actual RV. If so, floors the RV.
-        final int maximumReinforcement = getMaterialReinforcementCoefficient(reinforcement.getBlock().getType());
+        final int maximumReinforcement = getMaterialReinforcementCoefficient(location.getBlock().getType());
 
         if (reinforcement.getReinforcementValue() > maximumReinforcement) {
-            infoManager.setReinforcement(reinforcement.getLocation(), reinforcement.getCreatorName(), maximumReinforcement);
+            infoManager.setReinforcement(location, reinforcement.getCreatorName(), maximumReinforcement);
         }
     }
 
@@ -292,8 +292,8 @@ public final class ReinforcementManager {
 
         // Heals the block if the plugin is configured to do so and the required amount of time has elapsed.
         if (allowReinforcementHealing) {
-            if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
-                reinforcement.setReinforcementValue(reinforcement.getReinforcementValueCoefficient());
+            if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {                
+                reinforcement.setReinforcementValue(getMaterialReinforcementCoefficient(location.getBlock().getType()), getMaterialReinforcementCoefficient(location.getBlock().getType()));
             }
         }
 
@@ -318,9 +318,9 @@ public final class ReinforcementManager {
         // Damage the reinforcement on the block.
         // If the cause of damage is TNT, handle the RV decrease specially.
         if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
-            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - ((float) Math.pow(getMaterialReinforcementCoefficient(reinforcement.getBlock().getType()), 2) / 100));
+            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - ((float) Math.pow(getMaterialReinforcementCoefficient(location.getBlock().getType()), 2) / 100), getMaterialReinforcementCoefficient(location.getBlock().getType()));
         } else {
-            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1);
+            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1, getMaterialReinforcementCoefficient(location.getBlock().getType()));
         }
 
         feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, player);
@@ -363,7 +363,7 @@ public final class ReinforcementManager {
         infoManager.removeReinforcement(getProperLocation(location));
     }
 
-    public Location getProperLocation(final Location location) {
+    public static Location getProperLocation(final Location location) {
         final Block block = location.getBlock();
 
         if (block.getType().equals(Material.PISTON_EXTENSION)) {

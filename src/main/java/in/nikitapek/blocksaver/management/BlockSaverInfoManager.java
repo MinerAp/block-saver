@@ -14,7 +14,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 
 import com.amshulman.mbapi.management.InfoManager;
-import com.amshulman.mbapi.storage.TypeSafeStorageMap;
+import com.amshulman.mbapi.storage.TypeSafeDistributedStorageMap;
 import com.amshulman.mbapi.util.ConstructorFactory;
 import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.TypeSafeSet;
@@ -25,20 +25,18 @@ public final class BlockSaverInfoManager extends InfoManager {
 
     private final TypeSafeSet<String> worlds;
 
-    private final TypeSafeStorageMap<PlayerInfo> playerInfo;
+    private final TypeSafeDistributedStorageMap<PlayerInfo> playerInfo;
 
     private final TypeSafeMap<String, WorldContainer> worldContainers;
 
-    private final BlockSaverConfigurationContext configurationContext;
+    private ReinforcementManager reinforcementManager;
 
     public BlockSaverInfoManager(final BlockSaverConfigurationContext configurationContext) {
         super(configurationContext);
 
-        this.configurationContext = configurationContext;
-
         worlds = configurationContext.worlds;
 
-        playerInfo = storageManager.getStorageMap("playerInfo", SupplementaryTypes.PLAYER_INFO);
+        playerInfo = storageManager.getDistributedStorageMap("playerInfo", SupplementaryTypes.PLAYER_INFO);
         registerPlayerInfoLoader(playerInfo, FACTORY);
 
         WorldContainer.initialize(storageManager);
@@ -79,7 +77,7 @@ public final class BlockSaverInfoManager extends InfoManager {
 
         final Reinforcement reinforcement = worldContainers.get(worldName).getReinforcement(location);
         // TODO: Remove this possibly unecessary double-check.
-        configurationContext.getReinforcementManager().floorReinforcement(reinforcement);
+        reinforcementManager.floorReinforcement(reinforcement, location);
         return reinforcement;
     }
 
@@ -89,7 +87,7 @@ public final class BlockSaverInfoManager extends InfoManager {
             return;
         }
 
-        worldContainers.get(worldName).setReinforcement(location, playerName, value);
+        worldContainers.get(worldName).setReinforcement(location, playerName, value, reinforcementManager.getMaterialReinforcementCoefficient(location.getBlock().getType()));
     }
 
     public void reinforce(final Location location, final String playerName, float value) {
@@ -98,11 +96,11 @@ public final class BlockSaverInfoManager extends InfoManager {
             return;
         }
 
-        if (configurationContext.getReinforcementManager().isReinforced(location)) {
+        if (reinforcementManager.isReinforced(location)) {
             value += getReinforcement(location).getReinforcementValue();
         }
 
-        worldContainers.get(worldName).setReinforcement(location, playerName, value);
+        worldContainers.get(worldName).setReinforcement(location, playerName, value, reinforcementManager.getMaterialReinforcementCoefficient(location.getBlock().getType()));
     }
 
     public PlayerInfo getPlayerInfo(final String playerName) {
@@ -139,5 +137,14 @@ public final class BlockSaverInfoManager extends InfoManager {
         }
 
         return true;
+    }
+
+    // package private
+    void setReinforcementManager(ReinforcementManager reinforcementManager) {
+        this.reinforcementManager = reinforcementManager;
+    }
+
+    public ReinforcementManager getReinforcementManager() {
+        return reinforcementManager;
     }
 }

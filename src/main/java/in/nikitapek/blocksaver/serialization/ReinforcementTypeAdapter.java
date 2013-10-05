@@ -15,25 +15,21 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 
-public final class ReinforcementTypeAdapter implements GsonTypeAdapter<Location> {
-    private static final Type TYPE = SupplementaryTypes.LOCATION;
+public final class ReinforcementTypeAdapter implements GsonTypeAdapter<Reinforcement> {
+    private static final Type TYPE = SupplementaryTypes.REINFORCEMENT;
+
+    public static String currentWorld;
 
     @Override
-    public JsonElement serialize(final Location src, final Type typeOfSrc, final JsonSerializationContext context) {
-        final JsonArray arr = new JsonArray();
-        arr.add(new JsonPrimitive(src.getWorld().getName()));
-        arr.add(new JsonPrimitive(src.getX()));
-        arr.add(new JsonPrimitive(src.getY()));
-        arr.add(new JsonPrimitive(src.getZ()));
+    public JsonElement serialize(final Reinforcement src, final Type typeOfSrc, final JsonSerializationContext context) {
 
-        return arr;
+        return null;
     }
 
     @Override
-    public Location deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) {
-        final JsonArray arr = json.getAsJsonArray();
-        final World w = Bukkit.getWorld(arr.get(0).getAsString());
-        return new Location(w, arr.get(1).getAsDouble(), arr.get(2).getAsDouble(), arr.get(3).getAsDouble());
+    public Reinforcement deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) {
+
+        return null;
     }
 
     @Override
