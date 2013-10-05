@@ -255,6 +255,7 @@ public final class ReinforcementManager {
             } else {
                 player.getInventory().remove(item);
             }
+            player.updateInventory();
         }
         return true;
     }
