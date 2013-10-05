@@ -4,10 +4,12 @@ import com.amshulman.mbapi.commands.PlayerOnlyCommand;
 import com.amshulman.typesafety.TypeSafeCollections;
 import com.amshulman.typesafety.TypeSafeList;
 import com.sk89q.worldedit.BlockVector;
+import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.regions.CuboidRegionSelector;
 import com.sk89q.worldedit.regions.Polygonal2DRegion;
 import in.nikitapek.blocksaver.commands.CommandBlockSaver.BlockSaverCommands;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
@@ -44,11 +46,19 @@ public final class CommandReinforce extends PlayerOnlyCommand {
             return true;
         }
 
-        Iterable<BlockVector> selector;
+        Iterable<BlockVector> selector = null;
         if (selection instanceof CuboidSelection) {
-            selector = (CuboidRegion) selection.getRegionSelector();
+            try {
+                selector = (CuboidRegion) selection.getRegionSelector().getRegion();
+            } catch (IncompleteRegionException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
         } else if (selection instanceof Polygonal2DRegion) {
-            selector = (Polygonal2DRegion) selection.getRegionSelector();
+            try {
+                selector = (Polygonal2DRegion) selection.getRegionSelector().getRegion();
+            } catch (IncompleteRegionException e) {
+                e.printStackTrace();
+            }
         } else {
             if (playerInfo.isReceivingTextFeedback) {
                 player.sendMessage("Invalid selection.");
