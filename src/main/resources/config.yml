@@ -97,7 +97,7 @@ allowReinforcementHealing: true
 ## The amount of time before a block "heals" its reinforcement, if allowReinforcementHealing is set to true.
 # Note: must be a value greater than zero. The value is measured in seconds.
 # Default: 5
-reinforcementHealTime: 5
+reinforcementHealingTime: 5
 
 ## Whether or not a block remains in place when its RV reaches 0.
 # Note: if this is set to true, when RV reaches 0, the reinforcement is simply removed. Otherwise, the block gets destroyed.
