@@ -100,7 +100,6 @@ public final class BlockSaverListener implements Listener {
         }
 
         final Location location = block.getLocation();
-        final ItemStack item = player.getItemInHand();
 
         if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
             return;
