@@ -1,17 +1,15 @@
 package in.nikitapek.blocksaver.commands.blocksaver;
 
+import com.amshulman.mbapi.commands.PlayerOnlyCommand;
+import com.amshulman.typesafety.TypeSafeCollections;
+import com.amshulman.typesafety.TypeSafeList;
 import in.nikitapek.blocksaver.commands.CommandBlockSaver.BlockSaverCommands;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.serialization.PlayerInfo;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import com.amshulman.mbapi.commands.PlayerOnlyCommand;
-import com.amshulman.typesafety.TypeSafeCollections;
-import com.amshulman.typesafety.TypeSafeList;
 
 public final class CommandFeedback extends PlayerOnlyCommand {
     private static final String FEEDBACK_ENABLED = ChatColor.GRAY + "You are now receiving reinforcement-related text feedback.";

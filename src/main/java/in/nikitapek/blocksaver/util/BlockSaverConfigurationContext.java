@@ -1,24 +1,5 @@
 package in.nikitapek.blocksaver.util;
 
-import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
-import in.nikitapek.blocksaver.management.FeedbackManager;
-import in.nikitapek.blocksaver.management.ReinforcementManager;
-import in.nikitapek.blocksaver.serialization.Reinforcement;
-import in.nikitapek.blocksaver.serialization.LocationTypeAdapter;
-import in.nikitapek.blocksaver.serialization.ReinforcementTypeAdapter;
-
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.logging.Level;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Effect;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.configuration.ConfigurationSection;
-
 import com.amshulman.mbapi.MbapiPlugin;
 import com.amshulman.mbapi.util.ConfigurationContext;
 import com.amshulman.typesafety.TypeSafeMap;
@@ -27,6 +8,22 @@ import com.amshulman.typesafety.gson.TypeSafeMapTypeAdapter;
 import com.amshulman.typesafety.gson.TypeSafeSetTypeAdapter;
 import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 import com.amshulman.typesafety.impl.TypeSafeSetImpl;
+import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
+import in.nikitapek.blocksaver.management.FeedbackManager;
+import in.nikitapek.blocksaver.management.ReinforcementManager;
+import in.nikitapek.blocksaver.serialization.LocationTypeAdapter;
+import in.nikitapek.blocksaver.serialization.Reinforcement;
+import org.bukkit.Bukkit;
+import org.bukkit.Effect;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.configuration.ConfigurationSection;
+
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.logging.Level;
 
 public final class BlockSaverConfigurationContext extends ConfigurationContext {
     private final static double EXTINGUISH_CHANCE = 0.9;
@@ -86,8 +83,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             reinforceSuccessSound = Sound.valueOf(plugin.getConfig().getString("reinforceSuccessSound", Sound.ANVIL_USE.toString()));
             reinforceFailSound = Sound.valueOf(plugin.getConfig().getString("reinforceFailSound", Sound.BLAZE_HIT.toString()));
             hitFailSound = Sound.valueOf(plugin.getConfig().getString("hitFailSound", Sound.CREEPER_DEATH.toString()));
-        }
-        catch (final IllegalArgumentException ex) {
+        } catch (final IllegalArgumentException ex) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load one or more Effect values. Reverting to defaults.");
 
             reinforcementDamageFailEffect = Effect.EXTINGUISH;
@@ -232,7 +228,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
 
         try {
             materialId = Integer.parseInt(materialName);
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return Material.getMaterial(materialName);
         }
 

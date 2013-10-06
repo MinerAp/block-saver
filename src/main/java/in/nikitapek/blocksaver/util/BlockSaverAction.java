@@ -1,5 +1,7 @@
 package in.nikitapek.blocksaver.util;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import me.botsko.prism.actionlibs.QueryParameters;
@@ -7,12 +9,8 @@ import me.botsko.prism.actions.GenericAction;
 import me.botsko.prism.appliers.ChangeResult;
 import me.botsko.prism.appliers.ChangeResultType;
 import me.botsko.prism.appliers.PrismProcessType;
-
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 public final class BlockSaverAction extends GenericAction {
     private static ReinforcementManager reinforcementManager;

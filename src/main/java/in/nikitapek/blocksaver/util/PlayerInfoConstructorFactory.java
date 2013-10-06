@@ -1,8 +1,7 @@
 package in.nikitapek.blocksaver.util;
 
-import in.nikitapek.blocksaver.serialization.PlayerInfo;
-
 import com.amshulman.mbapi.util.ConstructorFactory;
+import in.nikitapek.blocksaver.serialization.PlayerInfo;
 
 public final class PlayerInfoConstructorFactory extends ConstructorFactory<PlayerInfo> {
     @Override

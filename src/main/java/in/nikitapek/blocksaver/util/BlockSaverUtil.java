@@ -1,15 +1,11 @@
 package in.nikitapek.blocksaver.util;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
-import org.bukkit.Location;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Firework;
 import org.bukkit.inventory.meta.FireworkMeta;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public final class BlockSaverUtil {
     public static final short MILLISECONDS_PER_SECOND = 1000;
@@ -17,7 +13,8 @@ public final class BlockSaverUtil {
     public static final int HANDS_TOOL_CODE = -1;
     public static final int ALL_TOOL_CODE = -2;
 
-    private BlockSaverUtil() {}
+    private BlockSaverUtil() {
+    }
 
     public static void sendParticleEffect(final Location location, final int reinforcementValue, final int reinforcementValueCoefficient) {
         World world = location.getWorld();
@@ -62,8 +59,7 @@ public final class BlockSaverUtil {
             Object nms_world = getMethod(world.getClass(), "getHandle").invoke(world);
             getMethod(nms_world.getClass(), "broadcastEntityEffect").invoke(nms_world, getMethod(firework.getClass(), "getHandle").invoke(firework), (byte) 17);
             firework.remove();
-        }
-        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             e.printStackTrace();
         }
 

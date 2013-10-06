@@ -1,15 +1,11 @@
 package in.nikitapek.blocksaver.management;
 
+import com.amshulman.typesafety.TypeSafeMap;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
 import in.nikitapek.blocksaver.util.BlockSaverFeedback;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,12 +13,13 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.Action;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonExtensionMaterial;
 
-import com.amshulman.typesafety.TypeSafeMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
 
 public final class ReinforcementManager {
     private static final byte NO_REINFORCEMENT_VALUE = -1;
@@ -422,7 +419,7 @@ public final class ReinforcementManager {
 
     public void explodeBlocks(final List<Block> blockList, final EntityType entityType) {
 
-        for (final Iterator<Block> iter = blockList.iterator(); iter.hasNext();) {
+        for (final Iterator<Block> iter = blockList.iterator(); iter.hasNext(); ) {
             final Block block = iter.next();
             final Location location = block.getLocation();
 
