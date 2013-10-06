@@ -67,7 +67,7 @@ public final class BlockSaverUtil {
 
         try {
             Object nms_world = getMethod(world.getClass(), "getHandle").invoke(world);
-            getMethod(nms_world.getClass(), "broadcastEntityEffect").invoke(nms_world, new Object[] { getMethod(firework.getClass(), "getHandle").invoke(firework), (byte) 17 });
+            getMethod(nms_world.getClass(), "broadcastEntityEffect").invoke(nms_world, getMethod(firework.getClass(), "getHandle").invoke(firework), (byte) 17);
             firework.remove();
         }
         catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
