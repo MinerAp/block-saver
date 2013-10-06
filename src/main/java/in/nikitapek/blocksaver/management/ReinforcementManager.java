@@ -114,13 +114,8 @@ public final class ReinforcementManager {
         return reinforcementBlocks.containsKey(material);
     }
 
-    public boolean canPlayerReinforce(final Player player, Action action) {
-        // If the player is not placing a block, continue as normal.
-        if (Action.LEFT_CLICK_BLOCK.equals(action)) {
-            return !Material.AIR.equals(getReinforcingMaterial(player));
-        } else {
-            return infoManager.getPlayerInfo(player.getName()).isInReinforcementMode;
-        }
+    public boolean isPlayerInReinforcementMode(final Player player) {
+        return infoManager.getPlayerInfo(player.getName()).isInReinforcementMode;
     }
 
     private Material getReinforcingMaterial(final Player player) {
