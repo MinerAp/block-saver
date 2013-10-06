@@ -32,7 +32,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     private final static double EXTINGUISH_CHANCE = 0.9;
 
     public Effect reinforcementDamageFailEffect;
-    public Effect reinforcementDamageSuccessEffect;
     public Sound reinforceSuccessSound;
     public Sound reinforceFailSound;
     public Sound hitFailSound;
@@ -69,9 +68,9 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     private final ReinforcementManager reinforcementManager;
 
     public BlockSaverConfigurationContext(final MbapiPlugin plugin) {
-        super(plugin, 
+        super(plugin,
                 new TypeSafeMapTypeAdapter<>(SupplementaryTypes.HASHMAP, SupplementaryTypes.LOCATION, SupplementaryTypes.REINFORCEMENT),
-                new TypeSafeSetTypeAdapter<Reinforcement>(SupplementaryTypes.HASHSET, SupplementaryTypes.REINFORCEMENT), 
+                new TypeSafeSetTypeAdapter<Reinforcement>(SupplementaryTypes.HASHSET, SupplementaryTypes.REINFORCEMENT),
                 new LocationTypeAdapter());
 
         worlds = new TypeSafeSetImpl<>(new HashSet<String>(), SupplementaryTypes.STRING);
@@ -84,7 +83,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         try {
             // Note: setting the default values here might be unnecessary because if the config values fail to load and it defaults to these, they will never result in an exception.
             reinforcementDamageFailEffect = Effect.valueOf(plugin.getConfig().getString("reinforcementDamageFailEffect", Effect.EXTINGUISH.toString()));
-            reinforcementDamageSuccessEffect = Effect.valueOf(plugin.getConfig().getString("reinforcementDamageSuccessEffect", Effect.POTION_BREAK.toString()));
             reinforceSuccessSound = Sound.valueOf(plugin.getConfig().getString("reinforceSuccessSound", Sound.ANVIL_USE.toString()));
             reinforceFailSound = Sound.valueOf(plugin.getConfig().getString("reinforceFailSound", Sound.BLAZE_HIT.toString()));
             hitFailSound = Sound.valueOf(plugin.getConfig().getString("hitFailSound", Sound.CREEPER_DEATH.toString()));
@@ -93,7 +91,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             plugin.getLogger().log(Level.SEVERE, "Failed to load one or more Effect values. Reverting to defaults.");
 
             reinforcementDamageFailEffect = Effect.EXTINGUISH;
-            reinforcementDamageSuccessEffect = Effect.POTION_BREAK;
             reinforceSuccessSound = Sound.ANVIL_USE;
             reinforceFailSound = Sound.BLAZE_HIT;
             hitFailSound = Sound.CREEPER_DEATH;

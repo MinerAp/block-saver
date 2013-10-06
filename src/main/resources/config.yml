@@ -19,13 +19,6 @@ primaryFeedback: visual
 # Default: EXTINGUISH
 reinforcementDamageFailEffect: EXTINGUISH
 
-## The name of the effect to be played when a player successfully damages a reinforced block.
-# Notes:
-#   Please use an effect contained within the Effect class.
-#   This value can be overridden by the useParticleEffects option, which, if enabled, will instead use coloured particle effects to represent the state of the block as it is damaged or reinforced.
-# Default: POTION_BREAK
-reinforcementDamageSuccessEffect: POTION_BREAK
-
 ## The name of the sound to be played when a player reinforces a block.
 # Note: please use a sound contained within the Sound class.
 # Default: ANVIL_USE
