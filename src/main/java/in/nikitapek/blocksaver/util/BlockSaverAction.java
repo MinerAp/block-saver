@@ -179,7 +179,7 @@ public final class BlockSaverAction extends GenericAction {
                 return ChangeResultType.APPLIED;
             }
 
-            reinforcementManager.reinforce(getLoc(), getPlayerName(), -1);
+            reinforcementManager.removeReinforcement(getLoc());
             return ChangeResultType.APPLIED;
         }
     }
