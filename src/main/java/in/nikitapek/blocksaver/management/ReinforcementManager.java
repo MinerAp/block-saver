@@ -419,12 +419,12 @@ public final class ReinforcementManager {
 
         damageBlock(location, player, BlockSaverDamageCause.TOOL);
 
-        // If the block is no longer reinforced, and blocks are configured to break when their RV reaches 0, the event is allowed to proceed and break the block.
-        if (!isReinforced(location) && !leaveBlockAfterDeinforce) {
-            return true;
+        // If the block is reinforced, or blocks are not configured to break when their RV reaches 0, the event is not allowed to proceed.
+        if (isReinforced(location) || leaveBlockAfterDeinforce) {
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     public void explodeBlocks(final List<Block> blockList, final EntityType entityType) {

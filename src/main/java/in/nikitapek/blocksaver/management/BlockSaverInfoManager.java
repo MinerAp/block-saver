@@ -128,11 +128,8 @@ public final class BlockSaverInfoManager extends InfoManager {
         if (!isWorldLoaded(worldName)) {
             return false;
         }
-        if (!worldContainers.get(worldName).isReinforced(location)) {
-            return false;
-        }
 
-        return true;
+        return worldContainers.get(worldName).isReinforced(location);
     }
 
     // package private
