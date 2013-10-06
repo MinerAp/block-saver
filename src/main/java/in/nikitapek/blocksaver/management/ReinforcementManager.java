@@ -44,7 +44,7 @@ public final class ReinforcementManager {
     private final int reinforcementHealingTime;
 
     private final TypeSafeMap<Material, Integer> reinforceableBlocks;
-    public final TypeSafeMap<Material, Integer> reinforcementBlocks;
+    private final TypeSafeMap<Material, Integer> reinforcementBlocks;
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
