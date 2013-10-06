@@ -1,26 +1,24 @@
 package in.nikitapek.blocksaver.commands.blocksaver;
 
+import com.amshulman.mbapi.commands.PlayerOnlyCommand;
+import com.amshulman.typesafety.TypeSafeCollections;
+import com.amshulman.typesafety.TypeSafeList;
 import in.nikitapek.blocksaver.commands.CommandBlockSaver.BlockSaverCommands;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.serialization.PlayerInfo;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.amshulman.mbapi.commands.PlayerOnlyCommand;
-import com.amshulman.typesafety.TypeSafeCollections;
-import com.amshulman.typesafety.TypeSafeList;
-
-public final class CommandFeedback extends PlayerOnlyCommand {
-    private static final String FEEDBACK_ENABLED = ChatColor.GRAY + "You are now receiving reinforcement-related text feedback.";
-    private static final String FEEDBACK_DISABLED = ChatColor.GRAY + "You are no longer receiving reinforcement-related text feedback.";
+public final class CommandAutoenforce extends PlayerOnlyCommand {
+    private static final String AUTOENFORCE_ENABLED = ChatColor.GRAY + "You are now in auto-reinforcement mode.";
+    private static final String AUTOENFORCE_DISABLED = ChatColor.GRAY + "You are no longer in auto-reinforcement mode.";
 
     private final BlockSaverInfoManager infoManager;
 
-    public CommandFeedback(final BlockSaverConfigurationContext configurationContext) {
-        super(configurationContext, BlockSaverCommands.FEEDBACK, 0, 0);
+    public CommandAutoenforce(final BlockSaverConfigurationContext configurationContext) {
+        super(configurationContext, BlockSaverCommands.AUTOENFORCE, 0, 0);
         infoManager = configurationContext.infoManager;
     }
 
@@ -28,12 +26,14 @@ public final class CommandFeedback extends PlayerOnlyCommand {
     protected boolean executeForPlayer(final Player player, final TypeSafeList<String> args) {
         final PlayerInfo playerInfo = infoManager.getPlayerInfo(player.getName());
 
-        playerInfo.isReceivingTextFeedback = !playerInfo.isReceivingTextFeedback;
+        playerInfo.isInReinforcementMode = !playerInfo.isInReinforcementMode;
 
         if (playerInfo.isReceivingTextFeedback) {
-            player.sendMessage(FEEDBACK_ENABLED);
-        } else {
-            player.sendMessage(FEEDBACK_DISABLED);
+            if (playerInfo.isInReinforcementMode) {
+                player.sendMessage(AUTOENFORCE_ENABLED);
+            } else {
+                player.sendMessage(AUTOENFORCE_DISABLED);
+            }
         }
 
         return true;

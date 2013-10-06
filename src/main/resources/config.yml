@@ -143,6 +143,10 @@ worlds:
 # Default: true
 enableLogging: true
 
+## Whether or not to integrate BlockSaver into WorldEdit.
+# Default: true
+integrateWorldEdit: true
+
 
 #======== Reinforcement Item List ========#
 

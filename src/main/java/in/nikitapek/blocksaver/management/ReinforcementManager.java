@@ -10,12 +10,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.Action;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonExtensionMaterial;
@@ -49,6 +51,7 @@ public final class ReinforcementManager {
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
         this.feedbackManager = configurationContext.feedbackManager;
         this.infoManager = configurationContext.infoManager;
+        infoManager.setReinforcementManager(this);
 
         // Retrieves all of the configuration values relevant to Reinforcement managing from configurationContext.
         this.accumulateReinforcementValues = configurationContext.accumulateReinforcementValues;
@@ -111,6 +114,38 @@ public final class ReinforcementManager {
 
     public boolean canMaterialReinforce(final Material material) {
         return reinforcementBlocks.containsKey(material);
+    }
+
+    public boolean canPlayerReinforce(final Player player, Action action) {
+        // If the player is not placing a block, continue as normal.
+        if (Action.LEFT_CLICK_BLOCK.equals(action)) {
+            return !Material.AIR.equals(getReinforcingMaterial(player));
+        } else {
+            return infoManager.getPlayerInfo(player.getName()).isInReinforcementMode;
+        }
+    }
+
+    private Material getReinforcingMaterial(final Player player) {
+        // If the player is not in reinforcement mode, then we only check the item in their hand.
+        if (!infoManager.getPlayerInfo(player.getName()).isInReinforcementMode) {
+            Material itemInHandMaterial = player.getItemInHand().getType();
+            if (canMaterialReinforce(itemInHandMaterial)) {
+                return itemInHandMaterial;
+            } else {
+                return Material.AIR;
+            }
+        }
+
+        // Otherwise, loop through all the reinforcement items and check if the player has one of these.
+        for (Material material : reinforcementBlocks.getMap().keySet()) {
+            int index = player.getInventory().first(material);
+
+            if (index != -1) {
+                return material;
+            }
+        }
+
+        return Material.AIR;
     }
 
     private boolean canToolDamageBlock(final Location location, final ItemStack tool) {
@@ -179,12 +214,14 @@ public final class ReinforcementManager {
         return true;
     }
 
-    public boolean attemptReinforcement(final Location location, final Material reinforcementMaterial, final Player player) {
+    public boolean attemptReinforcement(final Location location, final Player player) {
         final Block block = location.getBlock();
         final String playerName = player.getName();
+        final Material material = getReinforcingMaterial(player);
+        final ItemStack item = player.getInventory().getItem(player.getInventory().first(material));
 
         // If the material cannot be used for reinforcement, the reinforcement fails.
-        if (!canMaterialReinforce(reinforcementMaterial)) {
+        if (!canMaterialReinforce(material)) {
             feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
             return false;
         }
@@ -200,7 +237,7 @@ public final class ReinforcementManager {
         }
 
         // Retrieves the amount the material will reinforce the block by.
-        int additionalReinforcementValue = reinforcementBlocks.get(reinforcementMaterial);
+        int additionalReinforcementValue = reinforcementBlocks.get(material);
 
         // If the material being used to reinforce has a reinforcement maximizing coefficient, then we want to set the block to its maximum possible enforcement.
         if (additionalReinforcementValue == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
@@ -216,6 +253,16 @@ public final class ReinforcementManager {
         reinforce(location, playerName, additionalReinforcementValue);
 
         feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
+
+        // The amount of the reinforcement material in the player's hand is decreased.
+        if (!GameMode.CREATIVE.equals(player.getGameMode())) {
+            if (item.getAmount() > 1) {
+                item.setAmount(item.getAmount() - 1);
+            } else {
+                player.getInventory().remove(item);
+            }
+            player.updateInventory();
+        }
         return true;
     }
 
@@ -225,7 +272,7 @@ public final class ReinforcementManager {
         removeReinforcement(block.getLocation());
     }
 
-    public void floorReinforcement(final Reinforcement reinforcement) {
+    public void floorReinforcement(final Reinforcement reinforcement, final Location location) {
         // If blocks are allowed to accumulate RV, then there is no need to floor the RV.
         if (accumulateReinforcementValues) {
             return;
@@ -236,10 +283,10 @@ public final class ReinforcementManager {
         }
 
         // Checks to see if the maximum RV is less than the actual RV. If so, floors the RV.
-        final int maximumReinforcement = getMaterialReinforcementCoefficient(reinforcement.getBlock().getType());
+        final int maximumReinforcement = getMaterialReinforcementCoefficient(location.getBlock().getType());
 
         if (reinforcement.getReinforcementValue() > maximumReinforcement) {
-            infoManager.setReinforcement(reinforcement.getLocation(), reinforcement.getCreatorName(), maximumReinforcement);
+            infoManager.setReinforcement(location, reinforcement.getCreatorName(), maximumReinforcement);
         }
     }
 
@@ -253,7 +300,7 @@ public final class ReinforcementManager {
         // Heals the block if the plugin is configured to do so and the required amount of time has elapsed.
         if (allowReinforcementHealing) {
             if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
-                reinforcement.setReinforcementValue(reinforcement.getLastMaximumValue());
+                reinforcement.setReinforcementValue(getMaterialReinforcementCoefficient(location.getBlock().getType()), getMaterialReinforcementCoefficient(location.getBlock().getType()));
             }
         }
 
@@ -278,9 +325,9 @@ public final class ReinforcementManager {
         // Damage the reinforcement on the block.
         // If the cause of damage is TNT, handle the RV decrease specially.
         if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
-            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - ((float) Math.pow(getMaterialReinforcementCoefficient(reinforcement.getBlock().getType()), 2) / 100));
+            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - ((float) Math.pow(getMaterialReinforcementCoefficient(location.getBlock().getType()), 2) / 100), getMaterialReinforcementCoefficient(location.getBlock().getType()));
         } else {
-            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1);
+            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1, getMaterialReinforcementCoefficient(location.getBlock().getType()));
         }
 
         feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, player);
@@ -323,7 +370,7 @@ public final class ReinforcementManager {
         infoManager.removeReinforcement(getProperLocation(location));
     }
 
-    public Location getProperLocation(final Location location) {
+    public static Location getProperLocation(final Location location) {
         final Block block = location.getBlock();
 
         if (block.getType().equals(Material.PISTON_EXTENSION)) {

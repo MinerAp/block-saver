@@ -61,11 +61,15 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        if (!reinforcementManager.isReinforced(location)) {
-            return;
+        if (reinforcementManager.isReinforced(location)) {
+            reinforcementManager.removeReinforcement(location);
         }
 
-        reinforcementManager.removeReinforcement(location);
+        // If the player has placed a block and is currently in auto-reinforce mode, an attempt is made to reinforce the newly placed block.
+        final Player player = event.getPlayer();
+        if (reinforcementManager.canPlayerReinforce(player, Action.RIGHT_CLICK_BLOCK)) {
+            reinforcementManager.attemptReinforcement(location, player);
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -103,34 +107,23 @@ public final class BlockSaverListener implements Listener {
         }
 
         // If the player is not left-clicking, then the player is not attempting to reinforce or damage a block.
-        if (Action.LEFT_CLICK_BLOCK.equals(event.getAction())) {
-            // If the player is not attempting a reinforcement, they may be trying to damage a reinforced block, and so a check is performed.
-            if (!reinforcementManager.canMaterialReinforce(item.getType())) {
-                if (!reinforcementManager.canPlayerDamageBlock(location, player, true)) {
-                    event.setCancelled(true);
-                }
-                return;
-            }
-
-            // The event is cancelled because if the reinforcement fails, we do not want left click actions registering with reinforcement blocks anyways.
-            event.setCancelled(true);
-
-            // An attempt is made to reinforce the block the player clicks, which, if not successful, exits the event.
-            if (!reinforcementManager.attemptReinforcement(location, item.getType(), player)) {
-                return;
-            }
-
-            // The amount of the reinforcement material in the player's hand is decreased.
-            if (!GameMode.CREATIVE.equals(player.getGameMode())) {
-                if (item.getAmount() > 1) {
-                    item.setAmount(item.getAmount() - 1);
-                } else {
-                    player.getInventory().remove(item);
-                }
-            }
-        } else if (Action.PHYSICAL.equals(event.getAction()) && Material.SOIL.equals(event.getClickedBlock().getType()) && !allowBlockFading && reinforcementManager.isReinforced(location)) {
-            event.setCancelled(true);
+        if (!Action.LEFT_CLICK_BLOCK.equals(event.getAction())) {
+            return;
         }
+
+        // If the player is not attempting a reinforcement, they may be trying to damage a reinforced block, and so a check is performed.
+        if (!reinforcementManager.canMaterialReinforce(player.getItemInHand().getType())) {
+            if (!reinforcementManager.canPlayerDamageBlock(location, player, true)) {
+                event.setCancelled(true);
+            }
+            return;
+        }
+
+        // The event is cancelled because if the reinforcement fails, we do not want left click actions registering with reinforcement blocks anyways.
+        event.setCancelled(true);
+
+        // An attempt is made to reinforce the block the player clicks, which, if not successful, exits the event.
+        reinforcementManager.attemptReinforcement(location, player);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -172,7 +165,14 @@ public final class BlockSaverListener implements Listener {
             entity = event.getEntity();
         }
 
-        reinforcementManager.explodeBlocks(event.blockList(), entity.getType());
+        final EntityType entityType = entity.getType();
+
+        // If the event is caused by neither TNT, nor a dragon, nor a wither, it is of no relevance.
+        if (!EntityType.PRIMED_TNT.equals(entityType) && !EntityType.ENDER_DRAGON.equals(entityType) && !EntityType.WITHER.equals(entityType) && !EntityType.WITHER_SKULL.equals(entityType)) {
+            return;
+        }
+
+        reinforcementManager.explodeBlocks(event.blockList(), entityType);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

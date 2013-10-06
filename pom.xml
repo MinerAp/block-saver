@@ -6,14 +6,14 @@
 	<groupId>in.nikitapek</groupId>
 	<artifactId>block-saver</artifactId>
 	<name>BlockSaver</name>
-	<version>${mbapi.version}.1</version>
+	<version>${mbapi.version}.0</version>
 	<description>A plugin to provide block reinforcement for the purposes of block protection.</description>
 	<url>http://dev.bukkit.org/server-mods/blocksaver/</url>
 
 	<parent>
 		<groupId>com.amshulman</groupId>
 		<artifactId>bukkit-parent</artifactId>
-		<version>0.14</version>
+		<version>0.15</version>
 	</parent>
 
 	<distributionManagement>
@@ -34,6 +34,10 @@
 			<id>minerap-repo</id>
 			<name>MinerAp</name>
 			<url>https://www.minerap.com/repository/</url>
+		</repository>
+		<repository>
+			<id>sk89q-repo</id>
+			<url>http://maven.sk89q.com/repo/</url>
 		</repository>
 	</repositories>
 
@@ -58,6 +62,13 @@
 			<groupId>me.botsko</groupId>
 			<artifactId>prism</artifactId>
 			<version>${prism.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- WorldEdit -->
+		<dependency>
+			<groupId>com.sk89q</groupId>
+			<artifactId>worldedit</artifactId>
+			<version>5.5.8</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

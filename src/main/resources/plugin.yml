@@ -4,17 +4,22 @@ load: POSTWORLD
 version: ${project.version}
 author: Indiv0
 description: A plugin for providing block protection capabilities on a server.
-softdepend: [Prism]
+softdepend: [Prism, WorldEdit]
 dev-url: http://github.com/Indiv0/block-saver/
 
 commands:
   blocksaver:
     description: Controls all functions of the BlockSaver plugin.
     usage: |
-      /<command> feedback [true|false] - Toggles feedback in chat
+      /<command> feedback - Toggles feedback in chat
+      /<command> autoenforce - Toggles auto-reinforcement mode
+      /<command> reinforce - Reinforces the WorldEdit selection
 
 permissions:
   blocksaver.blocksaver.feedback:
+    children:
+      blocksaver.blocksaver: true
+  blocksaver.blocksaver.autoenforce:
     children:
       blocksaver.blocksaver: true
   blocksaver.reinforce:
