@@ -131,6 +131,14 @@ public final class ReinforcementManager {
             int index = player.getInventory().first(material);
 
             if (index != -1) {
+                // If the player has a reinforcing material, then a check is made to see if this is the item being placed.
+                // If there is, and there is only 1 left, then it is not used as the reinforcing item is being used up by being placed on the ground.
+                if (index == 0) {
+                    if (player.getItemInHand().getAmount() == 1) {
+                        continue;
+                    }
+                }
+
                 return material;
             }
         }
