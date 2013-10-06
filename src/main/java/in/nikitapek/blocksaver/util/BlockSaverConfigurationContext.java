@@ -71,9 +71,9 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
                 new LocationTypeAdapter());
 
         worlds = new TypeSafeSetImpl<>(new HashSet<String>(), SupplementaryTypes.STRING);
-        reinforceableBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
-        reinforcementBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
-        toolRequirements = new TypeSafeMapImpl<Material, List<Integer>>(new EnumMap<Material, List<Integer>>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.LIST);
+        reinforceableBlocks = new TypeSafeMapImpl<>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
+        reinforcementBlocks = new TypeSafeMapImpl<>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
+        toolRequirements = new TypeSafeMapImpl<>(new EnumMap<Material, List<Integer>>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.LIST);
 
         plugin.saveDefaultConfig();
 
@@ -180,7 +180,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         } else {
             for (final String materialName : configSection.getKeys(false)) {
                 final Material blockMaterial = loadMaterial(materialName);
-                final List<Integer> tools = new ArrayList<Integer>();
+                final List<Integer> tools = new ArrayList<>();
 
                 for (final String split : configSection.getString(materialName).split(",")) {
                     // If HANDS is a supplied tool we add -1 to the tool list to represent it.
