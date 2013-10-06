@@ -8,7 +8,7 @@ public final class Reinforcement {
 
     private transient final String creatorName;
     private transient long timeCreated;
-    private transient float value;
+    private transient float value = BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT;
     private transient long timeStamp;
 
     public Reinforcement(final String creatorName, final float value) {
@@ -46,6 +46,10 @@ public final class Reinforcement {
     }
 
     public void setReinforcementValue(final float value, final float coefficient) {
+        if (this.value == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
+            this.value = coefficient;
+        }
+
         if (value > coefficient) {
             this.value = coefficient;
         } else {
