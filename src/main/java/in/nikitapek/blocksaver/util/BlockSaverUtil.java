@@ -17,13 +17,6 @@ public final class BlockSaverUtil {
     public static final int HANDS_TOOL_CODE = -1;
     public static final int ALL_TOOL_CODE = -2;
 
-    // The ID of the packet used for particle effects.
-    private static final byte PARTICLE_EFFECT_PACKET = 61;
-    // The default potion to be used to represent a block's state.
-    private static final byte DEFAULT_POTION_EFFECT = 22;
-    // The data value for the particle effect packet required to send a potion effect.
-    private static final int POTION_PARTICLE_EFFECT_ID = 2002;
-
     private BlockSaverUtil() {}
 
     public static void sendParticleEffect(final Location location, final int reinforcementValue, final int reinforcementValueCoefficient) {
