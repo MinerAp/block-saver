@@ -84,11 +84,6 @@ pistonsMoveReinforcedBlocks: true
 # Default: false
 allowBlockFading: false
 
-## Whether or not the creator of the reinforcement should be given a grace period to remove the reinforcement if it is in an undesirable location.
-# Note: the item used in the reinforcement is not refunded.
-# Default: true
-allowReinforcementGracePeriod: true
-
 ## The amount of time the grace period should last to remove a reinforcement, if allowReinforcementGracePeriod is set to true.
 # Note: must be an integer value greater than zero. The value is measured in seconds.
 # Default: 3
@@ -143,16 +138,9 @@ integrateWorldEdit: true
 
 #======== Reinforcement Item List ========#
 
-## A list of all the items which can be used to reinforce blocks, and their corresponding reinforcement values.
-# Notes:
-#   Setting a value of -2 will mean the reinforcement will automatically be the maximum value the block can take.
-#   Any other value less than 1 is invalid.
-#   If "accumulateReinforcementValues" is set to true, any material set here with a reinforcement value of -2 will not reinforce blocks.
+## A list of all the items which can be used to reinforce blocks.
 reinforcementBlocks:
-  OBSIDIAN: -2
-  IRON_INGOT: 1
-  GOLD_INGOT: 3
-  DIAMOND: 10
+  - OBSIDIAN
 
 
 #======== Reinforceable Blocks List ========#

@@ -19,10 +19,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 
 public final class BlockSaverConfigurationContext extends ConfigurationContext {
@@ -33,7 +30,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public Sound reinforceFailSound;
     public Sound hitFailSound;
 
-    public final boolean accumulateReinforcementValues;
     public final boolean tntDamagesReinforcedBlocks;
     public final boolean tntStripReinforcementEntirely;
     public final boolean liquidsDestroyReinforcedBlocks;
@@ -59,7 +55,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
 
     public final TypeSafeSet<String> worlds;
     public final TypeSafeMap<Material, Integer> reinforceableBlocks;
-    public final TypeSafeMap<Material, Integer> reinforcementBlocks;
+    public final TypeSafeSet<Material> reinforcementBlocks;
     public final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     private final ReinforcementManager reinforcementManager;
@@ -72,7 +68,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
 
         worlds = new TypeSafeSetImpl<>(new HashSet<String>(), SupplementaryTypes.STRING);
         reinforceableBlocks = new TypeSafeMapImpl<>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
-        reinforcementBlocks = new TypeSafeMapImpl<>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
+        reinforcementBlocks = new TypeSafeSetImpl<>(new HashSet<Material>(), SupplementaryTypes.MATERIAL);
         toolRequirements = new TypeSafeMapImpl<>(new EnumMap<Material, List<Integer>>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.LIST);
 
         plugin.saveDefaultConfig();
@@ -92,7 +88,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             hitFailSound = Sound.CREEPER_DEATH;
         }
 
-        accumulateReinforcementValues = plugin.getConfig().getBoolean("accumulateReinforcementValues", false);
         tntDamagesReinforcedBlocks = plugin.getConfig().getBoolean("tntDamagesReinforcedBlocks", true);
         tntStripReinforcementEntirely = plugin.getConfig().getBoolean("tntStripReinforcementEntirely", false);
         liquidsDestroyReinforcedBlocks = plugin.getConfig().getBoolean("liquidsDestroyReinforcedBlocks", true);
@@ -159,18 +154,12 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             }
         }
 
-        configSection = plugin.getConfig().getConfigurationSection("reinforcementBlocks");
-        if (configSection == null) {
+        List<String> reinforcementBlocksList = (List<String>) plugin.getConfig().getList("reinforcementBlocks");
+        if (reinforcementBlocksList == null) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load reinforcement blocks list.");
         } else {
-            for (final String materialName : configSection.getKeys(false)) {
-                final int value = configSection.getInt(materialName);
-
-                if (value > 0 || value == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
-                    reinforcementBlocks.put(loadMaterial(materialName), value);
-                } else {
-                    plugin.getLogger().log(Level.WARNING, materialName + "has an invalid reinforcement value.");
-                }
+            for (String materialName : reinforcementBlocksList) {
+                this.reinforcementBlocks.add(loadMaterial(materialName));
             }
         }
 

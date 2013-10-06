@@ -5,7 +5,6 @@ import in.nikitapek.blocksaver.util.BlockSaverUtil;
 
 public final class Reinforcement {
     private static int gracePeriodTime;
-    private static boolean accumulateReinforcementValues;
 
     private transient final String creatorName;
     private transient long timeCreated;
@@ -20,7 +19,6 @@ public final class Reinforcement {
 
     public static void initialize(BlockSaverConfigurationContext configurationContext) {
         gracePeriodTime = configurationContext.gracePeriodTime;
-        accumulateReinforcementValues = configurationContext.accumulateReinforcementValues;
     }
 
     private void updateTimeStamp() {
@@ -48,7 +46,7 @@ public final class Reinforcement {
     }
 
     public void setReinforcementValue(final float value, final float coefficient) {
-        if (!accumulateReinforcementValues && value > coefficient) {
+        if (value > coefficient) {
             this.value = coefficient;
         } else {
             this.value = value;

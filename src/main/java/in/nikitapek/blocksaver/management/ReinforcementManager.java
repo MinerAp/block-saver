@@ -1,6 +1,7 @@
 package in.nikitapek.blocksaver.management;
 
 import com.amshulman.typesafety.TypeSafeMap;
+import com.amshulman.typesafety.TypeSafeSet;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
@@ -27,7 +28,6 @@ public final class ReinforcementManager {
     private final FeedbackManager feedbackManager;
     private final BlockSaverInfoManager infoManager;
 
-    private final boolean accumulateReinforcementValues;
     private final boolean tntDamagesReinforcedBlocks;
     private final boolean tntStripReinforcementEntirely;
     private final boolean fireDamagesReinforcedBlocks;
@@ -41,7 +41,7 @@ public final class ReinforcementManager {
     private final int reinforcementHealingTime;
 
     private final TypeSafeMap<Material, Integer> reinforceableBlocks;
-    private final TypeSafeMap<Material, Integer> reinforcementBlocks;
+    private final TypeSafeSet<Material> reinforcementBlocks;
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
@@ -50,7 +50,6 @@ public final class ReinforcementManager {
         infoManager.setReinforcementManager(this);
 
         // Retrieves all of the configuration values relevant to Reinforcement managing from configurationContext.
-        this.accumulateReinforcementValues = configurationContext.accumulateReinforcementValues;
         this.tntDamagesReinforcedBlocks = configurationContext.tntDamagesReinforcedBlocks;
         this.tntStripReinforcementEntirely = configurationContext.tntStripReinforcementEntirely;
         this.fireDamagesReinforcedBlocks = configurationContext.fireDamagesReinforcedBlocks;
@@ -86,11 +85,6 @@ public final class ReinforcementManager {
 
         final float reinforcementValue = reinforcement.getReinforcementValue();
 
-        // If reinforcement values are being accumulated, the RV cannot have reached RVC, and therefore the block is reinforceable.
-        if (accumulateReinforcementValues) {
-            return true;
-        }
-
         // If reinforcement values are being capped, and the RV is already at RVC, the block cannot be reinforced further.
         return reinforcementValue < coefficient;
     }
@@ -108,7 +102,7 @@ public final class ReinforcementManager {
     }
 
     public boolean canMaterialReinforce(final Material material) {
-        return reinforcementBlocks.containsKey(material);
+        return reinforcementBlocks.contains(material);
     }
 
     public boolean isPlayerInReinforcementMode(final Player player) {
@@ -127,7 +121,7 @@ public final class ReinforcementManager {
         }
 
         // Otherwise, loop through all the reinforcement items and check if the player has one of these.
-        for (Material material : reinforcementBlocks.getMap().keySet()) {
+        for (Material material : reinforcementBlocks) {
             int index = player.getInventory().first(material);
 
             if (index != -1) {
@@ -237,21 +231,7 @@ public final class ReinforcementManager {
             return;
         }
 
-        // Retrieves the amount the material will reinforce the block by.
-        int additionalReinforcementValue = reinforcementBlocks.get(material);
-
-        // If the material being used to reinforce has a reinforcement maximizing coefficient, then we want to set the block to its maximum possible enforcement.
-        if (additionalReinforcementValue == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
-            additionalReinforcementValue = getMaterialReinforcementCoefficient(block.getType());
-
-            // If there is no reinforcement value cap, then we cannot set the block to its maximum reinforcement, therefore the reinforcement fails.
-            if (accumulateReinforcementValues) {
-                feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
-                return;
-            }
-        }
-
-        reinforce(location, playerName, additionalReinforcementValue);
+        reinforce(location, playerName);
 
         feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
 
@@ -273,11 +253,6 @@ public final class ReinforcementManager {
     }
 
     public void floorReinforcement(final Reinforcement reinforcement, final Location location) {
-        // If blocks are allowed to accumulate RV, then there is no need to floor the RV.
-        if (accumulateReinforcementValues) {
-            return;
-        }
-
         if (reinforcement == null) {
             return;
         }
@@ -341,10 +316,6 @@ public final class ReinforcementManager {
 
     public void reinforce(final Location location, final String playerName) {
         infoManager.reinforce(location, playerName, getMaterialReinforcementCoefficient(location.getBlock().getType()));
-    }
-
-    public void reinforce(final Location location, final String playerName, final float amount) {
-        infoManager.reinforce(location, playerName, amount);
     }
 
     public boolean isReinforced(final Location location) {
