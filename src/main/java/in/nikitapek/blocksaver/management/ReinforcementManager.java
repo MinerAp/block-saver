@@ -334,7 +334,6 @@ public final class ReinforcementManager {
         // This uses less than 1 in case TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
         if (reinforcement.getReinforcementValue() < 1 || (player != null && !isFortified(reinforcement, player.getName()))) {
             removeReinforcement(location);
-            return;
         }
     }
 
