@@ -76,7 +76,7 @@ public final class BlockSaverInfoManager extends InfoManager {
         }
 
         final Reinforcement reinforcement = worldContainers.get(worldName).getReinforcement(location);
-        // TODO: Remove this possibly unecessary double-check.
+        // TODO: Remove this possibly unnecessary double-check.
         reinforcementManager.floorReinforcement(reinforcement, location);
         return reinforcement;
     }
