@@ -17,6 +17,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.Action;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonExtensionMaterial;
@@ -115,8 +116,13 @@ public final class ReinforcementManager {
         return reinforcementBlocks.containsKey(material);
     }
 
-    public boolean canPlayerReinforce(final Player player) {
-        return !Material.AIR.equals(getReinforcingMaterial(player));
+    public boolean canPlayerReinforce(final Player player, Action action) {
+        // If the player is not placing a block, continue as normal.
+        if (Action.LEFT_CLICK_BLOCK.equals(action)) {
+            return !Material.AIR.equals(getReinforcingMaterial(player));
+        } else {
+            return infoManager.getPlayerInfo(player.getName()).isInReinforcementMode;
+        }
     }
 
     private Material getReinforcingMaterial(final Player player) {
@@ -293,7 +299,7 @@ public final class ReinforcementManager {
 
         // Heals the block if the plugin is configured to do so and the required amount of time has elapsed.
         if (allowReinforcementHealing) {
-            if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {                
+            if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
                 reinforcement.setReinforcementValue(getMaterialReinforcementCoefficient(location.getBlock().getType()), getMaterialReinforcementCoefficient(location.getBlock().getType()));
             }
         }

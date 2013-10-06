@@ -65,7 +65,7 @@ public final class BlockSaverListener implements Listener {
 
         // If the player has placed a block and is currently in auto-reinforce mode, an attempt is made to reinforce the newly placed block.
         final Player player = event.getPlayer();
-        if (reinforcementManager.canPlayerReinforce(player)) {
+        if (reinforcementManager.canPlayerReinforce(player, Action.RIGHT_CLICK_BLOCK)) {
             reinforcementManager.attemptReinforcement(location, player);
         }
     }
