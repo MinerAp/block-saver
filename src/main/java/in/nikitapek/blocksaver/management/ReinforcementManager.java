@@ -207,7 +207,7 @@ public final class ReinforcementManager {
         return true;
     }
 
-    public boolean attemptReinforcement(final Location location, final Player player) {
+    public void attemptReinforcement(final Location location, final Player player) {
         final Block block = location.getBlock();
         final String playerName = player.getName();
         final Material material = getReinforcingMaterial(player);
@@ -216,17 +216,17 @@ public final class ReinforcementManager {
         // If the material cannot be used for reinforcement, the reinforcement fails.
         if (!canMaterialReinforce(material)) {
             feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
-            return false;
+            return;
         }
 
         if (!isReinforceable(block)) {
             feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
-            return false;
+            return;
         }
 
         if (!player.hasPermission("blocksaver.reinforce")) {
             feedbackManager.sendFeedback(location, BlockSaverFeedback.PERMISSIONS_FAIL, player);
-            return false;
+            return;
         }
 
         // Retrieves the amount the material will reinforce the block by.
@@ -239,7 +239,7 @@ public final class ReinforcementManager {
             // If there is no reinforcement value cap, then we cannot set the block to its maximum reinforcement, therefore the reinforcement fails.
             if (accumulateReinforcementValues) {
                 feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
-                return false;
+                return;
             }
         }
 
@@ -256,7 +256,6 @@ public final class ReinforcementManager {
             }
             player.updateInventory();
         }
-        return true;
     }
 
     public void moveReinforcement(final Block block, final BlockFace direction) {
