@@ -398,7 +398,7 @@ public final class ReinforcementManager {
             return true;
         }
 
-        if (!reinforcement.getCreatorName().equals(playerName)) {
+        if (!playerName.equals(reinforcement.getCreatorName())) {
             return true;
         }
 
