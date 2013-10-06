@@ -216,6 +216,9 @@ public final class ReinforcementManager {
         final Block block = location.getBlock();
         final String playerName = player.getName();
         final Material material = getReinforcingMaterial(player);
+        if (Material.AIR.equals(material)) {
+            return;
+        }
         final ItemStack item = player.getInventory().getItem(player.getInventory().first(material));
 
         // If the material cannot be used for reinforcement, the reinforcement fails.
