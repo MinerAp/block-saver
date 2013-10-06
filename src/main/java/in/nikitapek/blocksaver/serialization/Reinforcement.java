@@ -5,7 +5,6 @@ import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
 
 public final class Reinforcement {
-    private static BlockSaverPlugin plugin;
     private static int gracePeriodTime;
     private static boolean accumulateReinforcementValues;
 
@@ -21,7 +20,6 @@ public final class Reinforcement {
     }
 
     public static void initialize(BlockSaverConfigurationContext configurationContext) {
-        plugin = (BlockSaverPlugin) configurationContext.plugin;
         gracePeriodTime = configurationContext.gracePeriodTime;
         accumulateReinforcementValues = configurationContext.accumulateReinforcementValues;
     }

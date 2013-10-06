@@ -41,7 +41,6 @@ public final class ReinforcementManager {
     private final boolean mobsInteractWithReinforcedBlocks;
     private final boolean enderdragonInteractWithReinforcedBlocks;
     private final double extinguishChance;
-    private final int gracePeriodTime;
     private final int reinforcementHealingTime;
 
     private final TypeSafeMap<Material, Integer> reinforceableBlocks;
@@ -65,7 +64,6 @@ public final class ReinforcementManager {
         this.mobsInteractWithReinforcedBlocks = configurationContext.mobsInteractWithReinforcedBlocks;
         this.enderdragonInteractWithReinforcedBlocks = configurationContext.enderdragonInteractWithReinforcedBlocks;
         this.extinguishChance = configurationContext.extinguishChance;
-        this.gracePeriodTime = configurationContext.gracePeriodTime;
         this.reinforcementHealingTime = configurationContext.reinforcementHealingTime;
 
         this.reinforceableBlocks = configurationContext.reinforceableBlocks;

@@ -23,8 +23,6 @@ import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 public final class BlockSaverInfoManager extends InfoManager {
     private static final ConstructorFactory<PlayerInfo> FACTORY = new PlayerInfoConstructorFactory();
 
-    private final TypeSafeSet<String> worlds;
-
     private final TypeSafeDistributedStorageMap<PlayerInfo> playerInfo;
 
     private final TypeSafeMap<String, WorldContainer> worldContainers;
@@ -34,15 +32,13 @@ public final class BlockSaverInfoManager extends InfoManager {
     public BlockSaverInfoManager(final BlockSaverConfigurationContext configurationContext) {
         super(configurationContext);
 
-        worlds = configurationContext.worlds;
-
         playerInfo = storageManager.getDistributedStorageMap("playerInfo", SupplementaryTypes.PLAYER_INFO);
         registerPlayerInfoLoader(playerInfo, FACTORY);
 
         WorldContainer.initialize(storageManager);
         worldContainers = new TypeSafeMapImpl<>(new HashMap<String, WorldContainer>(), SupplementaryTypes.STRING, SupplementaryTypes.WORLD_CONTAINER);
 
-        for (String worldName : worlds) {
+        for (String worldName : configurationContext.worlds) {
             World world = Bukkit.getWorld(worldName);
             if (world == null) {
                 continue;
