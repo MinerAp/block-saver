@@ -3,10 +3,6 @@ package in.nikitapek.blocksaver.events;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
-
-import java.util.ListIterator;
-
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -18,19 +14,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockBurnEvent;
-import org.bukkit.event.block.BlockFadeEvent;
-import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
+
+import java.util.ListIterator;
 
 public final class BlockSaverListener implements Listener {
     private final ReinforcementManager reinforcementManager;
@@ -67,7 +56,7 @@ public final class BlockSaverListener implements Listener {
 
         // If the player has placed a block and is currently in auto-reinforce mode, an attempt is made to reinforce the newly placed block.
         final Player player = event.getPlayer();
-        if (reinforcementManager.canPlayerReinforce(player, Action.RIGHT_CLICK_BLOCK)) {
+        if (reinforcementManager.isPlayerInReinforcementMode(player)) {
             reinforcementManager.attemptReinforcement(location, player);
         }
     }
@@ -100,7 +89,6 @@ public final class BlockSaverListener implements Listener {
         }
 
         final Location location = block.getLocation();
-        final ItemStack item = player.getItemInHand();
 
         if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
             return;

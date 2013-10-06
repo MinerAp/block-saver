@@ -1,24 +1,5 @@
 package in.nikitapek.blocksaver.util;
 
-import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
-import in.nikitapek.blocksaver.management.FeedbackManager;
-import in.nikitapek.blocksaver.management.ReinforcementManager;
-import in.nikitapek.blocksaver.serialization.Reinforcement;
-import in.nikitapek.blocksaver.serialization.LocationTypeAdapter;
-import in.nikitapek.blocksaver.serialization.ReinforcementTypeAdapter;
-
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.logging.Level;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Effect;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.configuration.ConfigurationSection;
-
 import com.amshulman.mbapi.MbapiPlugin;
 import com.amshulman.mbapi.util.ConfigurationContext;
 import com.amshulman.typesafety.TypeSafeMap;
@@ -27,12 +8,27 @@ import com.amshulman.typesafety.gson.TypeSafeMapTypeAdapter;
 import com.amshulman.typesafety.gson.TypeSafeSetTypeAdapter;
 import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 import com.amshulman.typesafety.impl.TypeSafeSetImpl;
+import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
+import in.nikitapek.blocksaver.management.FeedbackManager;
+import in.nikitapek.blocksaver.management.ReinforcementManager;
+import in.nikitapek.blocksaver.serialization.LocationTypeAdapter;
+import in.nikitapek.blocksaver.serialization.Reinforcement;
+import org.bukkit.Bukkit;
+import org.bukkit.Effect;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.configuration.ConfigurationSection;
+
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.logging.Level;
 
 public final class BlockSaverConfigurationContext extends ConfigurationContext {
     private final static double EXTINGUISH_CHANCE = 0.9;
 
     public Effect reinforcementDamageFailEffect;
-    public Effect reinforcementDamageSuccessEffect;
     public Sound reinforceSuccessSound;
     public Sound reinforceFailSound;
     public Sound hitFailSound;
@@ -69,31 +65,28 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     private final ReinforcementManager reinforcementManager;
 
     public BlockSaverConfigurationContext(final MbapiPlugin plugin) {
-        super(plugin, 
+        super(plugin,
                 new TypeSafeMapTypeAdapter<>(SupplementaryTypes.HASHMAP, SupplementaryTypes.LOCATION, SupplementaryTypes.REINFORCEMENT),
-                new TypeSafeSetTypeAdapter<Reinforcement>(SupplementaryTypes.HASHSET, SupplementaryTypes.REINFORCEMENT), 
+                new TypeSafeSetTypeAdapter<Reinforcement>(SupplementaryTypes.HASHSET, SupplementaryTypes.REINFORCEMENT),
                 new LocationTypeAdapter());
 
         worlds = new TypeSafeSetImpl<>(new HashSet<String>(), SupplementaryTypes.STRING);
-        reinforceableBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
-        reinforcementBlocks = new TypeSafeMapImpl<Material, Integer>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
-        toolRequirements = new TypeSafeMapImpl<Material, List<Integer>>(new EnumMap<Material, List<Integer>>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.LIST);
+        reinforceableBlocks = new TypeSafeMapImpl<>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
+        reinforcementBlocks = new TypeSafeMapImpl<>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
+        toolRequirements = new TypeSafeMapImpl<>(new EnumMap<Material, List<Integer>>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.LIST);
 
         plugin.saveDefaultConfig();
 
         try {
             // Note: setting the default values here might be unnecessary because if the config values fail to load and it defaults to these, they will never result in an exception.
             reinforcementDamageFailEffect = Effect.valueOf(plugin.getConfig().getString("reinforcementDamageFailEffect", Effect.EXTINGUISH.toString()));
-            reinforcementDamageSuccessEffect = Effect.valueOf(plugin.getConfig().getString("reinforcementDamageSuccessEffect", Effect.POTION_BREAK.toString()));
             reinforceSuccessSound = Sound.valueOf(plugin.getConfig().getString("reinforceSuccessSound", Sound.ANVIL_USE.toString()));
             reinforceFailSound = Sound.valueOf(plugin.getConfig().getString("reinforceFailSound", Sound.BLAZE_HIT.toString()));
             hitFailSound = Sound.valueOf(plugin.getConfig().getString("hitFailSound", Sound.CREEPER_DEATH.toString()));
-        }
-        catch (final IllegalArgumentException ex) {
+        } catch (final IllegalArgumentException ex) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load one or more Effect values. Reverting to defaults.");
 
             reinforcementDamageFailEffect = Effect.EXTINGUISH;
-            reinforcementDamageSuccessEffect = Effect.POTION_BREAK;
             reinforceSuccessSound = Sound.ANVIL_USE;
             reinforceFailSound = Sound.BLAZE_HIT;
             hitFailSound = Sound.CREEPER_DEATH;
@@ -187,24 +180,25 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         } else {
             for (final String materialName : configSection.getKeys(false)) {
                 final Material blockMaterial = loadMaterial(materialName);
-                final List<Integer> tools = new ArrayList<Integer>();
+                final List<Integer> tools = new ArrayList<>();
 
-                for (final String split : configSection.getString(materialName).split(",")) {
-                    // If HANDS is a supplied tool we add -1 to the tool list to represent it.
-                    if ("HANDS".equals(split)) {
-                        tools.add(BlockSaverUtil.HANDS_TOOL_CODE);
-                    }
-                    // If ALL is provided as a valid tool, we clear the list of other tools, add -2 to the tool list to represent it, and skip the rest of the tools.
-                    else if ("ALL".equals(split)) {
-                        tools.clear();
-                        tools.add(BlockSaverUtil.ALL_TOOL_CODE);
-                        toolRequirements.remove(blockMaterial);
-                        break;
-                    } else {
-                        Material material = loadMaterial(split);
-                        if (material != null) {
-                            tools.add(material.getId());
-                        }
+                tools: for (final String split : configSection.getString(materialName).split(",")) {
+                    switch (split) {
+                        // If HANDS is a supplied tool we add -1 to the tool list to represent it.
+                        case "HANDS":
+                            tools.add(BlockSaverUtil.HANDS_TOOL_CODE);
+                            break;
+                        // If ALL is provided as a valid tool, we clear the list of other tools, add -2 to the tool list to represent it, and skip the rest of the tools.
+                        case "ALL":
+                            tools.clear();
+                            tools.add(BlockSaverUtil.ALL_TOOL_CODE);
+                            toolRequirements.remove(blockMaterial);
+                            break tools;
+                        default:
+                            Material material = loadMaterial(split);
+                            if (material != null) {
+                                tools.add(material.getId());
+                            }
                     }
                 }
 
@@ -235,7 +229,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
 
         try {
             materialId = Integer.parseInt(materialName);
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return Material.getMaterial(materialName);
         }
 

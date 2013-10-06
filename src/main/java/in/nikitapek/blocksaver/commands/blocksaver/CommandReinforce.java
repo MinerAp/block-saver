@@ -8,8 +8,6 @@ import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldedit.bukkit.selections.Selection;
-import com.sk89q.worldedit.regions.CuboidRegion;
-import com.sk89q.worldedit.regions.CuboidRegionSelector;
 import com.sk89q.worldedit.regions.Polygonal2DRegion;
 import in.nikitapek.blocksaver.commands.CommandBlockSaver.BlockSaverCommands;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
@@ -39,25 +37,20 @@ public final class CommandReinforce extends PlayerOnlyCommand {
 
         Selection selection = worldEditPlugin.getSelection(player);
 
-        if (selection.getArea() == 0)  {
+        if (selection.getArea() == 0) {
             if (playerInfo.isReceivingTextFeedback) {
                 player.sendMessage("No blocks were selected for reinforcement.");
             }
             return true;
         }
 
-        Iterable<BlockVector> selector = null;
-        if (selection instanceof CuboidSelection) {
+        Iterable<BlockVector> selector;
+        if (!(selection instanceof CuboidSelection || selection instanceof Polygonal2DRegion)) {
             try {
-                selector = (CuboidRegion) selection.getRegionSelector().getRegion();
-            } catch (IncompleteRegionException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        } else if (selection instanceof Polygonal2DRegion) {
-            try {
-                selector = (Polygonal2DRegion) selection.getRegionSelector().getRegion();
+                selector = selection.getRegionSelector().getRegion();
             } catch (IncompleteRegionException e) {
                 e.printStackTrace();
+                return false;
             }
         } else {
             if (playerInfo.isReceivingTextFeedback) {

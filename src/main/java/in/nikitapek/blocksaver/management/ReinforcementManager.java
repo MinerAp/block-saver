@@ -1,15 +1,11 @@
 package in.nikitapek.blocksaver.management;
 
+import com.amshulman.typesafety.TypeSafeMap;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
 import in.nikitapek.blocksaver.util.BlockSaverFeedback;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,12 +13,13 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.Action;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonExtensionMaterial;
 
-import com.amshulman.typesafety.TypeSafeMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
 
 public final class ReinforcementManager {
     private static final byte NO_REINFORCEMENT_VALUE = -1;
@@ -41,11 +38,10 @@ public final class ReinforcementManager {
     private final boolean mobsInteractWithReinforcedBlocks;
     private final boolean enderdragonInteractWithReinforcedBlocks;
     private final double extinguishChance;
-    private final int gracePeriodTime;
     private final int reinforcementHealingTime;
 
     private final TypeSafeMap<Material, Integer> reinforceableBlocks;
-    public final TypeSafeMap<Material, Integer> reinforcementBlocks;
+    private final TypeSafeMap<Material, Integer> reinforcementBlocks;
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
@@ -65,7 +61,6 @@ public final class ReinforcementManager {
         this.mobsInteractWithReinforcedBlocks = configurationContext.mobsInteractWithReinforcedBlocks;
         this.enderdragonInteractWithReinforcedBlocks = configurationContext.enderdragonInteractWithReinforcedBlocks;
         this.extinguishChance = configurationContext.extinguishChance;
-        this.gracePeriodTime = configurationContext.gracePeriodTime;
         this.reinforcementHealingTime = configurationContext.reinforcementHealingTime;
 
         this.reinforceableBlocks = configurationContext.reinforceableBlocks;
@@ -116,13 +111,8 @@ public final class ReinforcementManager {
         return reinforcementBlocks.containsKey(material);
     }
 
-    public boolean canPlayerReinforce(final Player player, Action action) {
-        // If the player is not placing a block, continue as normal.
-        if (Action.LEFT_CLICK_BLOCK.equals(action)) {
-            return !Material.AIR.equals(getReinforcingMaterial(player));
-        } else {
-            return infoManager.getPlayerInfo(player.getName()).isInReinforcementMode;
-        }
+    public boolean isPlayerInReinforcementMode(final Player player) {
+        return infoManager.getPlayerInfo(player.getName()).isInReinforcementMode;
     }
 
     private Material getReinforcingMaterial(final Player player) {
@@ -214,7 +204,7 @@ public final class ReinforcementManager {
         return true;
     }
 
-    public boolean attemptReinforcement(final Location location, final Player player) {
+    public void attemptReinforcement(final Location location, final Player player) {
         final Block block = location.getBlock();
         final String playerName = player.getName();
         final Material material = getReinforcingMaterial(player);
@@ -223,17 +213,17 @@ public final class ReinforcementManager {
         // If the material cannot be used for reinforcement, the reinforcement fails.
         if (!canMaterialReinforce(material)) {
             feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
-            return false;
+            return;
         }
 
         if (!isReinforceable(block)) {
             feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
-            return false;
+            return;
         }
 
         if (!player.hasPermission("blocksaver.reinforce")) {
             feedbackManager.sendFeedback(location, BlockSaverFeedback.PERMISSIONS_FAIL, player);
-            return false;
+            return;
         }
 
         // Retrieves the amount the material will reinforce the block by.
@@ -246,7 +236,7 @@ public final class ReinforcementManager {
             // If there is no reinforcement value cap, then we cannot set the block to its maximum reinforcement, therefore the reinforcement fails.
             if (accumulateReinforcementValues) {
                 feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
-                return false;
+                return;
             }
         }
 
@@ -263,7 +253,6 @@ public final class ReinforcementManager {
             }
             player.updateInventory();
         }
-        return true;
     }
 
     public void moveReinforcement(final Block block, final BlockFace direction) {
@@ -333,10 +322,9 @@ public final class ReinforcementManager {
         feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, player);
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
-        // This uses less than 1 incase TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
+        // This uses less than 1 in case TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
         if (reinforcement.getReinforcementValue() < 1 || (player != null && !isFortified(reinforcement, player.getName()))) {
             removeReinforcement(location);
-            return;
         }
     }
 
@@ -421,17 +409,17 @@ public final class ReinforcementManager {
 
         damageBlock(location, player, BlockSaverDamageCause.TOOL);
 
-        // If the block is no longer reinforced, and blocks are configured to break when their RV reaches 0, the event is allowed to proceed and break the block.
-        if (!isReinforced(location) && !leaveBlockAfterDeinforce) {
-            return true;
+        // If the block is reinforced, or blocks are not configured to break when their RV reaches 0, the event is not allowed to proceed.
+        if (isReinforced(location) || leaveBlockAfterDeinforce) {
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     public void explodeBlocks(final List<Block> blockList, final EntityType entityType) {
 
-        for (final Iterator<Block> iter = blockList.iterator(); iter.hasNext();) {
+        for (final Iterator<Block> iter = blockList.iterator(); iter.hasNext(); ) {
             final Block block = iter.next();
             final Location location = block.getLocation();
 

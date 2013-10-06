@@ -1,14 +1,12 @@
 package in.nikitapek.blocksaver.util;
 
+import com.amshulman.mbapi.MbapiPlugin;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import me.botsko.prism.Prism;
 import me.botsko.prism.actionlibs.ActionType;
 import me.botsko.prism.exceptions.InvalidActionException;
-
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-
-import com.amshulman.mbapi.MbapiPlugin;
 
 public final class BlockSaverPrismBridge {
     public static final String ENFORCE_EVENT_NAME = "bs-block-enforce";
@@ -26,8 +24,7 @@ public final class BlockSaverPrismBridge {
             Prism.getActionRegistry().registerCustomAction(plugin, ENFORCE_EVENT);
             Prism.getActionRegistry().registerCustomAction(plugin, DAMAGE_EVENT);
             Prism.getHandlerRegistry().registerCustomHandler(plugin, BlockSaverAction.class);
-        }
-        catch (InvalidActionException e) {
+        } catch (InvalidActionException e) {
             e.printStackTrace();
         }
     }

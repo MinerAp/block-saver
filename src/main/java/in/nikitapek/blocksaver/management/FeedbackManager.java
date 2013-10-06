@@ -5,14 +5,13 @@ import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverFeedback;
 import in.nikitapek.blocksaver.util.BlockSaverPrismBridge;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
-
-import java.util.logging.Level;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+
+import java.util.logging.Level;
 
 public class FeedbackManager {
     private static final byte PITCH_SHIFT = 50;
@@ -20,7 +19,6 @@ public class FeedbackManager {
     private final BlockSaverInfoManager infoManager;
 
     private final Effect reinforcementDamageFailEffect;
-    private final Effect reinforcementDamageSuccessEffect;
     private final Sound reinforceSuccessSound;
     private final Sound reinforceFailSound;
     private final Sound hitFailSound;
@@ -29,28 +27,22 @@ public class FeedbackManager {
 
     private boolean prismBridged = false;
 
-    private BlockSaverPrismBridge prismBridge;
-
     public FeedbackManager(final BlockSaverConfigurationContext configurationContext) {
         this.infoManager = configurationContext.infoManager;
 
         this.reinforcementDamageFailEffect = configurationContext.reinforcementDamageFailEffect;
-        this.reinforcementDamageSuccessEffect = configurationContext.reinforcementDamageSuccessEffect;
         this.reinforceSuccessSound = configurationContext.reinforceSuccessSound;
         this.reinforceFailSound = configurationContext.reinforceFailSound;
         this.hitFailSound = configurationContext.hitFailSound;
         this.primaryFeedback = configurationContext.primaryFeedback;
-
-        prismBridge = null;
 
         if (!configurationContext.enableLogging) {
             return;
         }
 
         try {
-            prismBridge = new BlockSaverPrismBridge(configurationContext.plugin);
-        }
-        catch (final NoClassDefFoundError ex) {
+            new BlockSaverPrismBridge(configurationContext.plugin);
+        } catch (final NoClassDefFoundError ex) {
             configurationContext.plugin.getLogger().log(Level.WARNING, "\"enableLogging\" true but Prism not found. Logging will not be enabled.");
             return;
         }
