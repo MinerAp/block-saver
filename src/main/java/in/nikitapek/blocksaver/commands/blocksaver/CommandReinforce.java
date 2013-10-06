@@ -46,18 +46,13 @@ public final class CommandReinforce extends PlayerOnlyCommand {
             return true;
         }
 
-        Iterable<BlockVector> selector = null;
-        if (selection instanceof CuboidSelection) {
+        Iterable<BlockVector> selector;
+        if (!(selection instanceof CuboidSelection || selection instanceof Polygonal2DRegion)) {
             try {
-                selector = (CuboidRegion) selection.getRegionSelector().getRegion();
-            } catch (IncompleteRegionException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        } else if (selection instanceof Polygonal2DRegion) {
-            try {
-                selector = (Polygonal2DRegion) selection.getRegionSelector().getRegion();
+                selector = selection.getRegionSelector().getRegion();
             } catch (IncompleteRegionException e) {
                 e.printStackTrace();
+                return false;
             }
         } else {
             if (playerInfo.isReceivingTextFeedback) {
