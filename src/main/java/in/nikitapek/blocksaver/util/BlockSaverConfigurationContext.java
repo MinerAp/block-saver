@@ -182,22 +182,23 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
                 final Material blockMaterial = loadMaterial(materialName);
                 final List<Integer> tools = new ArrayList<>();
 
-                for (final String split : configSection.getString(materialName).split(",")) {
-                    // If HANDS is a supplied tool we add -1 to the tool list to represent it.
-                    if ("HANDS".equals(split)) {
-                        tools.add(BlockSaverUtil.HANDS_TOOL_CODE);
-                    }
-                    // If ALL is provided as a valid tool, we clear the list of other tools, add -2 to the tool list to represent it, and skip the rest of the tools.
-                    else if ("ALL".equals(split)) {
-                        tools.clear();
-                        tools.add(BlockSaverUtil.ALL_TOOL_CODE);
-                        toolRequirements.remove(blockMaterial);
-                        break;
-                    } else {
-                        Material material = loadMaterial(split);
-                        if (material != null) {
-                            tools.add(material.getId());
-                        }
+                tools: for (final String split : configSection.getString(materialName).split(",")) {
+                    switch (split) {
+                        // If HANDS is a supplied tool we add -1 to the tool list to represent it.
+                        case "HANDS":
+                            tools.add(BlockSaverUtil.HANDS_TOOL_CODE);
+                            break;
+                        // If ALL is provided as a valid tool, we clear the list of other tools, add -2 to the tool list to represent it, and skip the rest of the tools.
+                        case "ALL":
+                            tools.clear();
+                            tools.add(BlockSaverUtil.ALL_TOOL_CODE);
+                            toolRequirements.remove(blockMaterial);
+                            break tools;
+                        default:
+                            Material material = loadMaterial(split);
+                            if (material != null) {
+                                tools.add(material.getId());
+                            }
                     }
                 }
 
