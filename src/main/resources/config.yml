@@ -37,13 +37,6 @@ hitFailSound: CREEPER_DEATH
 
 #======== Functionality ========#
 
-## Whether or not reinforcement values should accumulate indefinitely, as opposed to reaching the limits specified by the Reinforceable Blocks List.
-# Notes:
-#   If this is set to false, the values will be capped at those provided in the list.
-#   Setting this to true then reverting to false will not reset the values to their maximums as defined in the Reinforceable Blocks List.
-# Default: false
-accumulateReinforcementValues: false
-
 ## Whether or not TNT can damage reinforced blocks.
 # Default: true
 tntDamagesReinforcedBlocks: true
