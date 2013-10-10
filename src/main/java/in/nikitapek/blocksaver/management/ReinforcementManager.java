@@ -188,6 +188,10 @@ public final class ReinforcementManager {
     }
 
     public boolean canPlayerDamageBlock(final Location location, final Player player, final boolean feedback) {
+        if (player.hasPermission("blocksaver.exempt")) {
+            return true;
+        }
+
         if (!player.hasPermission("blocksaver.damage") && isReinforced(location)) {
             if (feedback) {
                 feedbackManager.sendFeedback(location, BlockSaverFeedback.PERMISSIONS_FAIL, player);
