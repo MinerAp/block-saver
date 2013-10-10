@@ -16,10 +16,13 @@ commands:
       /<command> reinforce - Reinforces the WorldEdit selection
 
 permissions:
+  blocksaver.blocksaver.autoenforce:
+    children:
+      blocksaver.blocksaver: true
   blocksaver.blocksaver.feedback:
     children:
       blocksaver.blocksaver: true
-  blocksaver.blocksaver.autoenforce:
+  blocksaver.blocksaver.worldedit:
     children:
       blocksaver.blocksaver: true
   blocksaver.reinforce:
