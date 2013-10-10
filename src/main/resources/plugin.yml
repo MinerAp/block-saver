@@ -26,6 +26,8 @@ permissions:
     description: Allows the reinforcement of blocks
   blocksaver.damage:
     description: Allows the player to damage reinforced blocks
+  blocksaver.exempt:
+    description: The player may break reinforced blocks as if they were not reinforced
   blocksaver.feedback:
     description: Controls what feedback the player receives
   blocksaver.feedback.reinforce.success:
