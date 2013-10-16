@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.ListIterator;
@@ -95,23 +96,23 @@ public final class BlockSaverListener implements Listener {
         }
 
         // If the player is not left-clicking, then the player is not attempting to reinforce or damage a block.
-        if (!Action.LEFT_CLICK_BLOCK.equals(event.getAction())) {
-            return;
-        }
-
-        // If the player is not attempting a reinforcement, they may be trying to damage a reinforced block, and so a check is performed.
-        if (!reinforcementManager.canMaterialReinforce(player.getItemInHand().getType())) {
-            if (!reinforcementManager.canPlayerDamageBlock(location, player, true)) {
-                event.setCancelled(true);
+        if (Action.LEFT_CLICK_BLOCK.equals(event.getAction())) {
+            // If the player is not attempting a reinforcement, they may be trying to damage a reinforced block, and so a check is performed.
+            if (!reinforcementManager.canMaterialReinforce(player.getItemInHand().getType())) {
+                if (!reinforcementManager.canPlayerDamageBlock(location, player, true)) {
+                    event.setCancelled(true);
+                }
+                return;
             }
-            return;
+
+            // The event is cancelled because if the reinforcement fails, we do not want left click actions registering with reinforcement blocks anyways.
+            event.setCancelled(true);
+
+            // An attempt is made to reinforce the block the player clicks, which, if not successful, exits the event.
+            reinforcementManager.attemptReinforcement(location, player);
+        } else if (Action.PHYSICAL.equals(event.getAction()) && Material.SOIL.equals(block.getType()) && reinforcementManager.isReinforced(location)) {
+            event.setCancelled(true);
         }
-
-        // The event is cancelled because if the reinforcement fails, we do not want left click actions registering with reinforcement blocks anyways.
-        event.setCancelled(true);
-
-        // An attempt is made to reinforce the block the player clicks, which, if not successful, exits the event.
-        reinforcementManager.attemptReinforcement(location, player);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -258,7 +259,7 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        if (!Material.SNOW.equals(material) && !Material.ICE.equals(material)) {
+        if (!Material.SNOW.equals(material) && !Material.ICE.equals(material) && !Material.SOIL.equals(material)) {
             return;
         }
 
@@ -352,6 +353,28 @@ public final class BlockSaverListener implements Listener {
             } else {
                 event.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onEntityInteract(final EntityInteractEvent event) {
+        final Entity entity = event.getEntity();
+        final Block block = event.getBlock();
+
+        // Confirms that the block is not null.
+        if (block == null) {
+            return;
+        }
+
+        final Location location = block.getLocation();
+
+        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+            return;
+        }
+
+        // If the affected block is soil, and it is reinforced, then the soil is not allowed to decay.
+        if (Material.SOIL.equals(block.getType()) && reinforcementManager.isReinforced(location)) {
+            event.setCancelled(true);
         }
     }
 }
