@@ -153,14 +153,7 @@ public final class BlockSaverListener implements Listener {
             entity = event.getEntity();
         }
 
-        final EntityType entityType = entity.getType();
-
-        // If the event is caused by neither TNT, nor a dragon, nor a wither, it is of no relevance.
-        if (!EntityType.PRIMED_TNT.equals(entityType) && !EntityType.ENDER_DRAGON.equals(entityType) && !EntityType.WITHER.equals(entityType) && !EntityType.WITHER_SKULL.equals(entityType)) {
-            return;
-        }
-
-        reinforcementManager.explodeBlocks(event.blockList(), entityType);
+        reinforcementManager.explodeBlocks(event.blockList(), entity.getType());
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
