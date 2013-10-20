@@ -217,11 +217,6 @@ public final class BlockSaverListener implements Listener {
 
             reinforcementManager.moveReinforcement(block, direction);
         }
-
-        // Handle the reinforcement on the piston itself.
-        if (reinforcementManager.isReinforced(piston.getLocation())) {
-            reinforcementManager.moveReinforcement(piston, direction);
-        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
