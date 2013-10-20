@@ -188,21 +188,23 @@ public final class ReinforcementManager {
     }
 
     public boolean canPlayerDamageBlock(final Location location, final Player player, final boolean feedback) {
+        Location properLocation = getProperLocation(location);
+
         if (player.hasPermission("blocksaver.exempt")) {
             return true;
         }
 
-        if (!player.hasPermission("blocksaver.damage") && isReinforced(location)) {
+        if (!player.hasPermission("blocksaver.damage") && isReinforced(properLocation)) {
             if (feedback) {
-                feedbackManager.sendFeedback(location, BlockSaverFeedback.PERMISSIONS_FAIL, player);
+                feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.PERMISSIONS_FAIL, player);
             }
 
             return false;
         }
 
-        if (!canToolDamageBlock(location, player.getItemInHand())) {
+        if (!canToolDamageBlock(properLocation, player.getItemInHand())) {
             if (feedback) {
-                feedbackManager.sendFeedback(location, BlockSaverFeedback.HIT_FAIL, player);
+                feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.HIT_FAIL, player);
             }
             return false;
         }
@@ -270,7 +272,10 @@ public final class ReinforcementManager {
     }
 
     public void damageBlock(final Location location, final Player player, final BlockSaverDamageCause damageCause) {
-        final Reinforcement reinforcement = infoManager.getReinforcement(location);
+        Location properLocation = getProperLocation(location);
+        final Reinforcement reinforcement = infoManager.getReinforcement(properLocation);
+        Block block = properLocation.getBlock();
+        Material material = block.getType();
 
         if (reinforcement == null) {
             return;
@@ -279,21 +284,21 @@ public final class ReinforcementManager {
         // Heals the block if the plugin is configured to do so and the required amount of time has elapsed.
         if (allowReinforcementHealing) {
             if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
-                reinforcement.setReinforcementValue(getMaterialReinforcementCoefficient(location.getBlock().getType()), getMaterialReinforcementCoefficient(location.getBlock().getType()));
+                reinforcement.setReinforcementValue(getMaterialReinforcementCoefficient(material), getMaterialReinforcementCoefficient(material));
             }
         }
 
         if (BlockSaverDamageCause.FIRE.equals(damageCause)) {
             // If fire is not allowed to damage blocks, the block damage fail feedback is provided and the damage fails.
             if (!fireDamagesReinforcedBlocks) {
-                feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_FAIL, null);
+                feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.DAMAGE_FAIL, null);
                 return;
             }
 
             // Attempt to extinguish the fires on the reinforced block if the configuration allows for it.
             if (extinguishReinforcementFire && Math.random() > extinguishChance) {
                 for (final BlockFace face : BlockFace.values()) {
-                    final Block relative = location.getBlock().getRelative(face);
+                    final Block relative = block.getRelative(face);
                     if (Material.FIRE.equals(relative.getType())) {
                         relative.setType(Material.AIR);
                     }
@@ -304,17 +309,17 @@ public final class ReinforcementManager {
         // Damage the reinforcement on the block.
         // If the cause of damage is TNT, handle the RV decrease specially.
         if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
-            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - ((float) Math.pow(getMaterialReinforcementCoefficient(location.getBlock().getType()), 2) / 100), getMaterialReinforcementCoefficient(location.getBlock().getType()));
+            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - ((float) Math.pow(getMaterialReinforcementCoefficient(material), 2) / 100), getMaterialReinforcementCoefficient(material));
         } else {
-            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1, getMaterialReinforcementCoefficient(location.getBlock().getType()));
+            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1, getMaterialReinforcementCoefficient(material));
         }
 
-        feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, player);
+        feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.DAMAGE_SUCCESS, player);
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
         // This uses less than 1 in case TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
         if (reinforcement.getReinforcementValue() < 1 || (player != null && !isFortified(reinforcement, player.getName()))) {
-            removeReinforcement(location);
+            removeReinforcement(properLocation);
         }
     }
 
