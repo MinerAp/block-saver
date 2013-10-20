@@ -174,7 +174,8 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
                 final Material blockMaterial = loadMaterial(materialName);
                 final List<Integer> tools = new ArrayList<>();
 
-                tools: for (final String split : configSection.getString(materialName).split(",")) {
+                tools:
+                for (final String split : configSection.getString(materialName).split(",")) {
                     switch (split) {
                         // If HANDS is a supplied tool we add -1 to the tool list to represent it.
                         case "HANDS":
