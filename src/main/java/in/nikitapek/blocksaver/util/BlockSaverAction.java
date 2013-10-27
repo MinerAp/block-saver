@@ -5,17 +5,17 @@ import com.google.gson.GsonBuilder;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import me.botsko.prism.actionlibs.QueryParameters;
-import me.botsko.prism.actions.GenericAction;
+import me.botsko.prism.actions.BlockAction;
 import me.botsko.prism.appliers.ChangeResult;
 import me.botsko.prism.appliers.ChangeResultType;
 import me.botsko.prism.appliers.PrismProcessType;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-public final class BlockSaverAction extends GenericAction {
+public final class BlockSaverAction extends BlockAction {
     private static ReinforcementManager reinforcementManager;
 
-    public class ReinforcementActionData {
+    public class ReinforcementActionData extends BlockActionData {
         public String owner;
         public long creationTime;
     }
