@@ -258,19 +258,6 @@ public final class ReinforcementManager {
         removeReinforcement(block.getLocation());
     }
 
-    public void floorReinforcement(final Reinforcement reinforcement, final Location location) {
-        if (reinforcement == null) {
-            return;
-        }
-
-        // Checks to see if the maximum RV is less than the actual RV. If so, floors the RV.
-        final int maximumReinforcement = getMaterialReinforcementCoefficient(location.getBlock().getType());
-
-        if (reinforcement.getReinforcementValue() > maximumReinforcement) {
-            infoManager.setReinforcement(location, reinforcement.getCreatorName(), maximumReinforcement);
-        }
-    }
-
     public void damageBlock(final Location location, final Player player, final BlockSaverDamageCause damageCause) {
         Location properLocation = getProperLocation(location);
         final Reinforcement reinforcement = infoManager.getReinforcement(properLocation);
