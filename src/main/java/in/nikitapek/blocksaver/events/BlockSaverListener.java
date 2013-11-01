@@ -292,8 +292,6 @@ public final class BlockSaverListener implements Listener {
             event.setCancelled(true);
             return;
         }
-
-        reinforcementManager.removeReinforcement(location);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
