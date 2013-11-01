@@ -64,6 +64,18 @@ public final class WorldContainer {
         return reinforcementMap.get(location);
     }
 
+    /**
+     * Moves a reinforcement from one location to another location, without modifying the reinforcement object.
+     * @param fromLocation the initial location of the reinforcement.
+     * @param toLocation the target location of the reinforcement.
+     */
+    public void moveReinforcement(Location fromLocation, Location toLocation) {
+        ensureMapExists(toLocation);
+        TypeSafeUnifiedStorageMap<Location, Reinforcement> fromReinforcementMap = getReinforcementMap(fromLocation);
+        TypeSafeUnifiedStorageMap<Location, Reinforcement> toReinforcementMap = getReinforcementMap(toLocation);
+        toReinforcementMap.put(toLocation, fromReinforcementMap.remove(fromLocation));
+    }
+
     public boolean isReinforced(final Location location) {
         TypeSafeUnifiedStorageMap<Location, Reinforcement> reinforcementMap = getReinforcementMap(location);
 

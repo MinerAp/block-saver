@@ -252,10 +252,13 @@ public final class ReinforcementManager {
         }
     }
 
-    public void moveReinforcement(final Block block, final BlockFace direction) {
-        final Reinforcement previousReinforcement = infoManager.getReinforcement(block.getLocation());
-        infoManager.setReinforcement(block.getRelative(direction).getLocation(), previousReinforcement.getCreatorName(), previousReinforcement.getReinforcementValue());
-        removeReinforcement(block.getLocation());
+    /**
+     * Moves a reinforcement from its location to the location one block over in the given direction, without modifying the reinforcement object.
+     * @param location the initial location of the reinforcement.
+     * @param direction the target direction of the movement operation.
+     */
+    public void moveReinforcement(Location location, BlockFace direction) {
+        infoManager.moveReinforcement(location, location.getBlock().getRelative(direction).getLocation());
     }
 
     public void damageBlock(final Location location, final Player player, final BlockSaverDamageCause damageCause) {

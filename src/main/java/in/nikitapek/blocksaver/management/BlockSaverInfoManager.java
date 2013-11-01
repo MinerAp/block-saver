@@ -114,6 +114,15 @@ public final class BlockSaverInfoManager extends InfoManager {
         return getLoadedWorlds().contains(worldName);
     }
 
+    /**
+     * Moves a reinforcement from one location to another location, without modifying the reinforcement object.
+     * @param fromLocation the initial location of the reinforcement.
+     * @param toLocation the target location of the reinforcement.
+     */
+    public void moveReinforcement(Location fromLocation, Location toLocation) {
+        worldContainers.get(fromLocation.getWorld().getName()).moveReinforcement(fromLocation, toLocation);
+    }
+
     public void removeReinforcement(final Location location) {
         setReinforcement(location, "", 0);
     }

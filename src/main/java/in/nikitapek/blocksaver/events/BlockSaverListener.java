@@ -215,7 +215,7 @@ public final class BlockSaverListener implements Listener {
                 return;
             }
 
-            reinforcementManager.moveReinforcement(block, direction);
+            reinforcementManager.moveReinforcement(block.getLocation(), direction);
         }
     }
 
@@ -231,6 +231,7 @@ public final class BlockSaverListener implements Listener {
 
         final BlockFace direction = event.getDirection();
         final Block block = event.getBlock().getRelative(direction, 2);
+        Location location = block.getLocation();
 
         if (!reinforcementManager.isReinforced(block.getLocation())) {
             return;
@@ -241,7 +242,7 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        reinforcementManager.moveReinforcement(block, direction.getOppositeFace());
+        reinforcementManager.moveReinforcement(location, direction.getOppositeFace());
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
