@@ -2,6 +2,7 @@ package in.nikitapek.blocksaver.management;
 
 import com.amshulman.mbapi.management.InfoManager;
 import com.amshulman.mbapi.storage.TypeSafeDistributedStorageMap;
+import com.amshulman.mbapi.storage.TypeSafeUnifiedStorageMap;
 import com.amshulman.mbapi.util.ConstructorFactory;
 import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.TypeSafeSet;
@@ -74,15 +75,6 @@ public final class BlockSaverInfoManager extends InfoManager {
         return reinforcement;
     }
 
-    public void setReinforcement(final Location location, final String playerName, final float value) {
-        String worldName = location.getWorld().getName();
-        if (!isWorldLoaded(worldName)) {
-            return;
-        }
-
-        worldContainers.get(worldName).setReinforcement(location, playerName, value, reinforcementManager.getMaterialReinforcementCoefficient(location.getBlock().getType()));
-    }
-
     public void reinforce(final Location location, final String playerName, float value) {
         String worldName = location.getWorld().getName();
         if (!isWorldLoaded(worldName)) {
@@ -124,7 +116,12 @@ public final class BlockSaverInfoManager extends InfoManager {
     }
 
     public void removeReinforcement(final Location location) {
-        setReinforcement(location, "", 0);
+        String worldName = location.getWorld().getName();
+        if (!isWorldLoaded(worldName)) {
+            return;
+        }
+
+        worldContainers.get(worldName).removeReinforcement(location);
     }
 
     public boolean isReinforced(final Location location) {

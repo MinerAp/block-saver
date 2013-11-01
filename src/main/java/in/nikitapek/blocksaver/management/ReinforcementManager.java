@@ -274,7 +274,7 @@ public final class ReinforcementManager {
         // Heals the block if the plugin is configured to do so and the required amount of time has elapsed.
         if (allowReinforcementHealing) {
             if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
-                reinforcement.setReinforcementValue(getMaterialReinforcementCoefficient(material), getMaterialReinforcementCoefficient(material));
+                reinforce(properLocation, reinforcement.getCreatorName());
             }
         }
 
@@ -299,9 +299,9 @@ public final class ReinforcementManager {
         // Damage the reinforcement on the block.
         // If the cause of damage is TNT, handle the RV decrease specially.
         if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
-            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - ((float) Math.pow(getMaterialReinforcementCoefficient(material), 2) / 100), getMaterialReinforcementCoefficient(material));
+            infoManager.reinforce(properLocation, reinforcement.getCreatorName(), -((float) Math.pow(getMaterialReinforcementCoefficient(material), 2) / 100));
         } else {
-            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1, getMaterialReinforcementCoefficient(material));
+            infoManager.reinforce(properLocation, reinforcement.getCreatorName(), -1);
         }
 
         feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.DAMAGE_SUCCESS, player);

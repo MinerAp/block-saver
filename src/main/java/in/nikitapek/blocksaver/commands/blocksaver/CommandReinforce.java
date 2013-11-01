@@ -67,7 +67,7 @@ public final class CommandReinforce extends PlayerOnlyCommand {
                 continue;
             }
 
-            infoManager.setReinforcement(block.getLocation(), player.getName(), reinforcementManager.getMaterialReinforcementCoefficient(block.getType()));
+            reinforcementManager.reinforce(block.getLocation(), player.getName());
             reinforceCount++;
         }
 
