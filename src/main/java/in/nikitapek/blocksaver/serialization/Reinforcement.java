@@ -45,14 +45,17 @@ public final class Reinforcement {
         return timeStamp;
     }
 
-    public void setReinforcementValue(final float value, final float coefficient) {
+    void setReinforcementValue(final float value, final float coefficient) {
+        // If the block has been recently restored or created, set its RV to RVC.
         if (this.value == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
             this.value = coefficient;
         }
 
+        // Ensure that the RV is not being set above RVC.
         if (value > coefficient) {
             this.value = coefficient;
         } else {
+            // Set the RV to the requested value.
             this.value = value;
         }
 
