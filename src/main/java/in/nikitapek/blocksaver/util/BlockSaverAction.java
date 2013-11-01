@@ -96,22 +96,6 @@ public final class BlockSaverAction extends BlockAction {
             return new ChangeResult(null, null);
         }
 
-        // For each location in the parameters list we ROLLBACK or RESTORE the actions. This is probably unnecessary as each process should be called for each location.
-        /*for (Location location : parameters.getSpecificBlockLocations()) {
-            if (PrismProcessType.ROLLBACK.equals(pt)) {
-                result = rollback(location, parameters, result);
-            } else if (PrismProcessType.RESTORE.equals(pt)) {
-                result = restore(location, parameters, result);
-            }
-        }*/
-
-        // If the reinforcement or damage event being rolled back or restored is older than the current existing reinforcement, then it does not need to occur.
-        if (reinforcementManager.isReinforced(getLoc())) {
-            if (reinforcementManager.getReinforcement(getLoc()).getCreationTime() > actionData.creationTime) {
-                return new ChangeResult(ChangeResultType.SKIPPED, null);
-            }
-        }
-
         if (PrismProcessType.ROLLBACK.equals(processType)) {
             result = rollback();
         } else if (PrismProcessType.RESTORE.equals(processType)) {
