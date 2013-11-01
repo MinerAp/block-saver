@@ -51,7 +51,7 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        if (reinforcementManager.isReinforced(location)) {
+        if (Material.AIR.equals(event.getBlock().getType()) && reinforcementManager.isReinforced(location)) {
             reinforcementManager.removeReinforcement(location);
         }
 
