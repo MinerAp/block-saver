@@ -6,7 +6,6 @@ import me.botsko.prism.Prism;
 import me.botsko.prism.actionlibs.ActionType;
 import me.botsko.prism.exceptions.InvalidActionException;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 
 public final class BlockSaverPrismBridge {
     public static final String ENFORCE_EVENT_NAME = "bs-block-enforce";
