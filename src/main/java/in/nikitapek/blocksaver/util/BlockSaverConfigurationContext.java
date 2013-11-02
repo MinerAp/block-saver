@@ -212,8 +212,8 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         infoManager = new BlockSaverInfoManager(this);
         feedbackManager = new FeedbackManager(this);
         reinforcementManager = new ReinforcementManager(this);
-        if (feedbackManager.isPrismBridged()) {
-            BlockSaverAction.initialize(reinforcementManager);
+        if (reinforcementManager.isPrismBridged()) {
+            BlockSaverAction.initialize(reinforcementManager, infoManager);
         }
     }
 

@@ -52,7 +52,7 @@ public final class BlockSaverListener implements Listener {
         }
 
         if (Material.AIR.equals(event.getBlock().getType()) && reinforcementManager.isReinforced(location)) {
-            reinforcementManager.removeReinforcement(location);
+            reinforcementManager.removeReinforcement("Environment", location);
         }
 
         // If the player has placed a block and is currently in auto-reinforce mode, an attempt is made to reinforce the newly placed block.
@@ -157,6 +157,7 @@ public final class BlockSaverListener implements Listener {
         reinforcementManager.explodeBlocks(event.blockList(), entity.getType());
     }
 
+    /*
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockPhysics(final BlockPhysicsEvent event) {
         final Block block = event.getBlock();
@@ -183,6 +184,7 @@ public final class BlockSaverListener implements Listener {
 
         reinforcementManager.removeReinforcement(location);
     }
+    */
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
@@ -268,7 +270,7 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        reinforcementManager.removeReinforcement(location);
+        reinforcementManager.removeReinforcement("Environment", location);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -285,7 +287,7 @@ public final class BlockSaverListener implements Listener {
 
         // If the event is caused by a dragon egg moving to a new location, simply make sure it is not teleporting into a field.
         if (Material.DRAGON_EGG.equals(event.getBlock().getType())) {
-            reinforcementManager.removeReinforcement(location);
+            reinforcementManager.removeReinforcement("Environment", location);
             return;
         }
 
@@ -324,7 +326,7 @@ public final class BlockSaverListener implements Listener {
             // If the enderman is picking up a block, and is allowed to do so, the reinforcement is removed from the block.
             if (!fromMaterial.equals(Material.AIR) && toMaterial.equals(Material.AIR)) {
                 if (mobsInteractWithReinforcedBlocks) {
-                    reinforcementManager.removeReinforcement(location);
+                    reinforcementManager.removeReinforcement("Environment", location);
                 } else {
                     event.setCancelled(true);
                 }
@@ -334,7 +336,7 @@ public final class BlockSaverListener implements Listener {
         // Are sheep able to eat grass, and prevent withers from destroying blocks.
         if (EntityType.SHEEP.equals(entityType) || EntityType.WITHER.equals(entityType) || EntityType.WITHER_SKULL.equals(entityType)) {
             if (mobsInteractWithReinforcedBlocks) {
-                reinforcementManager.removeReinforcement(location);
+                reinforcementManager.removeReinforcement("Environment", location);
             } else {
                 event.setCancelled(true);
             }
@@ -343,7 +345,7 @@ public final class BlockSaverListener implements Listener {
         // Prevent sand and gravel from falling, if the plugin is configured to do so. Otherwise, their reinforcements are removed.
         if (EntityType.FALLING_BLOCK.equals(entityType) && (Material.SAND.equals(fromMaterial) || Material.GRAVEL.equals(fromMaterial))) {
             if (allowReinforcedBlockPhysics) {
-                reinforcementManager.removeReinforcement(location);
+                reinforcementManager.removeReinforcement("Environment", location);
             } else {
                 event.setCancelled(true);
             }

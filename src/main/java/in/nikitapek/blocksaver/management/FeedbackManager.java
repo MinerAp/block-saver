@@ -3,15 +3,12 @@ package in.nikitapek.blocksaver.management;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverFeedback;
-import in.nikitapek.blocksaver.util.BlockSaverPrismBridge;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-
-import java.util.logging.Level;
 
 public class FeedbackManager {
     private static final byte PITCH_SHIFT = 50;
@@ -25,8 +22,6 @@ public class FeedbackManager {
 
     private final String primaryFeedback;
 
-    private boolean prismBridged = false;
-
     public FeedbackManager(final BlockSaverConfigurationContext configurationContext) {
         this.infoManager = configurationContext.infoManager;
 
@@ -39,15 +34,6 @@ public class FeedbackManager {
         if (!configurationContext.enableLogging) {
             return;
         }
-
-        try {
-            new BlockSaverPrismBridge(configurationContext.plugin);
-        } catch (final NoClassDefFoundError ex) {
-            configurationContext.plugin.getLogger().log(Level.WARNING, "\"enableLogging\" true but Prism not found. Logging will not be enabled.");
-            return;
-        }
-
-        prismBridged = true;
     }
 
     public void sendFeedback(final Location location, final BlockSaverFeedback feedback, final Player player) {
@@ -58,9 +44,6 @@ public class FeedbackManager {
                 location.getWorld().playSound(location, reinforceSuccessSound, 1.0f, PITCH_SHIFT);
                 if (player == null) {
                     break;
-                }
-                if (isPrismBridged()) {
-                    BlockSaverPrismBridge.logCustomEvent(reinforcement, location, player, BlockSaverPrismBridge.ENFORCE_EVENT);
                 }
                 if (infoManager.getPlayerInfo(player.getName()).isReceivingTextFeedback && player.hasPermission("blocksaver.feedback.reinforce.success")) {
                     player.sendMessage(ChatColor.GRAY + "Reinforced a block.");
@@ -84,9 +67,6 @@ public class FeedbackManager {
                 } else if ("auditory".equals(primaryFeedback)) {
                     BlockSaverUtil.playMusicalEffect(location, (int) reinforcement.getReinforcementValue());
                 }
-                if (isPrismBridged()) {
-                    BlockSaverPrismBridge.logCustomEvent(reinforcement, location, player, BlockSaverPrismBridge.DAMAGE_EVENT);
-                }
                 break;
             case DAMAGE_FAIL:
                 location.getWorld().playEffect(location, reinforcementDamageFailEffect, 0);
@@ -109,9 +89,5 @@ public class FeedbackManager {
             default:
                 break;
         }
-    }
-
-    public boolean isPrismBridged() {
-        return prismBridged;
     }
 }
