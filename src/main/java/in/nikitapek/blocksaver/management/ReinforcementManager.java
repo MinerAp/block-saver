@@ -329,11 +329,11 @@ public final class ReinforcementManager {
     }
 
     public void reinforce(String playerName, Location location, float value) {
-        infoManager.reinforce(location, playerName, value);
-
         if (isPrismBridged()) {
             BlockSaverPrismBridge.logReinforcementEvent(getReinforcement(location), location, playerName, value);
         }
+
+        infoManager.reinforce(location, playerName, value);
     }
 
     public boolean isReinforced(final Location location) {
@@ -347,7 +347,7 @@ public final class ReinforcementManager {
 
         // Removes the reinforcement from the un-reinforceable block.
         if (!isMaterialReinforceable(block.getType())) {
-            removeReinforcement(getReinforcement(properLocation).getCreatorName(), properLocation);
+            removeReinforcement("Environment", properLocation);
             return false;
         }
 
@@ -357,11 +357,11 @@ public final class ReinforcementManager {
     public void removeReinforcement(String playerName, Location location) {
         Location properLocation = getProperLocation(location);
 
-        infoManager.removeReinforcement(properLocation);
-
         if (isPrismBridged()) {
             BlockSaverPrismBridge.logReinforcementEvent(getReinforcement(properLocation), properLocation, playerName, BlockSaverPrismBridge.DAMAGE_EVENT);
         }
+
+        infoManager.removeReinforcement(properLocation);
     }
 
     public static Location getProperLocation(final Location location) {
