@@ -307,6 +307,8 @@ public final class ReinforcementManager {
             }
         }
 
+        feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.DAMAGE_SUCCESS, player);
+
         // Damage the reinforcement on the block.
         // If the cause of damage is TNT, handle the RV decrease specially.
         if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
@@ -314,8 +316,6 @@ public final class ReinforcementManager {
         } else {
             reinforce(playerName, properLocation, -1);
         }
-
-        feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.DAMAGE_SUCCESS, player);
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
         // This uses less than 1 in case TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
