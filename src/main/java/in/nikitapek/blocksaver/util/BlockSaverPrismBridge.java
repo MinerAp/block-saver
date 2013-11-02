@@ -29,7 +29,7 @@ public final class BlockSaverPrismBridge {
         }
     }
 
-    public static void logReinforcementEvent(final Reinforcement reinforcement, final Location location, final String playerName, int value) {
+    public static void logReinforcementEvent(final Reinforcement reinforcement, final Location location, final String playerName, float value) {
         ActionType actionType;
 
         if (value < 0) {
@@ -38,6 +38,10 @@ public final class BlockSaverPrismBridge {
             actionType = BlockSaverPrismBridge.ENFORCE_EVENT;
         }
 
+        logReinforcementEvent(reinforcement, location, playerName, actionType);
+    }
+
+    public static void logReinforcementEvent(final Reinforcement reinforcement, final Location location, final String playerName, ActionType actionType) {
         BlockSaverAction action = new BlockSaverAction();
 
         action.setType(actionType);
