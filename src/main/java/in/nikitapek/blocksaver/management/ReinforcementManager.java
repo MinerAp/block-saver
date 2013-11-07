@@ -12,6 +12,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
@@ -44,7 +45,7 @@ public final class ReinforcementManager {
     private final TypeSafeSet<Material> reinforcementBlocks;
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
-    private final TypeSafeSet<Entity> fallingEntities;
+    private final TypeSafeSet<FallingBlock> fallingEntities;
 
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
         this.feedbackManager = configurationContext.feedbackManager;
@@ -68,7 +69,7 @@ public final class ReinforcementManager {
         this.reinforcementBlocks = configurationContext.reinforcementBlocks;
         this.toolRequirements = configurationContext.toolRequirements;
 
-        fallingEntities = new TypeSafeSetImpl<>(new HashSet<Entity>(), SupplementaryTypes.ENTITY);
+        fallingEntities = new TypeSafeSetImpl<>(new HashSet<FallingBlock>(), SupplementaryTypes.FALLING_BLOCK);
     }
 
     public boolean isReinforceable(final Block block) {
