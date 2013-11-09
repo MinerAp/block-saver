@@ -2,6 +2,9 @@ package in.nikitapek.blocksaver.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import in.nikitapek.blocksaver.events.BlockDeinforceEvent;
+import in.nikitapek.blocksaver.events.BlockReinforceEvent;
+import in.nikitapek.blocksaver.events.ReinforcedBlockExplodeEvent;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
@@ -10,7 +13,9 @@ import me.botsko.prism.actions.BlockAction;
 import me.botsko.prism.appliers.ChangeResult;
 import me.botsko.prism.appliers.ChangeResultType;
 import me.botsko.prism.appliers.PrismProcessType;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 public final class BlockSaverAction extends BlockAction {
@@ -109,6 +114,8 @@ public final class BlockSaverAction extends BlockAction {
     }
 
     private ChangeResultType rollback() {
+        Block block = getLoc().getBlock();
+
         // Perform a ROLLBACK for a BlockSaver ENFORCE event (de-enforces the block).
         if (BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
             if (!reinforcementManager.isReinforced(getLoc())) {
@@ -122,13 +129,13 @@ public final class BlockSaverAction extends BlockAction {
             // If the current reinforcement belongs to the person whose enforcement is being rolled back, then it is removed.
             // Otherwise it remains because it must not be the reinforcement intended to be removed.
             if (getPlayerName().equals(infoManager.getReinforcement(getLoc()).getCreatorName())) {
-                infoManager.removeReinforcement(getLoc());
+                Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block));
                 return ChangeResultType.APPLIED;
             }
         } else {
             // We restore the reinforcement prior to the damage if one does not exist at that location currently.
             if (!reinforcementManager.isReinforced(getLoc())) {
-                infoManager.reinforce(getLoc(), actionData.owner, reinforcementManager.getMaterialReinforcementCoefficient(getLoc().getBlock().getType()));
+                Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, actionData.owner, false));
                 // The restored block must have the same creation time as the destroyed one.
                 infoManager.getReinforcement(getLoc()).setCreationTime(actionData.creationTime);
                 return ChangeResultType.APPLIED;
@@ -136,7 +143,7 @@ public final class BlockSaverAction extends BlockAction {
 
             // If the same person owns the reinforcement now as the one who did when it was broken, then the damage event probably occurred on this block, and so must be rolled back.
             if (actionData.owner.equals(infoManager.getReinforcement(getLoc()).getCreatorName())) {
-                infoManager.reinforce(getLoc(), actionData.owner, reinforcementManager.getMaterialReinforcementCoefficient(getLoc().getBlock().getType()));
+                Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, actionData.owner, false));
                 return ChangeResultType.APPLIED;
             }
         }
@@ -145,8 +152,10 @@ public final class BlockSaverAction extends BlockAction {
     }
 
     private ChangeResultType restore() {
+        Block block = getLoc().getBlock();
+
         if (BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
-            infoManager.reinforce(getLoc(), actionData.owner, reinforcementManager.getMaterialReinforcementCoefficient(getLoc().getBlock().getType()));
+            Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, actionData.owner, false));
             return ChangeResultType.APPLIED;
         } else {
             // If there is no existing reinforcement, then the restoration cannot proceed.
@@ -158,7 +167,7 @@ public final class BlockSaverAction extends BlockAction {
                 return ChangeResultType.APPLIED;
             }
 
-            infoManager.removeReinforcement(getLoc());
+            Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, actionData.owner, false));
             return ChangeResultType.APPLIED;
         }
     }

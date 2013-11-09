@@ -10,6 +10,8 @@ import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 import com.sk89q.worldedit.regions.Polygonal2DRegion;
 import in.nikitapek.blocksaver.commands.CommandBlockSaver.BlockSaverCommands;
+import in.nikitapek.blocksaver.events.BlockDeinforceEvent;
+import in.nikitapek.blocksaver.events.BlockReinforceEvent;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.PlayerInfo;
@@ -67,7 +69,7 @@ public final class CommandReinforce extends PlayerOnlyCommand {
                 continue;
             }
 
-            reinforcementManager.reinforce(player.getName(), block.getLocation());
+            Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, player.getName(), true));
             reinforceCount++;
         }
 
