@@ -60,6 +60,14 @@
             <version>${worldedit.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!-- MarbleAPI -->
+        <dependency>
+            <groupId>com.amshulman</groupId>
+            <artifactId>marble</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/marble-api-1.0-SNAPSHOT.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <distributionManagement>

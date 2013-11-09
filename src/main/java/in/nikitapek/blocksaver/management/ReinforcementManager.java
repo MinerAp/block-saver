@@ -4,6 +4,10 @@ import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.TypeSafeSet;
 import com.amshulman.typesafety.impl.TypeSafeSetImpl;
 import in.nikitapek.blocksaver.serialization.PlayerInfo;
+import in.nikitapek.blocksaver.events.BlockDeinforceEvent;
+import in.nikitapek.blocksaver.events.BlockReinforceEvent;
+import in.nikitapek.blocksaver.events.ReinforcedBlockDamageEvent;
+import in.nikitapek.blocksaver.events.ReinforcedBlockExplodeEvent;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
@@ -52,7 +56,8 @@ public final class ReinforcementManager {
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     private final TypeSafeSet<FallingBlock> fallingEntities;
-    private boolean prismBridged = false;
+	private boolean prismBridged = false;
+    private boolean marbleBridged = false;
 
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
         this.feedbackManager = configurationContext.feedbackManager;
@@ -80,12 +85,18 @@ public final class ReinforcementManager {
 
         try {
             new BlockSaverPrismBridge(configurationContext.plugin);
+            prismBridged = true;
         } catch (final NoClassDefFoundError ex) {
             configurationContext.plugin.getLogger().log(Level.WARNING, "\"enableLogging\" true but Prism not found. Logging will not be enabled.");
             return;
         }
 
-        prismBridged = true;
+        try {
+            new BlockSaverMarbleBridge(configurationContext.plugin);
+            marbleBridged = true;
+        } catch (final NoClassDefFoundError ex) {
+            configurationContext.plugin.getLogger().log(Level.WARNING, "\"enableLogging\" true but Marble not found. Logging will not be enabled.");
+        }
     }
 
     public boolean isReinforceable(final Block block) {
@@ -263,7 +274,7 @@ public final class ReinforcementManager {
             return;
         }
 
-        reinforce(playerName, location);
+        Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, playerName, true));
 
         feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
 
@@ -287,7 +298,6 @@ public final class ReinforcementManager {
             } else {
                 playerInfo.setRemainingUses(material, usesLeft - 1);
             }
-
         }
     }
 
@@ -343,15 +353,15 @@ public final class ReinforcementManager {
         // Damage the reinforcement on the block.
         // If the cause of damage is TNT, handle the RV decrease specially.
         if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
-            reinforce(playerName, properLocation, -((float) Math.pow(getMaterialReinforcementCoefficient(material), 2) / 100));
+            Bukkit.getServer().getPluginManager().callEvent(new ReinforcedBlockExplodeEvent(block, playerName, true));
         } else {
-            reinforce(playerName, properLocation, -1);
+            Bukkit.getServer().getPluginManager().callEvent(new ReinforcedBlockDamageEvent(block, playerName, true));
         }
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
         // This uses less than 1 in case TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
         if (reinforcement.getReinforcementValue() < 1 || (player != null && !isFortified(reinforcement, playerName))) {
-            removeReinforcement(playerName, properLocation);
+            Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, playerName, true));
         }
     }
 
@@ -378,7 +388,7 @@ public final class ReinforcementManager {
 
         // Removes the reinforcement from the un-reinforceable block.
         if (!isMaterialReinforceable(block.getType())) {
-            removeReinforcement("Environment", properLocation);
+            Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
             return false;
         }
 
@@ -481,7 +491,7 @@ public final class ReinforcementManager {
             if (EntityType.PRIMED_TNT.equals(entityType) && !tntStripReinforcementEntirely) {
                 damageBlock(location, null, BlockSaverDamageCause.EXPLOSION);
             } else {
-                removeReinforcement("Environment", location);
+                Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
             }
 
             // This probably shouldn't be here...
@@ -497,6 +507,10 @@ public final class ReinforcementManager {
 
     public boolean isPrismBridged() {
         return prismBridged;
+    }
+
+    public boolean isMarbleBridged() {
+        return marbleBridged;
     }
 
     public void storeFallingEntity(FallingBlock entity) {
