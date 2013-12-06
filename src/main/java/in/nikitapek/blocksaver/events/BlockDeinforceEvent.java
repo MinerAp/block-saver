@@ -1,13 +1,13 @@
 package in.nikitapek.blocksaver.events;
 
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.block.BlockEvent;
 
-public class BlockDeinforceEvent extends Event {
+public class BlockDeinforceEvent extends BlockEvent {
+    private static final HandlerList handlers = new HandlerList();
+
     protected long time;
-    protected Block reinforcedBlock;
     protected String playerName;
     protected boolean isLogged;
 
@@ -20,18 +20,14 @@ public class BlockDeinforceEvent extends Event {
     }
 
     public BlockDeinforceEvent(Long time, Block reinforcedBlock, String playerName, boolean isLogged) {
+        super(reinforcedBlock);
         this.time = time;
-        this.reinforcedBlock = reinforcedBlock;
         this.playerName = playerName;
         this.isLogged = isLogged;
     }
 
     public Long getTime() {
         return time;
-    }
-
-    public Block getBlock() {
-        return reinforcedBlock;
     }
 
     public String getPlayerName() {
@@ -44,6 +40,10 @@ public class BlockDeinforceEvent extends Event {
 
     @Override
     public HandlerList getHandlers() {
-        return null;
+        return handlers;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 }
