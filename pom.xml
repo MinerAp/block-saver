@@ -11,7 +11,7 @@
     <url>http://dev.bukkit.org/server-mods/blocksaver/</url>
 
     <properties>
-        <prism.version>1.6.3</prism.version>
+        <prism.version>1.6.8</prism.version>
         <worldedit.version>5.5.8</worldedit.version>
     </properties>
 
