@@ -11,7 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 
-public final class BlockDeinforceListener extends EventBaseHandler<BlockReinforceEvent> {
+public final class BlockDeinforceListener extends EventBaseHandler<BlockDeinforceEvent> {
     private final ReinforcementManager reinforcementManager;
     private final BlockSaverInfoManager infoManager;
 
@@ -21,7 +21,7 @@ public final class BlockDeinforceListener extends EventBaseHandler<BlockReinforc
     }
 
     @EventHandler
-    public void listen(BlockReinforceEvent event) {
+    public void listen(BlockDeinforceEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();
         String playerName = event.getPlayerName();
