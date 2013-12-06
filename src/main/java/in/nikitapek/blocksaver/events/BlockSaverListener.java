@@ -180,8 +180,6 @@ public final class BlockSaverListener implements Listener {
             event.setCancelled(true);
             return;
         }
-
-        reinforcementManager.removeReinforcement(location);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -299,6 +297,7 @@ public final class BlockSaverListener implements Listener {
         final Block block = event.getBlock();
         final Location location = block.getLocation();
         final Material fromMaterial = block.getType();
+        final Entity entity = event.getEntity();
         final EntityType entityType = event.getEntityType();
         final Material toMaterial = event.getTo();
 
@@ -307,10 +306,13 @@ public final class BlockSaverListener implements Listener {
         }
 
         if (!reinforcementManager.isReinforced(location)) {
+            if (Material.AIR.equals(fromMaterial) && EntityType.FALLING_BLOCK.equals(entityType)) {
+                reinforcementManager.restoreFallingEntity(entity, toMaterial);
+            }
             return;
         }
 
-        if (event.getEntity() == null) {
+        if (entity == null) {
             return;
         }
 
@@ -342,6 +344,7 @@ public final class BlockSaverListener implements Listener {
         // Prevent sand and gravel from falling, if the plugin is configured to do so. Otherwise, their reinforcements are removed.
         if (EntityType.FALLING_BLOCK.equals(entityType) && (Material.SAND.equals(fromMaterial) || Material.GRAVEL.equals(fromMaterial))) {
             if (allowReinforcedBlockPhysics) {
+                reinforcementManager.storeFallingEntity(entity);
                 reinforcementManager.removeReinforcement(location);
             } else {
                 event.setCancelled(true);

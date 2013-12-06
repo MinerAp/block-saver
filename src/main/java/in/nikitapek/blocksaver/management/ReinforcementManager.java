@@ -2,22 +2,23 @@ package in.nikitapek.blocksaver.management;
 
 import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.TypeSafeSet;
+import com.amshulman.typesafety.impl.TypeSafeSetImpl;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
-import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
-import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
-import in.nikitapek.blocksaver.util.BlockSaverFeedback;
-import in.nikitapek.blocksaver.util.BlockSaverUtil;
+import in.nikitapek.blocksaver.util.*;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonExtensionMaterial;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -44,6 +45,8 @@ public final class ReinforcementManager {
     private final TypeSafeSet<Material> reinforcementBlocks;
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
+    private final TypeSafeSet<FallingBlock> fallingEntities;
+
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
         this.feedbackManager = configurationContext.feedbackManager;
         this.infoManager = configurationContext.infoManager;
@@ -65,6 +68,8 @@ public final class ReinforcementManager {
         this.reinforceableBlocks = configurationContext.reinforceableBlocks;
         this.reinforcementBlocks = configurationContext.reinforcementBlocks;
         this.toolRequirements = configurationContext.toolRequirements;
+
+        fallingEntities = new TypeSafeSetImpl<>(new HashSet<FallingBlock>(), SupplementaryTypes.FALLING_BLOCK);
     }
 
     public boolean isReinforceable(final Block block) {
@@ -324,7 +329,11 @@ public final class ReinforcementManager {
     }
 
     public void reinforce(final Location location, final String playerName) {
-        infoManager.reinforce(location, playerName, getMaterialReinforcementCoefficient(location.getBlock().getType()));
+        reinforce(location, playerName, location.getBlock().getType());
+    }
+
+    public void reinforce(final Location location, final String playerName, Material material) {
+        infoManager.reinforce(location, playerName, getMaterialReinforcementCoefficient(material));
     }
 
     public boolean isReinforced(final Location location) {
@@ -447,5 +456,18 @@ public final class ReinforcementManager {
 
     public boolean isWorldActive(String worldName) {
         return infoManager.isWorldLoaded(worldName);
+    }
+
+    public void storeFallingEntity(Entity entity) {
+        fallingEntities.add(entity);
+    }
+
+    public boolean restoreFallingEntity(Entity entity, Material material) {
+        if (!fallingEntities.remove(entity)) {
+            return false;
+        }
+
+        reinforce(entity.getLocation().getBlock().getLocation(), null, material);
+        return true;
     }
 }

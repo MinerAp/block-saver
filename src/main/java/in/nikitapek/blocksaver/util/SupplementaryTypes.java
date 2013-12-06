@@ -8,6 +8,7 @@ import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.serialization.WorldContainer;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.FallingBlock;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -21,6 +22,8 @@ public final class SupplementaryTypes {
     public static final Type HASHMAP = new TypeToken<HashMap>() {
     }.getType();
 
+    public static final Type FALLING_BLOCK = new TypeToken<FallingBlock>() {
+    }.getType();
     public static final Type INTEGER = new TypeToken<Integer>() {
     }.getType();
     public static final Type LIST = new TypeToken<List<?>>() {
