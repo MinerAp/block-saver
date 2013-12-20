@@ -458,11 +458,11 @@ public final class ReinforcementManager {
         return infoManager.isWorldLoaded(worldName);
     }
 
-    public void storeFallingEntity(Entity entity) {
+    public void storeFallingEntity(FallingBlock entity) {
         fallingEntities.add(entity);
     }
 
-    public boolean restoreFallingEntity(Entity entity, Material material) {
+    public boolean restoreFallingEntity(FallingBlock entity, Material material) {
         if (!fallingEntities.remove(entity)) {
             return false;
         }

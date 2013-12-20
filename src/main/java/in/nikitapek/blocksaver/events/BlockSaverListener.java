@@ -3,6 +3,9 @@ package in.nikitapek.blocksaver.events;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
+
+import java.util.ListIterator;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -10,17 +13,24 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EnderDragonPart;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockFadeEvent;
+import org.bukkit.event.block.BlockFromToEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-
-import java.util.ListIterator;
 
 public final class BlockSaverListener implements Listener {
     private final ReinforcementManager reinforcementManager;
@@ -306,8 +316,8 @@ public final class BlockSaverListener implements Listener {
         }
 
         if (!reinforcementManager.isReinforced(location)) {
-            if (Material.AIR.equals(fromMaterial) && EntityType.FALLING_BLOCK.equals(entityType)) {
-                reinforcementManager.restoreFallingEntity(entity, toMaterial);
+            if (Material.AIR.equals(fromMaterial) && entity instanceof FallingBlock) {
+                reinforcementManager.restoreFallingEntity((FallingBlock) entity, toMaterial);
             }
             return;
         }
@@ -342,9 +352,9 @@ public final class BlockSaverListener implements Listener {
         }
 
         // Prevent sand and gravel from falling, if the plugin is configured to do so. Otherwise, their reinforcements are removed.
-        if (EntityType.FALLING_BLOCK.equals(entityType) && (Material.SAND.equals(fromMaterial) || Material.GRAVEL.equals(fromMaterial))) {
+        if (entity instanceof FallingBlock && (Material.SAND.equals(fromMaterial) || Material.GRAVEL.equals(fromMaterial))) {
             if (allowReinforcedBlockPhysics) {
-                reinforcementManager.storeFallingEntity(entity);
+                reinforcementManager.storeFallingEntity((FallingBlock) entity);
                 reinforcementManager.removeReinforcement(location);
             } else {
                 event.setCancelled(true);
