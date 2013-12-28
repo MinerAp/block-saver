@@ -131,9 +131,9 @@ integrateWorldEdit: true
 
 #======== Reinforcement Item List ========#
 
-## A list of all the items which can be used to reinforce blocks.
+## A list of all the items which can be used to reinforce blocks, and the number of times they may be used.
 reinforcementBlocks:
-  - OBSIDIAN
+  OBSIDIAN: 8
 
 
 #======== Reinforceable Blocks List ========#

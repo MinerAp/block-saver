@@ -24,8 +24,6 @@ public final class SupplementaryTypes {
 
     public static final Type FALLING_BLOCK = new TypeToken<FallingBlock>() {
     }.getType();
-    public static final Type INTEGER = new TypeToken<Integer>() {
-    }.getType();
     public static final Type LIST = new TypeToken<List<?>>() {
     }.getType();
     public static final Type LOCATION = new TypeToken<Location>() {

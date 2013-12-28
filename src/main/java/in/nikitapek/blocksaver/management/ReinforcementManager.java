@@ -3,14 +3,18 @@ package in.nikitapek.blocksaver.management;
 import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.TypeSafeSet;
 import com.amshulman.typesafety.impl.TypeSafeSetImpl;
+import in.nikitapek.blocksaver.serialization.PlayerInfo;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
-import in.nikitapek.blocksaver.util.*;
+import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
+import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
+import in.nikitapek.blocksaver.util.BlockSaverFeedback;
+import in.nikitapek.blocksaver.util.BlockSaverUtil;
+import in.nikitapek.blocksaver.util.SupplementaryTypes;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
@@ -42,7 +46,7 @@ public final class ReinforcementManager {
     private final int reinforcementHealingTime;
 
     private final TypeSafeMap<Material, Integer> reinforceableBlocks;
-    private final TypeSafeSet<Material> reinforcementBlocks;
+    private final TypeSafeMap<Material, Integer> reinforcementBlocks;
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     private final TypeSafeSet<FallingBlock> fallingEntities;
@@ -107,7 +111,7 @@ public final class ReinforcementManager {
     }
 
     public boolean canMaterialReinforce(final Material material) {
-        return reinforcementBlocks.contains(material);
+        return reinforcementBlocks.containsKey(material);
     }
 
     public boolean isPlayerInReinforcementMode(final Player player) {
@@ -126,7 +130,7 @@ public final class ReinforcementManager {
         }
 
         // Otherwise, loop through all the reinforcement items and check if the player has one of these.
-        for (Material material : reinforcementBlocks) {
+        for (Material material : reinforcementBlocks.keySet()) {
             int index = player.getInventory().first(material);
 
             if (index != -1) {
@@ -248,12 +252,25 @@ public final class ReinforcementManager {
 
         // The amount of the reinforcement material in the player's hand is decreased.
         if (!GameMode.CREATIVE.equals(player.getGameMode())) {
-            if (item.getAmount() > 1) {
-                item.setAmount(item.getAmount() - 1);
+            PlayerInfo playerInfo = infoManager.getPlayerInfo(playerName);
+
+            // If the player has already reinforced with this material, retrieves the number of remaining uses for the player; otherwise, use the default value for the material.
+            int usesLeft = playerInfo.hasUsed(material) ? playerInfo.getRemainingUses(material) : reinforcementBlocks.get(material);
+
+            if (usesLeft == 1) {
+                if (item.getAmount() > 1) {
+                    item.setAmount(item.getAmount() - 1);
+                } else {
+                    player.getInventory().remove(item);
+                }
+                player.updateInventory();
+
+                // Reset the number of uses.
+                playerInfo.setRemainingUses(material, reinforcementBlocks.get(material));
             } else {
-                player.getInventory().remove(item);
+                playerInfo.setRemainingUses(material, usesLeft - 1);
             }
-            player.updateInventory();
+
         }
     }
 

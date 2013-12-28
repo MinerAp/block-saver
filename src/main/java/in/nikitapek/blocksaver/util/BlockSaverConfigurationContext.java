@@ -2,6 +2,7 @@ package in.nikitapek.blocksaver.util;
 
 import com.amshulman.mbapi.MbapiPlugin;
 import com.amshulman.mbapi.util.ConfigurationContext;
+import com.amshulman.mbapi.util.CoreTypes;
 import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.TypeSafeSet;
 import com.amshulman.typesafety.gson.TypeSafeMapTypeAdapter;
@@ -21,6 +22,7 @@ import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
@@ -58,7 +60,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
 
     public final TypeSafeSet<String> worlds;
     public final TypeSafeMap<Material, Integer> reinforceableBlocks;
-    public final TypeSafeSet<Material> reinforcementBlocks;
+    public final TypeSafeMap<Material, Integer> reinforcementBlocks;
     public final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     private final ReinforcementManager reinforcementManager;
@@ -70,8 +72,8 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
                 new LocationTypeAdapter());
 
         worlds = new TypeSafeSetImpl<>(new HashSet<String>(), SupplementaryTypes.STRING);
-        reinforceableBlocks = new TypeSafeMapImpl<>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.INTEGER);
-        reinforcementBlocks = new TypeSafeSetImpl<>(new HashSet<Material>(), SupplementaryTypes.MATERIAL);
+        reinforceableBlocks = new TypeSafeMapImpl<>(new EnumMap<Material, Integer>(Material.class), SupplementaryTypes.MATERIAL, CoreTypes.INTEGER);
+        reinforcementBlocks = new TypeSafeMapImpl<>(new HashMap<Material, Integer>(), SupplementaryTypes.MATERIAL, CoreTypes.INTEGER);
         toolRequirements = new TypeSafeMapImpl<>(new EnumMap<Material, List<Integer>>(Material.class), SupplementaryTypes.MATERIAL, SupplementaryTypes.LIST);
 
         plugin.saveDefaultConfig();
@@ -157,12 +159,19 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
             }
         }
 
-        List<String> reinforcementBlocksList = (List<String>) plugin.getConfig().getList("reinforcementBlocks");
-        if (reinforcementBlocksList == null) {
+        configSection = plugin.getConfig().getConfigurationSection("reinforcementBlocks");
+        if (configSection == null) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load reinforcement blocks list.");
         } else {
-            for (String materialName : reinforcementBlocksList) {
-                this.reinforcementBlocks.add(loadMaterial(materialName));
+            for (String materialName : configSection.getKeys(false)) {
+                final Material material = loadMaterial(materialName);
+                final int value = configSection.getInt(materialName);
+
+                if (material != null && value > 0) {
+                    reinforcementBlocks.put(material, value);
+                } else {
+                    plugin.getLogger().log(Level.WARNING, materialName + "has an invalid usage count.");
+                }
             }
         }
 
