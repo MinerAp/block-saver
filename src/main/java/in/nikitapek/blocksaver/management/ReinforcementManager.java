@@ -116,7 +116,7 @@ public final class ReinforcementManager {
 
     private Material getReinforcingMaterial(final Player player) {
         // If the player is not in reinforcement mode, then we only check the item in their hand.
-        if (!infoManager.getPlayerInfo(player.getName()).isInReinforcementMode) {
+        if (!isPlayerInReinforcementMode(player)) {
             Material itemInHandMaterial = player.getItemInHand().getType();
             if (canMaterialReinforce(itemInHandMaterial)) {
                 return itemInHandMaterial;
