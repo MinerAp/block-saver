@@ -67,6 +67,7 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
 
     public BlockSaverConfigurationContext(final MbapiPlugin plugin) {
         super(plugin,
+                new TypeSafeMapTypeAdapter<>(SupplementaryTypes.HASHMAP, SupplementaryTypes.MATERIAL, CoreTypes.INTEGER),
                 new TypeSafeMapTypeAdapter<>(SupplementaryTypes.HASHMAP, SupplementaryTypes.LOCATION, SupplementaryTypes.REINFORCEMENT),
                 new TypeSafeSetTypeAdapter<Reinforcement>(SupplementaryTypes.HASHSET, SupplementaryTypes.REINFORCEMENT),
                 new LocationTypeAdapter());
