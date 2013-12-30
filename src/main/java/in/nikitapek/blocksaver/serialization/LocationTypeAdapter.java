@@ -1,7 +1,11 @@
 package in.nikitapek.blocksaver.serialization;
 
 import com.amshulman.typesafety.gson.GsonTypeAdapter;
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
 import in.nikitapek.blocksaver.util.SupplementaryTypes;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
