@@ -11,6 +11,10 @@ public final class Reinforcement {
     private transient float value = BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT;
     private transient long timeStamp;
 
+    public Reinforcement() {
+        this(null, BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT);
+    }
+
     public Reinforcement(final String creatorName, final float value) {
         this.creatorName = creatorName;
         this.timeCreated = System.currentTimeMillis();
