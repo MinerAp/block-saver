@@ -345,7 +345,7 @@ public final class ReinforcementManager {
         if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
             reinforce(playerName, properLocation, -((float) Math.pow(getMaterialReinforcementCoefficient(material), 2) / 100));
         } else {
-            removeReinforcement(playerName, properLocation);
+            reinforce(playerName, properLocation, -1);
         }
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
