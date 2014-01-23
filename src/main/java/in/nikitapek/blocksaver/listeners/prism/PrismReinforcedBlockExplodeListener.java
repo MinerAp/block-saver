@@ -8,6 +8,7 @@ import in.nikitapek.blocksaver.util.PrismBridge;
 import me.botsko.prism.Prism;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 public final class PrismReinforcedBlockExplodeListener implements Listener {
@@ -17,7 +18,7 @@ public final class PrismReinforcedBlockExplodeListener implements Listener {
         this.reinforcementManager = configurationContext.getReinforcementManager();
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void listen(ReinforcedBlockExplodeEvent event) {
         Location location = event.getBlock().getLocation();
 

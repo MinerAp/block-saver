@@ -6,6 +6,7 @@ import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 public final class BlockReinforceListener implements Listener {
@@ -17,7 +18,7 @@ public final class BlockReinforceListener implements Listener {
         this.infoManager = configurationContext.infoManager;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void listen(BlockReinforceEvent event) {
         Block block = event.getBlock();
 
