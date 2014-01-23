@@ -6,7 +6,6 @@ import me.botsko.prism.Prism;
 import me.botsko.prism.actionlibs.ActionType;
 import me.botsko.prism.exceptions.InvalidActionException;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 
 public final class BlockSaverPrismBridge {
     public static final String ENFORCE_EVENT_NAME = "bs-block-enforce";
@@ -29,12 +28,24 @@ public final class BlockSaverPrismBridge {
         }
     }
 
-    public static void logCustomEvent(final Reinforcement reinforcement, final Location location, final Player player, final ActionType event) {
+    public static void logReinforcementEvent(final Reinforcement reinforcement, final Location location, final String playerName, float value) {
+        ActionType actionType;
+
+        if (value < 0) {
+            actionType = BlockSaverPrismBridge.DAMAGE_EVENT;
+        } else {
+            actionType = BlockSaverPrismBridge.ENFORCE_EVENT;
+        }
+
+        logReinforcementEvent(reinforcement, location, playerName, actionType);
+    }
+
+    public static void logReinforcementEvent(final Reinforcement reinforcement, final Location location, final String playerName, ActionType actionType) {
         BlockSaverAction action = new BlockSaverAction();
 
-        action.setType(event);
+        action.setType(actionType);
         action.setLoc(location);
-        action.setPlayerName(player.getName());
+        action.setPlayerName(playerName);
 
         // Required for the ItemStackAction
         action.setReinforcement(location, reinforcement);

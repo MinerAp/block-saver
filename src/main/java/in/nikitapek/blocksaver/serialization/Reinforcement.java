@@ -15,7 +15,7 @@ public final class Reinforcement {
         this(null, BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT);
     }
 
-    public Reinforcement(final String creatorName, final float value) {
+    public Reinforcement(final String creatorName, float value) {
         this.creatorName = creatorName;
         this.timeCreated = System.currentTimeMillis();
         setReinforcementValue(value, Float.MAX_VALUE);
@@ -49,14 +49,17 @@ public final class Reinforcement {
         return timeStamp;
     }
 
-    public void setReinforcementValue(final float value, final float coefficient) {
+    void setReinforcementValue(final float value, final float coefficient) {
+        // If the block has been recently restored or created, set its RV to RVC.
         if (this.value == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
             this.value = coefficient;
         }
 
+        // Ensure that the RV is not being set above RVC.
         if (value > coefficient) {
             this.value = coefficient;
         } else {
+            // Set the RV to the requested value.
             this.value = value;
         }
 

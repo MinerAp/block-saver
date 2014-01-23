@@ -2,6 +2,7 @@ package in.nikitapek.blocksaver.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import me.botsko.prism.actionlibs.QueryParameters;
@@ -13,6 +14,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public final class BlockSaverAction extends BlockAction {
+    private static BlockSaverInfoManager infoManager;
     private static ReinforcementManager reinforcementManager;
 
     public class ReinforcementActionData extends BlockActionData {
@@ -26,7 +28,8 @@ public final class BlockSaverAction extends BlockAction {
 
     private Gson gson1 = new GsonBuilder().disableHtmlEscaping().create();
 
-    public static void initialize(ReinforcementManager reinforcementManager) {
+    public static void initialize(ReinforcementManager reinforcementManager, BlockSaverInfoManager infoManager) {
+        BlockSaverAction.infoManager = infoManager;
         BlockSaverAction.reinforcementManager = reinforcementManager;
     }
 
@@ -96,22 +99,6 @@ public final class BlockSaverAction extends BlockAction {
             return new ChangeResult(null, null);
         }
 
-        // For each location in the parameters list we ROLLBACK or RESTORE the actions. This is probably unnecessary as each process should be called for each location.
-        /*for (Location location : parameters.getSpecificBlockLocations()) {
-            if (PrismProcessType.ROLLBACK.equals(pt)) {
-                result = rollback(location, parameters, result);
-            } else if (PrismProcessType.RESTORE.equals(pt)) {
-                result = restore(location, parameters, result);
-            }
-        }*/
-
-        // If the reinforcement or damage event being rolled back or restored is older than the current existing reinforcement, then it does not need to occur.
-        if (reinforcementManager.isReinforced(getLoc())) {
-            if (reinforcementManager.getReinforcement(getLoc()).getCreationTime() > actionData.creationTime) {
-                return new ChangeResult(ChangeResultType.SKIPPED, null);
-            }
-        }
-
         if (PrismProcessType.ROLLBACK.equals(processType)) {
             result = rollback();
         } else if (PrismProcessType.RESTORE.equals(processType)) {
@@ -134,22 +121,22 @@ public final class BlockSaverAction extends BlockAction {
             // If the block is reinforced, then we must confirm that this is the reinforcement to be removed before we continue.
             // If the current reinforcement belongs to the person whose enforcement is being rolled back, then it is removed.
             // Otherwise it remains because it must not be the reinforcement intended to be removed.
-            if (getPlayerName().equals(reinforcementManager.getReinforcement(getLoc()).getCreatorName())) {
-                reinforcementManager.removeReinforcement(getLoc());
+            if (getPlayerName().equals(infoManager.getReinforcement(getLoc()).getCreatorName())) {
+                infoManager.removeReinforcement(getLoc());
                 return ChangeResultType.APPLIED;
             }
         } else {
             // We restore the reinforcement prior to the damage if one does not exist at that location currently.
             if (!reinforcementManager.isReinforced(getLoc())) {
-                reinforcementManager.reinforce(getLoc(), actionData.owner);
+                infoManager.reinforce(getLoc(), actionData.owner, reinforcementManager.getMaterialReinforcementCoefficient(getLoc().getBlock().getType()));
                 // The restored block must have the same creation time as the destroyed one.
-                reinforcementManager.getReinforcement(getLoc()).setCreationTime(actionData.creationTime);
+                infoManager.getReinforcement(getLoc()).setCreationTime(actionData.creationTime);
                 return ChangeResultType.APPLIED;
             }
 
             // If the same person owns the reinforcement now as the one who did when it was broken, then the damage event probably occurred on this block, and so must be rolled back.
-            if (actionData.owner.equals(reinforcementManager.getReinforcement(getLoc()).getCreatorName())) {
-                reinforcementManager.reinforce(getLoc(), actionData.owner);
+            if (actionData.owner.equals(infoManager.getReinforcement(getLoc()).getCreatorName())) {
+                infoManager.reinforce(getLoc(), actionData.owner, reinforcementManager.getMaterialReinforcementCoefficient(getLoc().getBlock().getType()));
                 return ChangeResultType.APPLIED;
             }
         }
@@ -159,15 +146,7 @@ public final class BlockSaverAction extends BlockAction {
 
     private ChangeResultType restore() {
         if (BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
-            // If there is no existing reinforcement, then the restoration can proceed without problems.
-            if (!reinforcementManager.isReinforced(getLoc())) {
-                reinforcementManager.reinforce(getLoc(), actionData.owner);
-                return ChangeResultType.APPLIED;
-            }
-
-            // The already existing reinforcement is removed and replaced by the one being restored.
-            reinforcementManager.removeReinforcement(getLoc());
-            reinforcementManager.reinforce(getLoc(), actionData.owner);
+            infoManager.reinforce(getLoc(), actionData.owner, reinforcementManager.getMaterialReinforcementCoefficient(getLoc().getBlock().getType()));
             return ChangeResultType.APPLIED;
         } else {
             // If there is no existing reinforcement, then the restoration cannot proceed.
@@ -179,7 +158,7 @@ public final class BlockSaverAction extends BlockAction {
                 return ChangeResultType.APPLIED;
             }
 
-            reinforcementManager.removeReinforcement(getLoc());
+            infoManager.removeReinforcement(getLoc());
             return ChangeResultType.APPLIED;
         }
     }

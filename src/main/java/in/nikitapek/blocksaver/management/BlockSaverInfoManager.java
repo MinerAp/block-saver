@@ -2,6 +2,7 @@ package in.nikitapek.blocksaver.management;
 
 import com.amshulman.mbapi.management.InfoManager;
 import com.amshulman.mbapi.storage.TypeSafeDistributedStorageMap;
+import com.amshulman.mbapi.storage.TypeSafeUnifiedStorageMap;
 import com.amshulman.mbapi.util.ConstructorFactory;
 import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.TypeSafeSet;
@@ -70,18 +71,8 @@ public final class BlockSaverInfoManager extends InfoManager {
         }
 
         final Reinforcement reinforcement = worldContainers.get(worldName).getReinforcement(location);
-        // TODO: Remove this possibly unnecessary double-check.
-        reinforcementManager.floorReinforcement(reinforcement, location);
+
         return reinforcement;
-    }
-
-    public void setReinforcement(final Location location, final String playerName, final float value) {
-        String worldName = location.getWorld().getName();
-        if (!isWorldLoaded(worldName)) {
-            return;
-        }
-
-        worldContainers.get(worldName).setReinforcement(location, playerName, value, reinforcementManager.getMaterialReinforcementCoefficient(location.getBlock().getType()));
     }
 
     public void reinforce(final Location location, final String playerName, float value) {
@@ -115,8 +106,22 @@ public final class BlockSaverInfoManager extends InfoManager {
         return getLoadedWorlds().contains(worldName);
     }
 
+    /**
+     * Moves a reinforcement from one location to another location, without modifying the reinforcement object.
+     * @param fromLocation the initial location of the reinforcement.
+     * @param toLocation the target location of the reinforcement.
+     */
+    public void moveReinforcement(Location fromLocation, Location toLocation) {
+        worldContainers.get(fromLocation.getWorld().getName()).moveReinforcement(fromLocation, toLocation);
+    }
+
     public void removeReinforcement(final Location location) {
-        setReinforcement(location, "", 0);
+        String worldName = location.getWorld().getName();
+        if (!isWorldLoaded(worldName)) {
+            return;
+        }
+
+        worldContainers.get(worldName).removeReinforcement(location);
     }
 
     public boolean isReinforced(final Location location) {

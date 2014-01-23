@@ -3,9 +3,6 @@ package in.nikitapek.blocksaver.events;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
-
-import java.util.ListIterator;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -18,19 +15,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockBurnEvent;
-import org.bukkit.event.block.BlockFadeEvent;
-import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+
+import java.util.ListIterator;
 
 public final class BlockSaverListener implements Listener {
     private final ReinforcementManager reinforcementManager;
@@ -62,7 +53,7 @@ public final class BlockSaverListener implements Listener {
         }
 
         if (Material.AIR.equals(event.getBlock().getType()) && reinforcementManager.isReinforced(location)) {
-            reinforcementManager.removeReinforcement(location);
+            reinforcementManager.removeReinforcement("Environment", location);
         }
 
         // If the player has placed a block and is currently in auto-reinforce mode, an attempt is made to reinforce the newly placed block.
@@ -167,6 +158,7 @@ public final class BlockSaverListener implements Listener {
         reinforcementManager.explodeBlocks(event.blockList(), entity.getType());
     }
 
+    /*
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockPhysics(final BlockPhysicsEvent event) {
         final Block block = event.getBlock();
@@ -190,7 +182,10 @@ public final class BlockSaverListener implements Listener {
             event.setCancelled(true);
             return;
         }
+
+        reinforcementManager.removeReinforcement(location);
     }
+    */
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
@@ -223,7 +218,7 @@ public final class BlockSaverListener implements Listener {
                 return;
             }
 
-            reinforcementManager.moveReinforcement(block, direction);
+            reinforcementManager.moveReinforcement(block.getLocation(), direction);
         }
     }
 
@@ -239,6 +234,7 @@ public final class BlockSaverListener implements Listener {
 
         final BlockFace direction = event.getDirection();
         final Block block = event.getBlock().getRelative(direction, 2);
+        Location location = block.getLocation();
 
         if (!reinforcementManager.isReinforced(block.getLocation())) {
             return;
@@ -249,7 +245,7 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        reinforcementManager.moveReinforcement(block, direction.getOppositeFace());
+        reinforcementManager.moveReinforcement(location, direction.getOppositeFace());
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -275,7 +271,7 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        reinforcementManager.removeReinforcement(location);
+        reinforcementManager.removeReinforcement("Environment", location);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -292,7 +288,7 @@ public final class BlockSaverListener implements Listener {
 
         // If the event is caused by a dragon egg moving to a new location, simply make sure it is not teleporting into a field.
         if (Material.DRAGON_EGG.equals(event.getBlock().getType())) {
-            reinforcementManager.removeReinforcement(location);
+            reinforcementManager.removeReinforcement("Environment", location);
             return;
         }
 
@@ -335,7 +331,7 @@ public final class BlockSaverListener implements Listener {
             // If the enderman is picking up a block, and is allowed to do so, the reinforcement is removed from the block.
             if (!fromMaterial.equals(Material.AIR) && toMaterial.equals(Material.AIR)) {
                 if (mobsInteractWithReinforcedBlocks) {
-                    reinforcementManager.removeReinforcement(location);
+                    reinforcementManager.removeReinforcement("Environment", location);
                 } else {
                     event.setCancelled(true);
                 }
@@ -345,7 +341,7 @@ public final class BlockSaverListener implements Listener {
         // Are sheep able to eat grass, and prevent withers from destroying blocks.
         if (EntityType.SHEEP.equals(entityType) || EntityType.WITHER.equals(entityType) || EntityType.WITHER_SKULL.equals(entityType)) {
             if (mobsInteractWithReinforcedBlocks) {
-                reinforcementManager.removeReinforcement(location);
+                reinforcementManager.removeReinforcement("Environment", location);
             } else {
                 event.setCancelled(true);
             }
@@ -355,7 +351,7 @@ public final class BlockSaverListener implements Listener {
         if (entity instanceof FallingBlock && (Material.SAND.equals(fromMaterial) || Material.GRAVEL.equals(fromMaterial))) {
             if (allowReinforcedBlockPhysics) {
                 reinforcementManager.storeFallingEntity((FallingBlock) entity);
-                reinforcementManager.removeReinforcement(location);
+                reinforcementManager.removeReinforcement("Environment", location);
             } else {
                 event.setCancelled(true);
             }

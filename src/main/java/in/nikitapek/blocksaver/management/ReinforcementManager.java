@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 
 public final class ReinforcementManager {
     private static final byte NO_REINFORCEMENT_VALUE = -1;
@@ -45,6 +46,7 @@ public final class ReinforcementManager {
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     private final TypeSafeSet<FallingBlock> fallingEntities;
+	private boolean prismBridged = false;
 
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
         this.feedbackManager = configurationContext.feedbackManager;
@@ -69,6 +71,15 @@ public final class ReinforcementManager {
         this.toolRequirements = configurationContext.toolRequirements;
 
         fallingEntities = new TypeSafeSetImpl<>(new HashSet<FallingBlock>(), SupplementaryTypes.FALLING_BLOCK);
+
+        try {
+            new BlockSaverPrismBridge(configurationContext.plugin);
+        } catch (final NoClassDefFoundError ex) {
+            configurationContext.plugin.getLogger().log(Level.WARNING, "\"enableLogging\" true but Prism not found. Logging will not be enabled.");
+            return;
+        }
+
+        prismBridged = true;
     }
 
     public boolean isReinforceable(final Block block) {
@@ -241,7 +252,7 @@ public final class ReinforcementManager {
             return;
         }
 
-        reinforce(location, playerName);
+        reinforce(playerName, location);
 
         feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
 
@@ -256,30 +267,21 @@ public final class ReinforcementManager {
         }
     }
 
-    public void moveReinforcement(final Block block, final BlockFace direction) {
-        final Reinforcement previousReinforcement = infoManager.getReinforcement(block.getLocation());
-        infoManager.setReinforcement(block.getRelative(direction).getLocation(), previousReinforcement.getCreatorName(), previousReinforcement.getReinforcementValue());
-        removeReinforcement(block.getLocation());
-    }
-
-    public void floorReinforcement(final Reinforcement reinforcement, final Location location) {
-        if (reinforcement == null) {
-            return;
-        }
-
-        // Checks to see if the maximum RV is less than the actual RV. If so, floors the RV.
-        final int maximumReinforcement = getMaterialReinforcementCoefficient(location.getBlock().getType());
-
-        if (reinforcement.getReinforcementValue() > maximumReinforcement) {
-            infoManager.setReinforcement(location, reinforcement.getCreatorName(), maximumReinforcement);
-        }
+    /**
+     * Moves a reinforcement from its location to the location one block over in the given direction, without modifying the reinforcement object.
+     * @param location the initial location of the reinforcement.
+     * @param direction the target direction of the movement operation.
+     */
+    public void moveReinforcement(Location location, BlockFace direction) {
+        infoManager.moveReinforcement(location, location.getBlock().getRelative(direction).getLocation());
     }
 
     public void damageBlock(final Location location, final Player player, final BlockSaverDamageCause damageCause) {
         Location properLocation = getProperLocation(location);
-        final Reinforcement reinforcement = infoManager.getReinforcement(properLocation);
+        Reinforcement reinforcement = infoManager.getReinforcement(properLocation);
         Block block = properLocation.getBlock();
         Material material = block.getType();
+        String playerName = player.getName();
 
         if (reinforcement == null) {
             return;
@@ -288,7 +290,8 @@ public final class ReinforcementManager {
         // Heals the block if the plugin is configured to do so and the required amount of time has elapsed.
         if (allowReinforcementHealing) {
             if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
-                reinforcement.setReinforcementValue(getMaterialReinforcementCoefficient(material), getMaterialReinforcementCoefficient(material));
+                // This calls the infoManager.reinforce() method because there is no need to log reinforcement healing.
+                infoManager.reinforce(properLocation, reinforcement.getCreatorName(), getMaterialReinforcementCoefficient(material));
             }
         }
 
@@ -310,29 +313,33 @@ public final class ReinforcementManager {
             }
         }
 
+        feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.DAMAGE_SUCCESS, player);
+
         // Damage the reinforcement on the block.
         // If the cause of damage is TNT, handle the RV decrease specially.
         if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
-            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - ((float) Math.pow(getMaterialReinforcementCoefficient(material), 2) / 100), getMaterialReinforcementCoefficient(material));
+            reinforce(playerName, properLocation, -((float) Math.pow(getMaterialReinforcementCoefficient(material), 2) / 100));
         } else {
-            reinforcement.setReinforcementValue(reinforcement.getReinforcementValue() - 1, getMaterialReinforcementCoefficient(material));
+            reinforce(playerName, properLocation, -1);
         }
-
-        feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.DAMAGE_SUCCESS, player);
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
         // This uses less than 1 in case TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
-        if (reinforcement.getReinforcementValue() < 1 || (player != null && !isFortified(reinforcement, player.getName()))) {
-            removeReinforcement(properLocation);
+        if (reinforcement.getReinforcementValue() < 1 || (player != null && !isFortified(reinforcement, playerName))) {
+            removeReinforcement(playerName, properLocation);
         }
     }
 
-    public void reinforce(final Location location, final String playerName) {
-        reinforce(location, playerName, location.getBlock().getType());
+    public void reinforce(String playerName, Location location) {
+        reinforce(playerName, location, getMaterialReinforcementCoefficient(location.getBlock().getType()));
     }
 
-    public void reinforce(final Location location, final String playerName, Material material) {
-        infoManager.reinforce(location, playerName, getMaterialReinforcementCoefficient(material));
+    public void reinforce(String playerName, Location location, float value) {
+        if (isPrismBridged()) {
+            BlockSaverPrismBridge.logReinforcementEvent(getReinforcement(location), location, playerName, value);
+        }
+
+        infoManager.reinforce(location, playerName, value);
     }
 
     public boolean isReinforced(final Location location) {
@@ -346,15 +353,21 @@ public final class ReinforcementManager {
 
         // Removes the reinforcement from the un-reinforceable block.
         if (!isMaterialReinforceable(block.getType())) {
-            removeReinforcement(properLocation);
+            removeReinforcement("Environment", properLocation);
             return false;
         }
 
         return true;
     }
 
-    public void removeReinforcement(final Location location) {
-        infoManager.removeReinforcement(getProperLocation(location));
+    public void removeReinforcement(String playerName, Location location) {
+        Location properLocation = getProperLocation(location);
+
+        if (isPrismBridged()) {
+            BlockSaverPrismBridge.logReinforcementEvent(getReinforcement(properLocation), properLocation, playerName, BlockSaverPrismBridge.DAMAGE_EVENT);
+        }
+
+        infoManager.removeReinforcement(properLocation);
     }
 
     public static Location getProperLocation(final Location location) {
@@ -443,7 +456,7 @@ public final class ReinforcementManager {
             if (EntityType.PRIMED_TNT.equals(entityType) && !tntStripReinforcementEntirely) {
                 damageBlock(location, null, BlockSaverDamageCause.EXPLOSION);
             } else {
-                removeReinforcement(location);
+                removeReinforcement("Environment", location);
             }
 
             // This probably shouldn't be here...
@@ -455,6 +468,10 @@ public final class ReinforcementManager {
 
     public boolean isWorldActive(String worldName) {
         return infoManager.isWorldLoaded(worldName);
+    }
+
+    public boolean isPrismBridged() {
+        return prismBridged;
     }
 
     public void storeFallingEntity(FallingBlock entity) {
