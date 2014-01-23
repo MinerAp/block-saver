@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import in.nikitapek.blocksaver.events.BlockDeinforceEvent;
 import in.nikitapek.blocksaver.events.BlockReinforceEvent;
-import in.nikitapek.blocksaver.events.ReinforcedBlockExplodeEvent;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;

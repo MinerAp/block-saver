@@ -58,7 +58,7 @@ public final class ReinforcementManager {
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     private final TypeSafeSet<FallingBlock> fallingEntities;
-	private boolean prismBridged = false;
+    private boolean prismBridged = false;
     private boolean marbleBridged = false;
 
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
