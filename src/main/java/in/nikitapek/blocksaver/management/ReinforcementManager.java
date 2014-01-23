@@ -367,18 +367,6 @@ public final class ReinforcementManager {
         }
     }
 
-    public void reinforce(String playerName, Location location) {
-        reinforce(playerName, location, getMaterialReinforcementCoefficient(location.getBlock().getType()));
-    }
-
-    public void reinforce(String playerName, Location location, float value) {
-        if (isPrismBridged()) {
-            BlockSaverPrismBridge.logReinforcementEvent(getReinforcement(location), location, playerName, value);
-        }
-
-        infoManager.reinforce(location, playerName, value);
-    }
-
     public boolean isReinforced(final Location location) {
         // If a part of a piston was damaged, retrieves the base of the piston.
         final Location properLocation = getProperLocation(location);

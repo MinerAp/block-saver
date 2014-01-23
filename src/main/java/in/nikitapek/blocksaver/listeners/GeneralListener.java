@@ -1,5 +1,6 @@
-package in.nikitapek.blocksaver.events;
+package in.nikitapek.blocksaver.listeners;
 
+import in.nikitapek.blocksaver.events.BlockDeinforceEvent;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;

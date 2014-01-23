@@ -7,13 +7,13 @@ import me.botsko.prism.actionlibs.ActionType;
 import me.botsko.prism.exceptions.InvalidActionException;
 import org.bukkit.Location;
 
-public final class BlockSaverPrismBridge {
+public final class PrismBridge {
     public static final String ENFORCE_EVENT_NAME = "bs-block-enforce";
     public static final String DAMAGE_EVENT_NAME = "bs-block-damage";
     public static final ActionType ENFORCE_EVENT = new ActionType(ENFORCE_EVENT_NAME, false, true, true, "BlockSaverAction", "reinforced");
     public static final ActionType DAMAGE_EVENT = new ActionType(DAMAGE_EVENT_NAME, false, true, true, "BlockSaverAction", "damaged");
 
-    public BlockSaverPrismBridge(MbapiPlugin plugin) {
+    public PrismBridge(MbapiPlugin plugin) {
         if (plugin.getServer().getPluginManager().getPlugin("Prism") == null) {
             return;
         }
@@ -32,9 +32,9 @@ public final class BlockSaverPrismBridge {
         ActionType actionType;
 
         if (value < 0) {
-            actionType = BlockSaverPrismBridge.DAMAGE_EVENT;
+            actionType = PrismBridge.DAMAGE_EVENT;
         } else {
-            actionType = BlockSaverPrismBridge.ENFORCE_EVENT;
+            actionType = PrismBridge.ENFORCE_EVENT;
         }
 
         logReinforcementEvent(reinforcement, location, playerName, actionType);

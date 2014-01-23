@@ -1,40 +1,42 @@
-package in.nikitapek.blocksaver.events;
+package in.nikitapek.blocksaver.listeners.insight;
 
 import com.amshulman.insight.event.BaseEventHandler;
 import com.amshulman.insight.rows.BlockRowEntry;
+import in.nikitapek.blocksaver.events.ReinforcedBlockDamageEvent;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
-import in.nikitapek.blocksaver.util.BlockSaverMarbleBridge;
-import in.nikitapek.blocksaver.util.BlockSaverPrismBridge;
+import in.nikitapek.blocksaver.util.InsightBridge;
+import in.nikitapek.blocksaver.util.PrismBridge;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 
-public final class BlockDeinforceListener extends BaseEventHandler<BlockDeinforceEvent> {
+public final class InsightReinforcedBlockDamageListener extends BaseEventHandler<ReinforcedBlockDamageEvent> {
     private final ReinforcementManager reinforcementManager;
     private final BlockSaverInfoManager infoManager;
 
-    public BlockDeinforceListener(final BlockSaverConfigurationContext configurationContext) {
+    public InsightReinforcedBlockDamageListener(final BlockSaverConfigurationContext configurationContext) {
         this.reinforcementManager = configurationContext.getReinforcementManager();
         this.infoManager = configurationContext.infoManager;
     }
 
     @EventHandler
-    public void listen(BlockDeinforceEvent event) {
+    public void listen(ReinforcedBlockDamageEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();
         String playerName = event.getPlayerName();
 
-        infoManager.removeReinforcement(location);
+        infoManager.reinforce(location, playerName, -1);
 
         if (event.isLogged) {
             if (reinforcementManager.isPrismBridged()) {
-                BlockSaverPrismBridge.logReinforcementEvent(reinforcementManager.getReinforcement(location), location, playerName, BlockSaverPrismBridge.DAMAGE_EVENT);
+                PrismBridge.logReinforcementEvent(reinforcementManager.getReinforcement(location), location, playerName, PrismBridge.DAMAGE_EVENT);
             }
-            if (reinforcementManager.isMarbleBridged()) {
-                add(new BlockRowEntry(event.getTime(), playerName, BlockSaverMarbleBridge.DAMAGE_EVENT, event.getBlock()));
+            if (reinforcementManager.isInsightBridged()) {
+                add(new BlockRowEntry(event.getTime(), playerName, InsightBridge.DAMAGE_EVENT, event.getBlock()));
             }
         }
+
     }
 }
