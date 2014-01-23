@@ -8,6 +8,7 @@ import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
 import in.nikitapek.blocksaver.util.BlockSaverFeedback;
+import in.nikitapek.blocksaver.util.BlockSaverPrismBridge;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
 import in.nikitapek.blocksaver.util.SupplementaryTypes;
 import org.bukkit.GameMode;
@@ -51,7 +52,7 @@ public final class ReinforcementManager {
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     private final TypeSafeSet<FallingBlock> fallingEntities;
-	private boolean prismBridged = false;
+    private boolean prismBridged = false;
 
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
         this.feedbackManager = configurationContext.feedbackManager;
@@ -91,7 +92,7 @@ public final class ReinforcementManager {
         final int coefficient = getMaterialReinforcementCoefficient(block.getType());
 
         // If the block's material cannot be reinforced, the reinforcement fails.
-        if (coefficient == -1) {
+        if (coefficient == NO_REINFORCEMENT_VALUE) {
             return false;
         }
 
@@ -287,7 +288,8 @@ public final class ReinforcementManager {
 
     /**
      * Moves a reinforcement from its location to the location one block over in the given direction, without modifying the reinforcement object.
-     * @param location the initial location of the reinforcement.
+     *
+     * @param location  the initial location of the reinforcement.
      * @param direction the target direction of the movement operation.
      */
     public void moveReinforcement(Location location, BlockFace direction) {
@@ -338,7 +340,7 @@ public final class ReinforcementManager {
         if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
             reinforce(playerName, properLocation, -((float) Math.pow(getMaterialReinforcementCoefficient(material), 2) / 100));
         } else {
-            reinforce(playerName, properLocation, -1);
+            removeReinforcement(playerName, properLocation);
         }
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).

@@ -66,8 +66,9 @@ public final class WorldContainer {
 
     /**
      * Moves a reinforcement from one location to another location, without modifying the reinforcement object.
+     *
      * @param fromLocation the initial location of the reinforcement.
-     * @param toLocation the target location of the reinforcement.
+     * @param toLocation   the target location of the reinforcement.
      */
     public void moveReinforcement(Location fromLocation, Location toLocation) {
         ensureMapExists(toLocation);
