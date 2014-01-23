@@ -1,7 +1,7 @@
 package in.nikitapek.blocksaver.events;
 
-import com.amshulman.marble.event.EventBaseHandler;
-import com.amshulman.marble.rows.BlockRowEntry;
+import com.amshulman.insight.event.BaseEventHandler;
+import com.amshulman.insight.rows.BlockRowEntry;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
@@ -11,7 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 
-public final class BlockDeinforceListener extends EventBaseHandler<BlockDeinforceEvent> {
+public final class BlockDeinforceListener extends BaseEventHandler<BlockDeinforceEvent> {
     private final ReinforcementManager reinforcementManager;
     private final BlockSaverInfoManager infoManager;
 
