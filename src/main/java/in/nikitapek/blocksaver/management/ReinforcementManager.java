@@ -483,7 +483,7 @@ public final class ReinforcementManager {
             return false;
         }
 
-        reinforce(entity.getLocation().getBlock().getLocation(), null, material);
+        reinforce(null, entity.getLocation().getBlock().getLocation(), getMaterialReinforcementCoefficient(material));
         return true;
     }
 }
