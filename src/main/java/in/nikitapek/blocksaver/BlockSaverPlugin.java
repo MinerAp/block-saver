@@ -2,11 +2,11 @@ package in.nikitapek.blocksaver;
 
 import com.amshulman.mbapi.MbapiPlugin;
 import in.nikitapek.blocksaver.commands.CommandBlockSaver;
-import in.nikitapek.blocksaver.events.BlockDeinforceListener;
-import in.nikitapek.blocksaver.events.BlockReinforceListener;
-import in.nikitapek.blocksaver.events.GeneralListener;
-import in.nikitapek.blocksaver.events.ReinforcedBlockDamageListener;
-import in.nikitapek.blocksaver.events.ReinforcedBlockExplodeListener;
+import in.nikitapek.blocksaver.listeners.BlockDeinforceListener;
+import in.nikitapek.blocksaver.listeners.BlockReinforceListener;
+import in.nikitapek.blocksaver.listeners.GeneralListener;
+import in.nikitapek.blocksaver.listeners.ReinforcedBlockDamageListener;
+import in.nikitapek.blocksaver.listeners.ReinforcedBlockExplodeListener;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 
 public final class BlockSaverPlugin extends MbapiPlugin {

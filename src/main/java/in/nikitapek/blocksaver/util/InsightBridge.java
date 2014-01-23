@@ -2,6 +2,11 @@ package in.nikitapek.blocksaver.util;
 
 import com.amshulman.insight.action.BlockAction;
 import com.amshulman.mbapi.MbapiPlugin;
+import in.nikitapek.blocksaver.listeners.insight.InsightBlockDeinforceListener;
+import in.nikitapek.blocksaver.listeners.insight.InsightBlockReinforceListener;
+import in.nikitapek.blocksaver.listeners.insight.InsightReinforcedBlockDamageListener;
+import in.nikitapek.blocksaver.listeners.insight.InsightReinforcedBlockExplodeListener;
+import org.bukkit.plugin.Plugin;
 
 public final class InsightBridge {
     public static final String ENFORCE_EVENT_NAME = "bs-block-enforce";
@@ -19,9 +24,18 @@ public final class InsightBridge {
         }
     };
 
-    public InsightBridge(MbapiPlugin plugin) {
-        if (plugin.getServer().getPluginManager().getPlugin("Marble") == null) {
+    public InsightBridge(BlockSaverConfigurationContext configurationContext) {
+        MbapiPlugin plugin = configurationContext.plugin;
+
+        Plugin insightPlugin = plugin.getServer().getPluginManager().getPlugin("Insight");
+
+        if (insightPlugin == null || !insightPlugin.isEnabled()) {
             return;
         }
+
+        plugin.registerEventHandler(new InsightBlockDeinforceListener());
+        plugin.registerEventHandler(new InsightBlockReinforceListener());
+        plugin.registerEventHandler(new InsightReinforcedBlockDamageListener());
+        plugin.registerEventHandler(new InsightReinforcedBlockExplodeListener());
     }
 }

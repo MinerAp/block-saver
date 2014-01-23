@@ -1,11 +1,14 @@
 package in.nikitapek.blocksaver.util;
 
 import com.amshulman.mbapi.MbapiPlugin;
-import in.nikitapek.blocksaver.serialization.Reinforcement;
+import in.nikitapek.blocksaver.listeners.prism.PrismBlockDeinforceListener;
+import in.nikitapek.blocksaver.listeners.prism.PrismBlockReinforceListener;
+import in.nikitapek.blocksaver.listeners.prism.PrismReinforcedBlockDamageListener;
+import in.nikitapek.blocksaver.listeners.prism.PrismReinforcedBlockExplodeListener;
 import me.botsko.prism.Prism;
 import me.botsko.prism.actionlibs.ActionType;
 import me.botsko.prism.exceptions.InvalidActionException;
-import org.bukkit.Location;
+import org.bukkit.plugin.Plugin;
 
 public final class PrismBridge {
     public static final String ENFORCE_EVENT_NAME = "bs-block-enforce";
@@ -13,8 +16,12 @@ public final class PrismBridge {
     public static final ActionType ENFORCE_EVENT = new ActionType(ENFORCE_EVENT_NAME, false, true, true, "BlockSaverAction", "reinforced");
     public static final ActionType DAMAGE_EVENT = new ActionType(DAMAGE_EVENT_NAME, false, true, true, "BlockSaverAction", "damaged");
 
-    public PrismBridge(MbapiPlugin plugin) {
-        if (plugin.getServer().getPluginManager().getPlugin("Prism") == null) {
+    public PrismBridge(BlockSaverConfigurationContext configurationContext) {
+        MbapiPlugin plugin = configurationContext.plugin;
+
+        Plugin prismPlugin = plugin.getServer().getPluginManager().getPlugin("Prism");
+
+        if (prismPlugin == null || !prismPlugin.isEnabled()) {
             return;
         }
 
@@ -26,31 +33,12 @@ public final class PrismBridge {
         } catch (InvalidActionException e) {
             e.printStackTrace();
         }
-    }
 
-    public static void logReinforcementEvent(final Reinforcement reinforcement, final Location location, final String playerName, float value) {
-        ActionType actionType;
+        plugin.registerEventHandler(new PrismBlockDeinforceListener(configurationContext));
+        plugin.registerEventHandler(new PrismBlockReinforceListener(configurationContext));
+        plugin.registerEventHandler(new PrismReinforcedBlockDamageListener(configurationContext));
+        plugin.registerEventHandler(new PrismReinforcedBlockExplodeListener(configurationContext));
 
-        if (value < 0) {
-            actionType = PrismBridge.DAMAGE_EVENT;
-        } else {
-            actionType = PrismBridge.ENFORCE_EVENT;
-        }
-
-        logReinforcementEvent(reinforcement, location, playerName, actionType);
-    }
-
-    public static void logReinforcementEvent(final Reinforcement reinforcement, final Location location, final String playerName, ActionType actionType) {
-        BlockSaverAction action = new BlockSaverAction();
-
-        action.setType(actionType);
-        action.setLoc(location);
-        action.setPlayerName(playerName);
-
-        // Required for the ItemStackAction
-        action.setReinforcement(location, reinforcement);
-
-        // Add the recorder queue
-        Prism.actionsRecorder.addToQueue(action);
+        BlockSaverAction.initialize(configurationContext.getReinforcementManager(), configurationContext.infoManager);
     }
 }

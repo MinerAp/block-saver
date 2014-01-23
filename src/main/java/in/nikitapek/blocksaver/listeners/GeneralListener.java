@@ -324,7 +324,7 @@ public final class GeneralListener implements Listener {
 
         if (!reinforcementManager.isReinforced(location)) {
             if (Material.AIR.equals(fromMaterial) && entity instanceof FallingBlock) {
-                reinforcementManager.restoreFallingEntity((FallingBlock) entity, toMaterial);
+                reinforcementManager.restoreFallingEntity((FallingBlock) entity);
             }
             return;
         }

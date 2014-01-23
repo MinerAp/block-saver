@@ -7,6 +7,7 @@ import in.nikitapek.blocksaver.events.BlockReinforceEvent;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
+import me.botsko.prism.actionlibs.ActionType;
 import me.botsko.prism.actionlibs.QueryParameters;
 import me.botsko.prism.actions.BlockAction;
 import me.botsko.prism.appliers.ChangeResult;
@@ -31,6 +32,14 @@ public final class BlockSaverAction extends BlockAction {
     private ReinforcementActionData actionData;
 
     private Gson gson1 = new GsonBuilder().disableHtmlEscaping().create();
+
+    public BlockSaverAction(Location location, String playerName, ActionType actionType, Reinforcement reinforcement) {
+        setLoc(location);
+        setPlayerName(playerName);
+        setType(actionType);
+        // Required for the ItemStackAction
+        setReinforcement(location, reinforcement);
+    }
 
     public static void initialize(ReinforcementManager reinforcementManager, BlockSaverInfoManager infoManager) {
         BlockSaverAction.infoManager = infoManager;
@@ -94,7 +103,7 @@ public final class BlockSaverAction extends BlockAction {
         }
 
         // If the event is not a BlockSaver ENFORCE or DAMAGE event being applied, then it is of no consequence.
-        if (!BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName()) && !BlockSaverPrismBridge.DAMAGE_EVENT_NAME.equals(getType().getName())) {
+        if (!PrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName()) && !PrismBridge.DAMAGE_EVENT_NAME.equals(getType().getName())) {
             return new ChangeResult(null, null);
         }
 
@@ -116,7 +125,7 @@ public final class BlockSaverAction extends BlockAction {
         Block block = getLoc().getBlock();
 
         // Perform a ROLLBACK for a BlockSaver ENFORCE event (de-enforces the block).
-        if (BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
+        if (PrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
             if (!reinforcementManager.isReinforced(getLoc())) {
                 // If the block is not reinforced, then the rollback can be assumed to be completed.
                 // In a practice, this will only occur when something has gone wrong (e.g. an out-of-order rollback) or when the same rollback is being executed twice.
@@ -153,7 +162,7 @@ public final class BlockSaverAction extends BlockAction {
     private ChangeResultType restore() {
         Block block = getLoc().getBlock();
 
-        if (BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
+        if (PrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
             Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, actionData.owner, false));
             return ChangeResultType.APPLIED;
         } else {

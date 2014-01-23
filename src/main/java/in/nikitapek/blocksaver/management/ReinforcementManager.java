@@ -12,8 +12,6 @@ import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
 import in.nikitapek.blocksaver.util.BlockSaverFeedback;
-import in.nikitapek.blocksaver.util.BlockSaverMarbleBridge;
-import in.nikitapek.blocksaver.util.BlockSaverPrismBridge;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
 import in.nikitapek.blocksaver.util.SupplementaryTypes;
 import org.bukkit.Bukkit;
@@ -33,7 +31,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.logging.Level;
 
 public final class ReinforcementManager {
     private static final byte NO_REINFORCEMENT_VALUE = -1;
@@ -58,8 +55,6 @@ public final class ReinforcementManager {
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     private final TypeSafeSet<FallingBlock> fallingEntities;
-    private boolean prismBridged = false;
-    private boolean marbleBridged = false;
 
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
         this.feedbackManager = configurationContext.feedbackManager;
@@ -84,21 +79,6 @@ public final class ReinforcementManager {
         this.toolRequirements = configurationContext.toolRequirements;
 
         fallingEntities = new TypeSafeSetImpl<>(new HashSet<FallingBlock>(), SupplementaryTypes.FALLING_BLOCK);
-
-        try {
-            new BlockSaverPrismBridge(configurationContext.plugin);
-            prismBridged = true;
-        } catch (final NoClassDefFoundError ex) {
-            configurationContext.plugin.getLogger().log(Level.WARNING, "\"enableLogging\" true but Prism not found. Logging will not be enabled.");
-            return;
-        }
-
-        try {
-            new BlockSaverMarbleBridge(configurationContext.plugin);
-            marbleBridged = true;
-        } catch (final NoClassDefFoundError ex) {
-            configurationContext.plugin.getLogger().log(Level.WARNING, "\"enableLogging\" true but Marble not found. Logging will not be enabled.");
-        }
     }
 
     public boolean isReinforceable(final Block block) {
@@ -385,16 +365,6 @@ public final class ReinforcementManager {
         return true;
     }
 
-    public void removeReinforcement(String playerName, Location location) {
-        Location properLocation = getProperLocation(location);
-
-        if (isPrismBridged()) {
-            BlockSaverPrismBridge.logReinforcementEvent(getReinforcement(properLocation), properLocation, playerName, BlockSaverPrismBridge.DAMAGE_EVENT);
-        }
-
-        infoManager.removeReinforcement(properLocation);
-    }
-
     public static Location getProperLocation(final Location location) {
         final Block block = location.getBlock();
 
@@ -495,24 +465,18 @@ public final class ReinforcementManager {
         return infoManager.isWorldLoaded(worldName);
     }
 
-    public boolean isPrismBridged() {
-        return prismBridged;
-    }
-
-    public boolean isMarbleBridged() {
-        return marbleBridged;
-    }
-
     public void storeFallingEntity(FallingBlock entity) {
         fallingEntities.add(entity);
     }
 
-    public boolean restoreFallingEntity(FallingBlock entity, Material material) {
+    public boolean restoreFallingEntity(FallingBlock entity) {
         if (!fallingEntities.remove(entity)) {
             return false;
         }
 
-        reinforce(null, entity.getLocation().getBlock().getLocation(), getMaterialReinforcementCoefficient(material));
+        Block block = entity.getLocation().getBlock();
+
+        Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, "Environment", false));
         return true;
     }
 }

@@ -31,7 +31,7 @@ public class FeedbackManager {
         this.hitFailSound = configurationContext.hitFailSound;
         this.primaryFeedback = configurationContext.primaryFeedback;
 
-        if (!configurationContext.enableLogging) {
+        if (!configurationContext.prismLogging && !configurationContext.insightLogging) {
             return;
         }
     }

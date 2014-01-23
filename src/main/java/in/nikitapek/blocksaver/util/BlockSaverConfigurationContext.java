@@ -48,7 +48,8 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean leaveBlockAfterDeinforce;
     public final boolean mobsInteractWithReinforcedBlocks;
     public final boolean enderdragonInteractWithReinforcedBlocks;
-    public final boolean enableLogging;
+    public final boolean prismLogging;
+    public final boolean insightLogging;
     public final boolean integrateWorldEdit;
     public final double extinguishChance;
     public final int gracePeriodTime;
@@ -107,7 +108,8 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         leaveBlockAfterDeinforce = plugin.getConfig().getBoolean("leaveBlockAfterDeinforce", false);
         mobsInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("mobsInteractWithReinforcedBlocks", false);
         enderdragonInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("enderdragonInteractWithReinforcedBlocks", false);
-        enableLogging = plugin.getConfig().getBoolean("enableLogging", true);
+        prismLogging = plugin.getConfig().getBoolean("prismLogging", true);
+        insightLogging = plugin.getConfig().getBoolean("insightLogging", true);
         integrateWorldEdit = plugin.getConfig().getBoolean("integrateWorldEdit", true);
 
         // Loads the primary feedback form, ensuring that the provided type of feedback is valid.
@@ -222,8 +224,22 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         infoManager = new BlockSaverInfoManager(this);
         feedbackManager = new FeedbackManager(this);
         reinforcementManager = new ReinforcementManager(this);
-        if (reinforcementManager.isPrismBridged()) {
-            BlockSaverAction.initialize(reinforcementManager, infoManager);
+
+
+        if (prismLogging) {
+            try {
+                new PrismBridge(this);
+            } catch (final NoClassDefFoundError ex) {
+                plugin.getLogger().log(Level.WARNING, "\"prismLogging\" true but Prism not found or not enabled. Prism logging will not be enabled.");
+            }
+        }
+
+        if (insightLogging) {
+            try {
+                new InsightBridge(this);
+            } catch (final NoClassDefFoundError ex) {
+                plugin.getLogger().log(Level.WARNING, "\"insightLogging\" true but Insight not found or not enabled. Insight logging will not be enabled.");
+            }
         }
     }
 
