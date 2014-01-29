@@ -1,9 +1,10 @@
-package in.nikitapek.blocksaver.listeners.insight;
+package in.nikitapek.blocksaver.logging.insight;
 
 import com.amshulman.insight.event.BaseEventHandler;
 import com.amshulman.insight.rows.BlockRowEntry;
+
 import in.nikitapek.blocksaver.events.BlockReinforceEvent;
-import in.nikitapek.blocksaver.util.InsightBridge;
+
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 

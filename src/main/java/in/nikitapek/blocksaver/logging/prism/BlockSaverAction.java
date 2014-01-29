@@ -1,4 +1,4 @@
-package in.nikitapek.blocksaver.util;
+package in.nikitapek.blocksaver.logging.prism;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

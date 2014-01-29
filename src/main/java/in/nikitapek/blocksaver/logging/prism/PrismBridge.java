@@ -1,13 +1,12 @@
-package in.nikitapek.blocksaver.util;
+package in.nikitapek.blocksaver.logging.prism;
 
 import com.amshulman.mbapi.MbapiPlugin;
-import in.nikitapek.blocksaver.listeners.prism.PrismBlockDeinforceListener;
-import in.nikitapek.blocksaver.listeners.prism.PrismBlockReinforceListener;
-import in.nikitapek.blocksaver.listeners.prism.PrismReinforcedBlockDamageListener;
-import in.nikitapek.blocksaver.listeners.prism.PrismReinforcedBlockExplodeListener;
+
+import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import me.botsko.prism.Prism;
 import me.botsko.prism.actionlibs.ActionType;
 import me.botsko.prism.exceptions.InvalidActionException;
+
 import org.bukkit.plugin.Plugin;
 
 public final class PrismBridge {

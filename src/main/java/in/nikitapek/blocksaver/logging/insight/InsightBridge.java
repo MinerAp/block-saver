@@ -1,11 +1,10 @@
-package in.nikitapek.blocksaver.util;
+package in.nikitapek.blocksaver.logging.insight;
 
 import com.amshulman.insight.action.BlockAction;
 import com.amshulman.mbapi.MbapiPlugin;
-import in.nikitapek.blocksaver.listeners.insight.InsightBlockDeinforceListener;
-import in.nikitapek.blocksaver.listeners.insight.InsightBlockReinforceListener;
-import in.nikitapek.blocksaver.listeners.insight.InsightReinforcedBlockDamageListener;
-import in.nikitapek.blocksaver.listeners.insight.InsightReinforcedBlockExplodeListener;
+
+import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
+
 import org.bukkit.plugin.Plugin;
 
 public final class InsightBridge {

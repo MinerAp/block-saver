@@ -9,11 +9,15 @@ import com.amshulman.typesafety.gson.TypeSafeMapTypeAdapter;
 import com.amshulman.typesafety.gson.TypeSafeSetTypeAdapter;
 import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 import com.amshulman.typesafety.impl.TypeSafeSetImpl;
+
+import in.nikitapek.blocksaver.logging.insight.InsightBridge;
+import in.nikitapek.blocksaver.logging.prism.PrismBridge;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.FeedbackManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.LocationTypeAdapter;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Material;
