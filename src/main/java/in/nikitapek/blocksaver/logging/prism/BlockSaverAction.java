@@ -37,7 +37,7 @@ public final class BlockSaverAction extends BlockAction {
 
     public BlockSaverAction(Location location, String playerName, ActionType actionType, Reinforcement reinforcement) {
         setLoc(location);
-        setPlayerName(playerName);
+        setPlayerName(playerName == null ? "Environment" : playerName);
         setType(actionType);
         // Required for the ItemStackAction
         setReinforcement(location, reinforcement);
