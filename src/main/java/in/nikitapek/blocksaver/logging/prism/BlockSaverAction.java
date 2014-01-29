@@ -33,6 +33,8 @@ public final class BlockSaverAction extends BlockAction {
 
     private Gson gson1 = new GsonBuilder().disableHtmlEscaping().create();
 
+    public BlockSaverAction() {}
+
     public BlockSaverAction(Location location, String playerName, ActionType actionType, Reinforcement reinforcement) {
         setLoc(location);
         setPlayerName(playerName);
