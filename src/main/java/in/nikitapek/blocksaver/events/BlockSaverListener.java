@@ -23,6 +23,7 @@ import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
@@ -141,6 +142,32 @@ public final class BlockSaverListener implements Listener {
 
         // The block reinforcement is then damaged.
         reinforcementManager.damageBlock(location, null, BlockSaverDamageCause.FIRE);
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onBlockIgnite(BlockIgniteEvent event) {
+        final Location location = event.getBlock().getLocation();
+
+        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+            return;
+        }
+
+        // If the block is not reinforced, it is allowed to burn normally.
+        if (!reinforcementManager.isReinforced(location)) {
+            return;
+        }
+
+        Player player = null;
+
+        if (BlockIgniteEvent.IgniteCause.FLINT_AND_STEEL.equals(event.getCause())) {
+            player = event.getPlayer();
+        }
+
+        // If the block is reinforced, the burn event is cancelled for the block.
+        event.setCancelled(true);
+
+        // The block reinforcement is then damaged.
+        reinforcementManager.damageBlock(location, player, BlockSaverDamageCause.FIRE);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
