@@ -305,7 +305,7 @@ public final class ReinforcementManager {
         }
 
         // Heals the block if the plugin is configured to do so and the required amount of time has elapsed.
-        if (allowReinforcementHealing) {
+        if (allowReinforcementHealing && reinforcement.getReinforcementValue() != BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
             if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
                 // This calls the infoManager.reinforce() method because there is no need to log reinforcement healing.
                 infoManager.reinforce(properLocation, reinforcement.getCreatorName(), getMaterialReinforcementCoefficient(material));
