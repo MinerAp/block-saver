@@ -15,11 +15,21 @@ public final class InsightBridge {
         public String name() {
             return ENFORCE_EVENT_NAME;
         }
+
+        @Override
+        public String getFriendlyDescription() {
+            return "reinforced";
+        }
     };
     public static final BlockAction DAMAGE_EVENT = new BlockAction() {
         @Override
         public String name() {
             return DAMAGE_EVENT_NAME;
+        }
+
+        @Override
+        public String getFriendlyDescription() {
+            return "damaged";
         }
     };
 
