@@ -6,20 +6,20 @@
     <groupId>in.nikitapek</groupId>
     <artifactId>block-saver</artifactId>
     <name>BlockSaver</name>
-    <version>${mbapi.version}.1</version>
+    <version>${mbapi.version}.0</version>
     <description>A plugin to provide block reinforcement for the purposes of block protection.</description>
     <url>http://dev.bukkit.org/server-mods/blocksaver/</url>
 
     <properties>
-        <prism.version>1.6.8</prism.version>
-        <worldedit.version>5.5.8</worldedit.version>
+        <prism.version>1.6.8-minerap</prism.version>
+        <worldedit.version>5.6.2</worldedit.version>
         <aws-maven.version>4.8.0.RELEASE</aws-maven.version>
     </properties>
 
     <parent>
         <groupId>com.amshulman</groupId>
         <artifactId>bukkit-parent</artifactId>
-        <version>0.16</version>
+        <version>0.19</version>
     </parent>
 
     <repositories>
