@@ -24,7 +24,7 @@ public final class CommandFeedback extends PlayerOnlyCommand {
 
     @Override
     protected boolean executeForPlayer(final Player player, final TypeSafeList<String> args) {
-        final PlayerInfo playerInfo = infoManager.getPlayerInfo(player.getName());
+        final PlayerInfo playerInfo = infoManager.getPlayerInfo(player);
 
         playerInfo.isReceivingTextFeedback = !playerInfo.isReceivingTextFeedback;
 

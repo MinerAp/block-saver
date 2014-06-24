@@ -24,7 +24,7 @@ public final class CommandAutoenforce extends PlayerOnlyCommand {
 
     @Override
     protected boolean executeForPlayer(final Player player, final TypeSafeList<String> args) {
-        final PlayerInfo playerInfo = infoManager.getPlayerInfo(player.getName());
+        final PlayerInfo playerInfo = infoManager.getPlayerInfo(player);
 
         playerInfo.isInReinforcementMode = !playerInfo.isInReinforcementMode;
 

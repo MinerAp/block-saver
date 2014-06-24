@@ -33,7 +33,7 @@ public final class CommandReinforce extends PlayerOnlyCommand {
 
     @Override
     protected boolean executeForPlayer(final Player player, final TypeSafeList<String> args) {
-        PlayerInfo playerInfo = infoManager.getPlayerInfo(player.getName());
+        PlayerInfo playerInfo = infoManager.getPlayerInfo(player);
         WorldEditPlugin worldEditPlugin = (WorldEditPlugin) Bukkit.getPluginManager().getPlugin("WorldEdit");
 
         Selection selection = worldEditPlugin.getSelection(player);

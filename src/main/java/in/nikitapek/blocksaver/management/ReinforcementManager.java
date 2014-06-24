@@ -125,7 +125,7 @@ public final class ReinforcementManager {
     }
 
     public boolean isPlayerInReinforcementMode(final Player player) {
-        return infoManager.getPlayerInfo(player.getName()).isInReinforcementMode;
+        return infoManager.getPlayerInfo(player).isInReinforcementMode;
     }
 
     private Material getReinforcingMaterial(final Player player) {
@@ -233,7 +233,6 @@ public final class ReinforcementManager {
 
     public void attemptReinforcement(final Location location, final Player player) {
         final Block block = location.getBlock();
-        final String playerName = player.getName();
         final Material material = getReinforcingMaterial(player);
         if (Material.AIR.equals(material)) {
             return;
@@ -256,13 +255,13 @@ public final class ReinforcementManager {
             return;
         }
 
-        Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, playerName, true));
+        Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, player.getName(), true));
 
         feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
 
         // The amount of the reinforcement material in the player's hand is decreased.
         if (!GameMode.CREATIVE.equals(player.getGameMode())) {
-            PlayerInfo playerInfo = infoManager.getPlayerInfo(playerName);
+            PlayerInfo playerInfo = infoManager.getPlayerInfo(player);
 
             // If the player has already reinforced with this material, retrieves the number of remaining uses for the player; otherwise, use the default value for the material.
             int usesLeft = playerInfo.hasUsed(material) ? playerInfo.getRemainingUses(material) : reinforcementBlocks.get(material);
