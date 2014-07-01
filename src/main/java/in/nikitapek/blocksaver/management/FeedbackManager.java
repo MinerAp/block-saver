@@ -62,10 +62,12 @@ public class FeedbackManager {
                 if (infoManager.getPlayerInfo(player).isReceivingTextFeedback && player.hasPermission("blocksaver.feedback.damage.success")) {
                     player.sendMessage(ChatColor.GRAY + "Damaged a reinforced block.");
                 }
+
+                float coefficient = infoManager.getReinforcementManager().getMaterialReinforcementCoefficient(location.getBlock().getType());
                 if ("visual".equals(primaryFeedback)) {
-                    BlockSaverUtil.sendParticleEffect(location, (int) reinforcement.getReinforcementValue(), infoManager.getReinforcementManager().getMaterialReinforcementCoefficient(location.getBlock().getType()));
+                    BlockSaverUtil.sendParticleEffect(location, (int) reinforcement.getReinforcementValue(coefficient), (int) coefficient);
                 } else if ("auditory".equals(primaryFeedback)) {
-                    BlockSaverUtil.playMusicalEffect(location, (int) reinforcement.getReinforcementValue());
+                    BlockSaverUtil.playMusicalEffect(location, (int) reinforcement.getReinforcementValue(coefficient));
                 }
                 break;
             case DAMAGE_FAIL:

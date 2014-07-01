@@ -81,11 +81,12 @@ public final class BlockSaverInfoManager extends InfoManager {
             return;
         }
 
+        float coefficient = reinforcementManager.getMaterialReinforcementCoefficient(location.getBlock().getType());
         if (reinforcementManager.isReinforced(location)) {
-            value += getReinforcement(location).getReinforcementValue();
+            value += getReinforcement(location).getReinforcementValue(coefficient);
         }
 
-        worldContainers.get(worldName).setReinforcement(location, playerName, value, reinforcementManager.getMaterialReinforcementCoefficient(location.getBlock().getType()));
+        worldContainers.get(worldName).setReinforcement(location, playerName, value, coefficient);
     }
 
     public PlayerInfo getPlayerInfo(final Player player) {

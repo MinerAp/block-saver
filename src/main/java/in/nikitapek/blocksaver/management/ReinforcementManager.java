@@ -97,7 +97,7 @@ public final class ReinforcementManager {
             return true;
         }
 
-        final float reinforcementValue = reinforcement.getReinforcementValue();
+        final float reinforcementValue = reinforcement.getReinforcementValue(coefficient);
 
         // If the RV of the block has not beed set to RVC after being deserialized, it is not reinforceable.
         if (reinforcementValue == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
@@ -304,10 +304,11 @@ public final class ReinforcementManager {
         }
 
         // Heals the block if the plugin is configured to do so and the required amount of time has elapsed.
-        if (allowReinforcementHealing && reinforcement.getReinforcementValue() != BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
+        float coefficient = getMaterialReinforcementCoefficient(location.getBlock().getType());
+        if (allowReinforcementHealing) {
             if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
                 // This calls the infoManager.reinforce() method because there is no need to log reinforcement healing.
-                infoManager.reinforce(properLocation, reinforcement.getCreatorName(), getMaterialReinforcementCoefficient(material));
+                infoManager.reinforce(properLocation, reinforcement.getCreatorName(), coefficient);
             }
         }
 
@@ -341,7 +342,7 @@ public final class ReinforcementManager {
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
         // This uses less than 1 in case TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
-        if (reinforcement.getReinforcementValue() < 1 || (player != null && !isFortified(reinforcement, playerName))) {
+        if (reinforcement.getReinforcementValue(coefficient) < 1 || (player != null && !isFortified(reinforcement, playerName))) {
             Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, playerName, true));
         }
     }
