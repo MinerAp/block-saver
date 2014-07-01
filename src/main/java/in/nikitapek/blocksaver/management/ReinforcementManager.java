@@ -3,14 +3,18 @@ package in.nikitapek.blocksaver.management;
 import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.TypeSafeSet;
 import com.amshulman.typesafety.impl.TypeSafeSetImpl;
+import in.nikitapek.blocksaver.events.BlockDeinforceEvent;
+import in.nikitapek.blocksaver.events.BlockReinforceEvent;
+import in.nikitapek.blocksaver.events.ReinforcedBlockDamageEvent;
+import in.nikitapek.blocksaver.events.ReinforcedBlockExplodeEvent;
 import in.nikitapek.blocksaver.serialization.PlayerInfo;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
 import in.nikitapek.blocksaver.util.BlockSaverFeedback;
-import in.nikitapek.blocksaver.util.BlockSaverPrismBridge;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
 import in.nikitapek.blocksaver.util.SupplementaryTypes;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -27,7 +31,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.logging.Level;
 
 public final class ReinforcementManager {
     private static final byte NO_REINFORCEMENT_VALUE = -1;
@@ -52,7 +55,6 @@ public final class ReinforcementManager {
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     private final TypeSafeSet<FallingBlock> fallingEntities;
-    private boolean prismBridged = false;
 
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
         this.feedbackManager = configurationContext.feedbackManager;
@@ -77,15 +79,6 @@ public final class ReinforcementManager {
         this.toolRequirements = configurationContext.toolRequirements;
 
         fallingEntities = new TypeSafeSetImpl<>(new HashSet<FallingBlock>(), SupplementaryTypes.FALLING_BLOCK);
-
-        try {
-            new BlockSaverPrismBridge(configurationContext.plugin);
-        } catch (final NoClassDefFoundError ex) {
-            configurationContext.plugin.getLogger().log(Level.WARNING, "\"enableLogging\" true but Prism not found. Logging will not be enabled.");
-            return;
-        }
-
-        prismBridged = true;
     }
 
     public boolean isReinforceable(final Block block) {
@@ -104,7 +97,7 @@ public final class ReinforcementManager {
             return true;
         }
 
-        final float reinforcementValue = reinforcement.getReinforcementValue();
+        final float reinforcementValue = reinforcement.getReinforcementValue(coefficient);
 
         // If the RV of the block has not beed set to RVC after being deserialized, it is not reinforceable.
         if (reinforcementValue == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
@@ -132,7 +125,7 @@ public final class ReinforcementManager {
     }
 
     public boolean isPlayerInReinforcementMode(final Player player) {
-        return infoManager.getPlayerInfo(player.getName()).isInReinforcementMode;
+        return infoManager.getPlayerInfo(player).isInReinforcementMode;
     }
 
     private Material getReinforcingMaterial(final Player player) {
@@ -240,7 +233,6 @@ public final class ReinforcementManager {
 
     public void attemptReinforcement(final Location location, final Player player) {
         final Block block = location.getBlock();
-        final String playerName = player.getName();
         final Material material = getReinforcingMaterial(player);
         if (Material.AIR.equals(material)) {
             return;
@@ -263,13 +255,13 @@ public final class ReinforcementManager {
             return;
         }
 
-        reinforce(playerName, location);
+        Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, player.getName(), true));
 
         feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
 
         // The amount of the reinforcement material in the player's hand is decreased.
         if (!GameMode.CREATIVE.equals(player.getGameMode())) {
-            PlayerInfo playerInfo = infoManager.getPlayerInfo(playerName);
+            PlayerInfo playerInfo = infoManager.getPlayerInfo(player);
 
             // If the player has already reinforced with this material, retrieves the number of remaining uses for the player; otherwise, use the default value for the material.
             int usesLeft = playerInfo.hasUsed(material) ? playerInfo.getRemainingUses(material) : reinforcementBlocks.get(material);
@@ -287,7 +279,6 @@ public final class ReinforcementManager {
             } else {
                 playerInfo.setRemainingUses(material, usesLeft - 1);
             }
-
         }
     }
 
@@ -306,17 +297,18 @@ public final class ReinforcementManager {
         Reinforcement reinforcement = infoManager.getReinforcement(properLocation);
         Block block = properLocation.getBlock();
         Material material = block.getType();
-        String playerName = player.getName();
+        String playerName = player == null ? null : player.getName();
 
         if (reinforcement == null) {
             return;
         }
 
         // Heals the block if the plugin is configured to do so and the required amount of time has elapsed.
+        float coefficient = getMaterialReinforcementCoefficient(location.getBlock().getType());
         if (allowReinforcementHealing) {
             if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
                 // This calls the infoManager.reinforce() method because there is no need to log reinforcement healing.
-                infoManager.reinforce(properLocation, reinforcement.getCreatorName(), getMaterialReinforcementCoefficient(material));
+                infoManager.reinforce(properLocation, reinforcement.getCreatorName(), coefficient);
             }
         }
 
@@ -343,28 +335,16 @@ public final class ReinforcementManager {
         // Damage the reinforcement on the block.
         // If the cause of damage is TNT, handle the RV decrease specially.
         if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
-            reinforce(playerName, properLocation, -((float) Math.pow(getMaterialReinforcementCoefficient(material), 2) / 100));
+            Bukkit.getServer().getPluginManager().callEvent(new ReinforcedBlockExplodeEvent(block, playerName, true));
         } else {
-            reinforce(playerName, properLocation, -1);
+            Bukkit.getServer().getPluginManager().callEvent(new ReinforcedBlockDamageEvent(block, playerName, true));
         }
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
         // This uses less than 1 in case TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
-        if (reinforcement.getReinforcementValue() < 1 || (player != null && !isFortified(reinforcement, playerName))) {
-            removeReinforcement(playerName, properLocation);
+        if (reinforcement.getReinforcementValue(coefficient) < 1 || (player != null && !isFortified(reinforcement, playerName))) {
+            Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, playerName, true));
         }
-    }
-
-    public void reinforce(String playerName, Location location) {
-        reinforce(playerName, location, getMaterialReinforcementCoefficient(location.getBlock().getType()));
-    }
-
-    public void reinforce(String playerName, Location location, float value) {
-        if (isPrismBridged()) {
-            BlockSaverPrismBridge.logReinforcementEvent(getReinforcement(location), location, playerName, value);
-        }
-
-        infoManager.reinforce(location, playerName, value);
     }
 
     public boolean isReinforced(final Location location) {
@@ -378,21 +358,11 @@ public final class ReinforcementManager {
 
         // Removes the reinforcement from the un-reinforceable block.
         if (!isMaterialReinforceable(block.getType())) {
-            removeReinforcement("Environment", properLocation);
+            Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
             return false;
         }
 
         return true;
-    }
-
-    public void removeReinforcement(String playerName, Location location) {
-        Location properLocation = getProperLocation(location);
-
-        if (isPrismBridged()) {
-            BlockSaverPrismBridge.logReinforcementEvent(getReinforcement(properLocation), properLocation, playerName, BlockSaverPrismBridge.DAMAGE_EVENT);
-        }
-
-        infoManager.removeReinforcement(properLocation);
     }
 
     public static Location getProperLocation(final Location location) {
@@ -481,7 +451,7 @@ public final class ReinforcementManager {
             if (EntityType.PRIMED_TNT.equals(entityType) && !tntStripReinforcementEntirely) {
                 damageBlock(location, null, BlockSaverDamageCause.EXPLOSION);
             } else {
-                removeReinforcement("Environment", location);
+                Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
             }
 
             // This probably shouldn't be here...
@@ -495,20 +465,18 @@ public final class ReinforcementManager {
         return infoManager.isWorldLoaded(worldName);
     }
 
-    public boolean isPrismBridged() {
-        return prismBridged;
-    }
-
     public void storeFallingEntity(FallingBlock entity) {
         fallingEntities.add(entity);
     }
 
-    public boolean restoreFallingEntity(FallingBlock entity, Material material) {
+    public boolean restoreFallingEntity(FallingBlock entity) {
         if (!fallingEntities.remove(entity)) {
             return false;
         }
 
-        reinforce(null, entity.getLocation().getBlock().getLocation(), getMaterialReinforcementCoefficient(material));
+        Block block = entity.getLocation().getBlock();
+
+        Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, "Environment", false));
         return true;
     }
 }

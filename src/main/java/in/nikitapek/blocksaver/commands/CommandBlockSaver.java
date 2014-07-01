@@ -21,7 +21,7 @@ public final class CommandBlockSaver extends DelegatingCommand {
         if (!configurationContext.integrateWorldEdit) {
             return;
         } else if (Bukkit.getPluginManager().getPlugin("WorldEdit") == null) {
-            Bukkit.getLogger().log(Level.WARNING, "\"integrateWorldEdit\" true but WorldEdit not found. WorldEdit integration will not be enabled.");
+            configurationContext.plugin.getLogger().log(Level.WARNING, "\"integrateWorldEdit\" true but WorldEdit not found. WorldEdit integration will not be enabled.");
             return;
         }
         registerSubcommand(new CommandReinforce(configurationContext));

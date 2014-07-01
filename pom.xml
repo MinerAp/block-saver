@@ -12,14 +12,14 @@
 
     <properties>
         <prism.version>1.6.8-minerap</prism.version>
-        <worldedit.version>5.5.8</worldedit.version>
+        <worldedit.version>5.6.2</worldedit.version>
         <aws-maven.version>4.8.0.RELEASE</aws-maven.version>
     </properties>
 
     <parent>
         <groupId>com.amshulman</groupId>
         <artifactId>bukkit-parent</artifactId>
-        <version>0.16</version>
+        <version>0.20</version>
     </parent>
 
     <repositories>
@@ -52,18 +52,25 @@
             <artifactId>prism</artifactId>
             <version>${prism.version}</version>
             <scope>provided</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.dthielke</groupId>
-					<artifactId>Herochat</artifactId>
-				</exclusion>
-			</exclusions>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.dthielke</groupId>
+                    <artifactId>Herochat</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- WorldEdit -->
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldedit</artifactId>
             <version>${worldedit.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Insight API -->
+        <dependency>
+            <groupId>com.amshulman</groupId>
+            <artifactId>insight-api</artifactId>
+            <version>0.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

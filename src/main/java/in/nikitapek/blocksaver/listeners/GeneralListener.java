@@ -1,8 +1,10 @@
-package in.nikitapek.blocksaver.events;
+package in.nikitapek.blocksaver.listeners;
 
+import in.nikitapek.blocksaver.events.BlockDeinforceEvent;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -31,7 +33,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.ListIterator;
 
-public final class BlockSaverListener implements Listener {
+public final class GeneralListener implements Listener {
     private final ReinforcementManager reinforcementManager;
 
     private final boolean liquidsDestroyReinforcedBlocks;
@@ -40,7 +42,7 @@ public final class BlockSaverListener implements Listener {
     private final boolean allowBlockFading;
     private final boolean mobsInteractWithReinforcedBlocks;
 
-    public BlockSaverListener(final BlockSaverConfigurationContext configurationContext) {
+    public GeneralListener(final BlockSaverConfigurationContext configurationContext) {
         this.reinforcementManager = configurationContext.getReinforcementManager();
 
         this.liquidsDestroyReinforcedBlocks = configurationContext.liquidsDestroyReinforcedBlocks;
@@ -54,18 +56,19 @@ public final class BlockSaverListener implements Listener {
     public void onBlockPlace(final BlockPlaceEvent event) {
         // If a block is being placed somewhere where there is already a reinforcement value, the reinforcement value is removed.
         // This is to prevent "reinforcement transfers" to blocks which could not normally obtain reinforcements.
-        final Location location = event.getBlock().getLocation();
+        Block block = event.getBlock();
+        Location location = block.getLocation();
+        Player player = event.getPlayer();
 
         if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
             return;
         }
 
-        if (Material.AIR.equals(event.getBlock().getType()) && reinforcementManager.isReinforced(location)) {
-            reinforcementManager.removeReinforcement("Environment", location);
+        if (Material.AIR.equals(block.getType()) && reinforcementManager.isReinforced(location)) {
+            Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
         }
 
         // If the player has placed a block and is currently in auto-reinforce mode, an attempt is made to reinforce the newly placed block.
-        final Player player = event.getPlayer();
         if (reinforcementManager.isPlayerInReinforcementMode(player)) {
             reinforcementManager.attemptReinforcement(location, player);
         }
@@ -305,12 +308,13 @@ public final class BlockSaverListener implements Listener {
             return;
         }
 
-        reinforcementManager.removeReinforcement("Environment", location);
+        Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onWaterPassThrough(final BlockFromToEvent event) {
-        final Location location = event.getToBlock().getLocation();
+        Block block = event.getToBlock();
+        Location location = block.getLocation();
 
         if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
             return;
@@ -322,7 +326,7 @@ public final class BlockSaverListener implements Listener {
 
         // If the event is caused by a dragon egg moving to a new location, simply make sure it is not teleporting into a field.
         if (Material.DRAGON_EGG.equals(event.getBlock().getType())) {
-            reinforcementManager.removeReinforcement("Environment", location);
+            Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
             return;
         }
 
@@ -347,7 +351,7 @@ public final class BlockSaverListener implements Listener {
 
         if (!reinforcementManager.isReinforced(location)) {
             if (Material.AIR.equals(fromMaterial) && entity instanceof FallingBlock) {
-                reinforcementManager.restoreFallingEntity((FallingBlock) entity, toMaterial);
+                reinforcementManager.restoreFallingEntity((FallingBlock) entity);
             }
             return;
         }
@@ -365,7 +369,7 @@ public final class BlockSaverListener implements Listener {
             // If the enderman is picking up a block, and is allowed to do so, the reinforcement is removed from the block.
             if (!fromMaterial.equals(Material.AIR) && toMaterial.equals(Material.AIR)) {
                 if (mobsInteractWithReinforcedBlocks) {
-                    reinforcementManager.removeReinforcement("Environment", location);
+                    Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
                 } else {
                     event.setCancelled(true);
                 }
@@ -375,7 +379,7 @@ public final class BlockSaverListener implements Listener {
         // Are sheep able to eat grass, and prevent withers from destroying blocks.
         if (EntityType.SHEEP.equals(entityType) || EntityType.WITHER.equals(entityType) || EntityType.WITHER_SKULL.equals(entityType)) {
             if (mobsInteractWithReinforcedBlocks) {
-                reinforcementManager.removeReinforcement("Environment", location);
+                Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
             } else {
                 event.setCancelled(true);
             }
@@ -385,7 +389,7 @@ public final class BlockSaverListener implements Listener {
         if (entity instanceof FallingBlock && (Material.SAND.equals(fromMaterial) || Material.GRAVEL.equals(fromMaterial))) {
             if (allowReinforcedBlockPhysics) {
                 reinforcementManager.storeFallingEntity((FallingBlock) entity);
-                reinforcementManager.removeReinforcement("Environment", location);
+                Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
             } else {
                 event.setCancelled(true);
             }

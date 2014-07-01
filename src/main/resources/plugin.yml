@@ -4,7 +4,7 @@ load: POSTWORLD
 version: ${project.version}
 author: Indiv0
 description: A plugin for providing block protection capabilities on a server.
-softdepend: [Prism, WorldEdit]
+softdepend: [Insight, Prism, WorldEdit]
 dev-url: http://github.com/Indiv0/block-saver/
 
 commands:

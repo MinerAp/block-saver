@@ -1,16 +1,21 @@
-package in.nikitapek.blocksaver.util;
+package in.nikitapek.blocksaver.logging.prism;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import in.nikitapek.blocksaver.events.BlockDeinforceEvent;
+import in.nikitapek.blocksaver.events.BlockReinforceEvent;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
+import me.botsko.prism.actionlibs.ActionType;
 import me.botsko.prism.actionlibs.QueryParameters;
 import me.botsko.prism.actions.BlockAction;
 import me.botsko.prism.appliers.ChangeResult;
 import me.botsko.prism.appliers.ChangeResultType;
 import me.botsko.prism.appliers.PrismProcessType;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 public final class BlockSaverAction extends BlockAction {
@@ -27,6 +32,16 @@ public final class BlockSaverAction extends BlockAction {
     private ReinforcementActionData actionData;
 
     private Gson gson1 = new GsonBuilder().disableHtmlEscaping().create();
+
+    public BlockSaverAction() {}
+
+    public BlockSaverAction(Location location, String playerName, ActionType actionType, Reinforcement reinforcement) {
+        setLoc(location);
+        setPlayerName(playerName == null ? "Environment" : playerName);
+        setType(actionType);
+        // Required for the ItemStackAction
+        setReinforcement(location, reinforcement);
+    }
 
     public static void initialize(ReinforcementManager reinforcementManager, BlockSaverInfoManager infoManager) {
         BlockSaverAction.infoManager = infoManager;
@@ -90,7 +105,7 @@ public final class BlockSaverAction extends BlockAction {
         }
 
         // If the event is not a BlockSaver ENFORCE or DAMAGE event being applied, then it is of no consequence.
-        if (!BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName()) && !BlockSaverPrismBridge.DAMAGE_EVENT_NAME.equals(getType().getName())) {
+        if (!PrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName()) && !PrismBridge.DAMAGE_EVENT_NAME.equals(getType().getName())) {
             return new ChangeResult(null, null);
         }
 
@@ -109,8 +124,10 @@ public final class BlockSaverAction extends BlockAction {
     }
 
     private ChangeResultType rollback() {
+        Block block = getLoc().getBlock();
+
         // Perform a ROLLBACK for a BlockSaver ENFORCE event (de-enforces the block).
-        if (BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
+        if (PrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
             if (!reinforcementManager.isReinforced(getLoc())) {
                 // If the block is not reinforced, then the rollback can be assumed to be completed.
                 // In a practice, this will only occur when something has gone wrong (e.g. an out-of-order rollback) or when the same rollback is being executed twice.
@@ -122,13 +139,13 @@ public final class BlockSaverAction extends BlockAction {
             // If the current reinforcement belongs to the person whose enforcement is being rolled back, then it is removed.
             // Otherwise it remains because it must not be the reinforcement intended to be removed.
             if (getPlayerName().equals(infoManager.getReinforcement(getLoc()).getCreatorName())) {
-                infoManager.removeReinforcement(getLoc());
+                Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block));
                 return ChangeResultType.APPLIED;
             }
         } else {
             // We restore the reinforcement prior to the damage if one does not exist at that location currently.
             if (!reinforcementManager.isReinforced(getLoc())) {
-                infoManager.reinforce(getLoc(), actionData.owner, reinforcementManager.getMaterialReinforcementCoefficient(getLoc().getBlock().getType()));
+                Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, actionData.owner, false));
                 // The restored block must have the same creation time as the destroyed one.
                 infoManager.getReinforcement(getLoc()).setCreationTime(actionData.creationTime);
                 return ChangeResultType.APPLIED;
@@ -136,7 +153,7 @@ public final class BlockSaverAction extends BlockAction {
 
             // If the same person owns the reinforcement now as the one who did when it was broken, then the damage event probably occurred on this block, and so must be rolled back.
             if (actionData.owner.equals(infoManager.getReinforcement(getLoc()).getCreatorName())) {
-                infoManager.reinforce(getLoc(), actionData.owner, reinforcementManager.getMaterialReinforcementCoefficient(getLoc().getBlock().getType()));
+                Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, actionData.owner, false));
                 return ChangeResultType.APPLIED;
             }
         }
@@ -145,8 +162,10 @@ public final class BlockSaverAction extends BlockAction {
     }
 
     private ChangeResultType restore() {
-        if (BlockSaverPrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
-            infoManager.reinforce(getLoc(), actionData.owner, reinforcementManager.getMaterialReinforcementCoefficient(getLoc().getBlock().getType()));
+        Block block = getLoc().getBlock();
+
+        if (PrismBridge.ENFORCE_EVENT_NAME.equals(getType().getName())) {
+            Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, actionData.owner, false));
             return ChangeResultType.APPLIED;
         } else {
             // If there is no existing reinforcement, then the restoration cannot proceed.
@@ -158,7 +177,7 @@ public final class BlockSaverAction extends BlockAction {
                 return ChangeResultType.APPLIED;
             }
 
-            infoManager.removeReinforcement(getLoc());
+            Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, actionData.owner, false));
             return ChangeResultType.APPLIED;
         }
     }

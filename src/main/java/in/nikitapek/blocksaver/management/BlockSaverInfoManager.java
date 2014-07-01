@@ -15,6 +15,7 @@ import in.nikitapek.blocksaver.util.SupplementaryTypes;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 
@@ -80,18 +81,20 @@ public final class BlockSaverInfoManager extends InfoManager {
             return;
         }
 
+        float coefficient = reinforcementManager.getMaterialReinforcementCoefficient(location.getBlock().getType());
         if (reinforcementManager.isReinforced(location)) {
-            value += getReinforcement(location).getReinforcementValue();
+            value += getReinforcement(location).getReinforcementValue(coefficient);
         }
 
-        worldContainers.get(worldName).setReinforcement(location, playerName, value, reinforcementManager.getMaterialReinforcementCoefficient(location.getBlock().getType()));
+        worldContainers.get(worldName).setReinforcement(location, playerName, value, coefficient);
     }
 
-    public PlayerInfo getPlayerInfo(final String playerName) {
-        PlayerInfo info = playerInfo.get(playerName);
+    public PlayerInfo getPlayerInfo(final Player player) {
+        String playerUUID = player.getUniqueId().toString();
+        PlayerInfo info = playerInfo.get(playerUUID);
         if (info == null) {
-            playerInfo.load(playerName, FACTORY);
-            info = playerInfo.get(playerName);
+            playerInfo.load(playerUUID, FACTORY);
+            info = playerInfo.get(playerUUID);
         }
 
         return info;
