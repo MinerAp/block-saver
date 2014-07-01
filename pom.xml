@@ -52,6 +52,12 @@
             <artifactId>prism</artifactId>
             <version>${prism.version}</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.dthielke</groupId>
+                    <artifactId>Herochat</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- WorldEdit -->
         <dependency>
