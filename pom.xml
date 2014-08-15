@@ -13,7 +13,6 @@
     <properties>
         <prism.version>1.6.8-minerap</prism.version>
         <worldedit.version>5.6.2</worldedit.version>
-        <aws-maven.version>4.8.0.RELEASE</aws-maven.version>
     </properties>
 
     <parent>
@@ -80,29 +79,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <distributionManagement>
-        <repository>
-            <id>aws-release</id>
-            <name>AWS Release Repository</name>
-            <url>s3://indiv0-maven-repo/release</url>
-        </repository>
-        <snapshotRepository>
-            <id>aws-snapshot</id>
-            <name>AWS Snapshot Repository</name>
-            <url>s3://indiv0-maven-repo/snapshot</url>
-        </snapshotRepository>
-    </distributionManagement>
-
-    <build>
-        <extensions>
-            <extension>
-                <groupId>org.springframework.build</groupId>
-                <artifactId>aws-maven</artifactId>
-                <version>${aws-maven.version}</version>
-            </extension>
-        </extensions>
-    </build>
 
     <profiles>
         <profile>
