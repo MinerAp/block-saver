@@ -1,4 +1,6 @@
-# BlockSaver [![Travis CI](https://secure.travis-ci.org/MinerAp/block-saver.png)](http://travis-ci.org/#!/MinerAp/block-saver)
+# BlockSaver
+[![Travis CI](https://secure.travis-ci.org/MinerAp/block-saver.png)](http://travis-ci.org/#!/MinerAp/block-saver)
+[![Coverage Status](https://img.shields.io/coveralls/MinerAp/block-saver.svg)](https://coveralls.io/r/MinerAp/block-saver?branch=master)
 
 BlockSaver is a plugin for Bukkit which attempts to provide block protection through the reinforcement of certain blocks with others, similarly to Citadel.
 
