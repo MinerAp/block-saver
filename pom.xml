@@ -3,6 +3,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>com.amshulman</groupId>
+        <artifactId>bukkit-parent</artifactId>
+        <version>0.20</version>
+    </parent>
+
     <groupId>in.nikitapek</groupId>
     <artifactId>block-saver</artifactId>
     <name>BlockSaver</name>
@@ -14,24 +20,6 @@
         <prism.version>1.6.8-minerap</prism.version>
         <worldedit.version>5.6.2</worldedit.version>
     </properties>
-
-    <parent>
-        <groupId>com.amshulman</groupId>
-        <artifactId>bukkit-parent</artifactId>
-        <version>0.20</version>
-    </parent>
-
-    <repositories>
-        <repository>
-            <id>minerap-repo</id>
-            <name>MinerAp</name>
-            <url>http://repo.minerap.com/</url>
-        </repository>
-        <repository>
-            <id>sk89q-repo</id>
-            <url>http://maven.sk89q.com/repo/</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <!-- Spigot -->
@@ -79,6 +67,18 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>minerap-repo</id>
+            <name>MinerAp</name>
+            <url>http://repo.minerap.com/</url>
+        </repository>
+        <repository>
+            <id>sk89q-repo</id>
+            <url>http://maven.sk89q.com/repo/</url>
+        </repository>
+    </repositories>
 
     <profiles>
         <profile>
