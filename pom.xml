@@ -72,7 +72,7 @@
         <repository>
             <id>minerap-repo</id>
             <name>MinerAp</name>
-            <url>http://repo.minerap.com/</url>
+            <url>http://repo.minerap.com/content/groups/public/</url>
         </repository>
         <repository>
             <id>sk89q-repo</id>
