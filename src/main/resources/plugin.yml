@@ -9,7 +9,7 @@ dev-url: http://github.com/Indiv0/block-saver/
 
 commands:
   blocksaver:
-    description: Controls all functions of the BlockSaver plugin.
+    description: Controls the BlockSaver plugin.
     usage: |
       /<command> feedback - Toggles feedback in chat
       /<command> autoenforce - Toggles auto-reinforcement mode
