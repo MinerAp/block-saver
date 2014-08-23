@@ -1,11 +1,13 @@
 package in.nikitapek.blocksaver.util;
 
+import com.amshulman.mbapi.storage.TypeSafeDistributedStorageMap;
 import com.amshulman.mbapi.storage.TypeSafeUnifiedStorageMap;
 import com.amshulman.typesafety.util.ParameterizedTypeImpl;
 import com.google.gson.reflect.TypeToken;
+
 import in.nikitapek.blocksaver.serialization.PlayerInfo;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
-import in.nikitapek.blocksaver.serialization.WorldContainer;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.FallingBlock;
@@ -36,7 +38,7 @@ public final class SupplementaryTypes {
     }.getType();
     public static final Type STRING = new TypeToken<String>() {
     }.getType();
-    public static final Type WORLD_CONTAINER = new TypeToken<WorldContainer>() {
+    public static final Type TYPE_SAFE_DISTRIBUTED_STORAGE_MAP = new TypeToken<TypeSafeDistributedStorageMap>() {
     }.getType();
 
     public static final Type REINFORCEMENT_STORAGE;

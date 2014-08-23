@@ -2,17 +2,21 @@ package in.nikitapek.blocksaver.management;
 
 import com.amshulman.mbapi.management.InfoManager;
 import com.amshulman.mbapi.storage.TypeSafeDistributedStorageMap;
+import com.amshulman.mbapi.storage.TypeSafeUnifiedStorageMap;
 import com.amshulman.mbapi.util.ConstructorFactory;
 import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.TypeSafeSet;
 import com.amshulman.typesafety.impl.TypeSafeMapImpl;
+
+import in.nikitapek.blocksaver.serialization.LocationTypeAdapter;
 import in.nikitapek.blocksaver.serialization.PlayerInfo;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
-import in.nikitapek.blocksaver.serialization.WorldContainer;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.PlayerInfoConstructorFactory;
 import in.nikitapek.blocksaver.util.SupplementaryTypes;
+
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -24,7 +28,7 @@ public final class BlockSaverInfoManager extends InfoManager {
 
     private final TypeSafeDistributedStorageMap<PlayerInfo> playerInfo;
 
-    private final TypeSafeMap<String, WorldContainer> worldContainers;
+    private final TypeSafeMap<String, TypeSafeDistributedStorageMap<TypeSafeUnifiedStorageMap<Location, Reinforcement>>> worlds;
 
     private ReinforcementManager reinforcementManager;
 
@@ -34,15 +38,19 @@ public final class BlockSaverInfoManager extends InfoManager {
         playerInfo = storageManager.getDistributedStorageMap("playerInfo", SupplementaryTypes.PLAYER_INFO);
         registerPlayerInfoLoader(playerInfo, FACTORY);
 
-        WorldContainer.initialize(storageManager);
-        worldContainers = new TypeSafeMapImpl<>(new HashMap<String, WorldContainer>(), SupplementaryTypes.STRING, SupplementaryTypes.WORLD_CONTAINER);
+        worlds = new TypeSafeMapImpl<>(new HashMap<String, TypeSafeDistributedStorageMap<TypeSafeUnifiedStorageMap<Location, Reinforcement>>>(), SupplementaryTypes.STRING, SupplementaryTypes.TYPE_SAFE_DISTRIBUTED_STORAGE_MAP);
 
         for (String worldName : configurationContext.worlds) {
             World world = Bukkit.getWorld(worldName);
             if (world == null) {
                 continue;
             }
-            worldContainers.put(worldName, new WorldContainer(worldName));
+
+            TypeSafeDistributedStorageMap<TypeSafeUnifiedStorageMap<Location, Reinforcement>> reinforcements = storageManager.getDistributedStorageMap(worldName, SupplementaryTypes.REINFORCEMENT_STORAGE);
+            LocationTypeAdapter.currentWorld = worldName;
+            reinforcements.loadAll();
+
+            worlds.put(worldName, reinforcements);
         }
     }
 
@@ -50,8 +58,8 @@ public final class BlockSaverInfoManager extends InfoManager {
     public void saveAll() {
         playerInfo.saveAll();
 
-        for (WorldContainer worldContainer : worldContainers.values()) {
-            worldContainer.saveAll();
+        for (TypeSafeDistributedStorageMap<TypeSafeUnifiedStorageMap<Location, Reinforcement>> world : worlds.values()) {
+            world.saveAll();
         }
     }
 
@@ -59,8 +67,8 @@ public final class BlockSaverInfoManager extends InfoManager {
     public void unloadAll() {
         playerInfo.unloadAll();
 
-        for (WorldContainer worldContainer : worldContainers.values()) {
-            worldContainer.unloadAll();
+        for (TypeSafeDistributedStorageMap<TypeSafeUnifiedStorageMap<Location, Reinforcement>> world : worlds.values()) {
+            world.unloadAll();
         }
     }
 
@@ -70,9 +78,13 @@ public final class BlockSaverInfoManager extends InfoManager {
             return null;
         }
 
-        final Reinforcement reinforcement = worldContainers.get(worldName).getReinforcement(location);
+        TypeSafeUnifiedStorageMap<Location, Reinforcement> reinforcementMap = getReinforcementMap(location);
 
-        return reinforcement;
+        if (reinforcementMap == null) {
+            return null;
+        }
+
+        return reinforcementMap.get(location);
     }
 
     public void reinforce(final Location location, final String playerName, float value) {
@@ -86,7 +98,23 @@ public final class BlockSaverInfoManager extends InfoManager {
             value += getReinforcement(location).getReinforcementValue(coefficient);
         }
 
-        worldContainers.get(worldName).setReinforcement(location, playerName, value, coefficient);
+        setReinforcement(location, playerName, value, coefficient);
+    }
+
+    public void setReinforcement(final Location location, final String playerName, final float value, final float coefficient) {
+        // If the reinforcement is being set a value of 0, then it is just deleted.
+        if (value <= 0) {
+            removeReinforcement(location);
+            return;
+        }
+
+        if (isReinforced(location)) {
+            getReinforcement(location).setReinforcementValue(value, coefficient);
+        } else {
+            ensureMapExists(location);
+            TypeSafeUnifiedStorageMap<Location, Reinforcement> reinforcementMap = getReinforcementMap(location);
+            reinforcementMap.put(location, new Reinforcement(playerName, value));
+        }
     }
 
     public PlayerInfo getPlayerInfo(final Player player) {
@@ -101,7 +129,7 @@ public final class BlockSaverInfoManager extends InfoManager {
     }
 
     private TypeSafeSet<String> getLoadedWorlds() {
-        return worldContainers.keySet();
+        return worlds.keySet();
     }
 
     public boolean isWorldLoaded(String worldName) {
@@ -115,7 +143,10 @@ public final class BlockSaverInfoManager extends InfoManager {
      * @param toLocation   the target location of the reinforcement.
      */
     public void moveReinforcement(Location fromLocation, Location toLocation) {
-        worldContainers.get(fromLocation.getWorld().getName()).moveReinforcement(fromLocation, toLocation);
+        ensureMapExists(toLocation);
+        TypeSafeUnifiedStorageMap<Location, Reinforcement> fromReinforcementMap = getReinforcementMap(fromLocation);
+        TypeSafeUnifiedStorageMap<Location, Reinforcement> toReinforcementMap = getReinforcementMap(toLocation);
+        toReinforcementMap.put(toLocation, fromReinforcementMap.remove(fromLocation));
     }
 
     public void removeReinforcement(final Location location) {
@@ -124,7 +155,10 @@ public final class BlockSaverInfoManager extends InfoManager {
             return;
         }
 
-        worldContainers.get(worldName).removeReinforcement(location);
+        String regionName = getRegionNameFromChunk(location.getChunk());
+
+        TypeSafeUnifiedStorageMap<Location, Reinforcement> reinforcementMap = worlds.get(worldName).get(regionName);
+        reinforcementMap.remove(location);
     }
 
     public boolean isReinforced(final Location location) {
@@ -135,7 +169,13 @@ public final class BlockSaverInfoManager extends InfoManager {
             return false;
         }
 
-        return worldContainers.get(worldName).isReinforced(location);
+        TypeSafeUnifiedStorageMap<Location, Reinforcement> reinforcementMap = getReinforcementMap(location);
+
+        if (reinforcementMap == null) {
+            return false;
+        }
+
+        return reinforcementMap.containsKey(location);
     }
 
     // package private
@@ -145,5 +185,19 @@ public final class BlockSaverInfoManager extends InfoManager {
 
     public ReinforcementManager getReinforcementManager() {
         return reinforcementManager;
+    }
+
+    private static String getRegionNameFromChunk(final Chunk chunk) {
+        return (chunk.getX() >> 5) + "." + (chunk.getZ() >> 5);
+    }
+
+    private TypeSafeUnifiedStorageMap<Location, Reinforcement> getReinforcementMap(Location location) {
+        return worlds.get(location.getWorld().getName()).get(getRegionNameFromChunk(location.getChunk()));
+    }
+
+    private void ensureMapExists(Location location) {
+        if (getReinforcementMap(location) == null) {
+            worlds.get(location.getWorld().getName()).putTypeSafeUnifiedStorageMap(getRegionNameFromChunk(location.getChunk()), SupplementaryTypes.LOCATION, SupplementaryTypes.REINFORCEMENT);
+        }
     }
 }

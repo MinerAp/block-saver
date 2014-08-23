@@ -56,7 +56,7 @@ public final class Reinforcement {
         return timeStamp;
     }
 
-    void setReinforcementValue(final float value, final float coefficient) {
+    public void setReinforcementValue(final float value, final float coefficient) {
         // If the block has been recently restored or created, set its RV to RVC.
         if (this.value == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
             this.value = coefficient;
