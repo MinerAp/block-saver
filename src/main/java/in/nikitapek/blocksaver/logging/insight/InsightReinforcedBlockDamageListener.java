@@ -1,7 +1,7 @@
 package in.nikitapek.blocksaver.logging.insight;
 
 import com.amshulman.insight.event.BaseEventHandler;
-import com.amshulman.insight.rows.BlockRowEntry;
+import com.amshulman.insight.row.BlockRowEntry;
 
 import in.nikitapek.blocksaver.events.ReinforcedBlockDamageEvent;
 

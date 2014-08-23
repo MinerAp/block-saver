@@ -12,7 +12,7 @@ public final class InsightBridge {
     public static final String DAMAGE_EVENT_NAME = "bs-block-damage";
     public static final BlockAction ENFORCE_EVENT = new BlockAction() {
         @Override
-        public String name() {
+        public String getName() {
             return ENFORCE_EVENT_NAME;
         }
 
@@ -23,7 +23,7 @@ public final class InsightBridge {
     };
     public static final BlockAction DAMAGE_EVENT = new BlockAction() {
         @Override
-        public String name() {
+        public String getName() {
             return DAMAGE_EVENT_NAME;
         }
 
