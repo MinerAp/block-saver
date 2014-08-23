@@ -230,7 +230,6 @@ public final class GeneralListener implements Listener {
             return;
         }
 
-        final Block piston = event.getBlock();
         final BlockFace direction = event.getDirection();
         final ListIterator<Block> iter = event.getBlocks().listIterator(event.getBlocks().size());
 
@@ -398,7 +397,6 @@ public final class GeneralListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onEntityInteract(final EntityInteractEvent event) {
-        final Entity entity = event.getEntity();
         final Block block = event.getBlock();
 
         // Confirms that the block is not null.

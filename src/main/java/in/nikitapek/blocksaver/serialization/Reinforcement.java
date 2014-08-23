@@ -11,8 +11,9 @@ public final class Reinforcement {
     private transient float value = BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT;
     private transient long timeStamp;
 
-    // Only gson will call this
-    private Reinforcement() {
+    // Only gson will call this.
+    @SuppressWarnings("unused")
+	private Reinforcement() {
         this(null, BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT);
     }
 

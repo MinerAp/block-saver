@@ -296,7 +296,6 @@ public final class ReinforcementManager {
         Location properLocation = getProperLocation(location);
         Reinforcement reinforcement = infoManager.getReinforcement(properLocation);
         Block block = properLocation.getBlock();
-        Material material = block.getType();
         String playerName = player == null ? null : player.getName();
 
         if (reinforcement == null) {
