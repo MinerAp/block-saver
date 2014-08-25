@@ -3,6 +3,7 @@ package in.nikitapek.blocksaver.management;
 import com.amshulman.typesafety.TypeSafeMap;
 import com.amshulman.typesafety.TypeSafeSet;
 import com.amshulman.typesafety.impl.TypeSafeSetImpl;
+
 import in.nikitapek.blocksaver.events.BlockDeinforceEvent;
 import in.nikitapek.blocksaver.events.BlockReinforceEvent;
 import in.nikitapek.blocksaver.events.ReinforcedBlockDamageEvent;
@@ -14,6 +15,7 @@ import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
 import in.nikitapek.blocksaver.util.BlockSaverFeedback;
 import in.nikitapek.blocksaver.util.BlockSaverUtil;
 import in.nikitapek.blocksaver.util.SupplementaryTypes;
+
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -24,6 +26,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Bed;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonExtensionMaterial;
 
@@ -365,12 +368,13 @@ public final class ReinforcementManager {
         return true;
     }
 
-    public static Location getProperLocation(final Location location) {
-        final Block block = location.getBlock();
+    public Location getProperLocation(final Location location) {
+        Block block = location.getBlock();
+        Material blockType = block.getType();
 
         // Select the base of the piston.
-        if (block.getType().equals(Material.PISTON_EXTENSION)) {
-            final MaterialData data = block.getState().getData();
+        if (blockType.equals(Material.PISTON_EXTENSION)) {
+            MaterialData data = block.getState().getData();
             BlockFace direction = null;
 
             // Check the block it pushed directly
@@ -381,12 +385,22 @@ public final class ReinforcementManager {
             if (direction != null) {
                 return block.getRelative(direction.getOppositeFace()).getLocation();
             }
-        } else if (block.getType().equals(Material.WOODEN_DOOR) || block.getType().equals(Material.IRON_DOOR)) {
+        } else if (blockType.equals(Material.WOODEN_DOOR) || blockType.equals(Material.IRON_DOOR)) {
             // If the user selected the top of a door, return the bottom.
             Block blockBelow = block.getRelative(BlockFace.DOWN);
-            if (blockBelow.getType() == Material.WOODEN_DOOR || blockBelow.getType() == Material.IRON_DOOR) {
+            if (blockBelow.getType().equals(Material.WOODEN_DOOR) || blockBelow.getType().equals(Material.IRON_DOOR)) {
                 return blockBelow.getLocation();
             }
+        } else if (blockType.equals(Material.BED_BLOCK)) {
+            Bed data = (Bed) block.getState().getData();
+
+            // If the selected block is the head of the bed, return the selected block's location.
+            if (data.isHeadOfBed()) {
+                return location;
+            }
+
+            // Otherwise, return the location of the head of the bed.
+            return block.getRelative(data.getFacing()).getLocation();
         }
 
         return location;
