@@ -231,33 +231,34 @@ public final class ReinforcementManager {
         return true;
     }
 
-    public void attemptReinforcement(final Location location, final Player player) {
-        final Block block = location.getBlock();
-        final Material material = getReinforcingMaterial(player);
+    public void attemptReinforcement(Location location, Player player) {
+        Location properLocation = getProperLocation(location);
+        Block block = properLocation.getBlock();
+        Material material = getReinforcingMaterial(player);
         if (Material.AIR.equals(material)) {
             return;
         }
-        final ItemStack item = player.getInventory().getItem(player.getInventory().first(material));
+        ItemStack item = player.getInventory().getItem(player.getInventory().first(material));
 
         // If the material cannot be used for reinforcement, the reinforcement fails.
         if (!canMaterialReinforce(material)) {
-            feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
+            feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.REINFORCE_FAIL, player);
             return;
         }
 
         if (!isReinforceable(block)) {
-            feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_FAIL, player);
+            feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.REINFORCE_FAIL, player);
             return;
         }
 
         if (!player.hasPermission("blocksaver.reinforce")) {
-            feedbackManager.sendFeedback(location, BlockSaverFeedback.PERMISSIONS_FAIL, player);
+            feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.PERMISSIONS_FAIL, player);
             return;
         }
 
         Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, player.getName(), true));
 
-        feedbackManager.sendFeedback(location, BlockSaverFeedback.REINFORCE_SUCCESS, player);
+        feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.REINFORCE_SUCCESS, player);
 
         // The amount of the reinforcement material in the player's hand is decreased.
         if (!GameMode.CREATIVE.equals(player.getGameMode())) {
