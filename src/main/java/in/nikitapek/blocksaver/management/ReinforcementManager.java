@@ -368,6 +368,7 @@ public final class ReinforcementManager {
     public static Location getProperLocation(final Location location) {
         final Block block = location.getBlock();
 
+        // Select the base of the piston.
         if (block.getType().equals(Material.PISTON_EXTENSION)) {
             final MaterialData data = block.getState().getData();
             BlockFace direction = null;
@@ -379,6 +380,12 @@ public final class ReinforcementManager {
 
             if (direction != null) {
                 return block.getRelative(direction.getOppositeFace()).getLocation();
+            }
+        } else if (block.getType().equals(Material.WOODEN_DOOR) || block.getType().equals(Material.IRON_DOOR)) {
+            // If the user selected the top of a door, return the bottom.
+            Block blockBelow = block.getRelative(BlockFace.DOWN);
+            if (blockBelow.getType() == Material.WOODEN_DOOR || blockBelow.getType() == Material.IRON_DOOR) {
+                return blockBelow.getLocation();
             }
         }
 
