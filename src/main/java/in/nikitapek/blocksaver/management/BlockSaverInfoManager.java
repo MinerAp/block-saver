@@ -72,9 +72,8 @@ public final class BlockSaverInfoManager extends InfoManager {
         }
     }
 
-    public Reinforcement getReinforcement(final Location location) {
-        String worldName = location.getWorld().getName();
-        if (!isWorldLoaded(worldName)) {
+    Reinforcement getReinforcement(final Location location) {
+        if (!isWorldLoaded(location.getWorld().getName())) {
             return null;
         }
 
@@ -87,26 +86,18 @@ public final class BlockSaverInfoManager extends InfoManager {
         return reinforcementMap.get(location);
     }
 
-    public void reinforce(final Location location, final String playerName, boolean value) {
-        String worldName = location.getWorld().getName();
-        if (!isWorldLoaded(worldName)) {
+    public void reinforce(final Location location, final String playerName, boolean removing) {
+        if (!isWorldLoaded(location.getWorld().getName())) {
             return;
         }
 
-        setReinforcement(location, playerName, value);
-    }
-
-    public void setReinforcement(final Location location, final String playerName, final boolean value) {
-        // If the reinforcement is being set a value of 0, then it is just deleted.
-        if (!value) {
+        if (removing) {
             removeReinforcement(location);
-            return;
-        }
-
-        if (!isReinforced(location)) {
-            ensureMapExists(location);
-            TypeSafeUnifiedStorageMap<Location, Reinforcement> reinforcementMap = getReinforcementMap(location);
-            reinforcementMap.put(location, new Reinforcement(playerName));
+        } else {
+	        if (!isReinforced(location)) {
+	            ensureMapExists(location);
+	            getReinforcementMap(location).put(location, new Reinforcement(playerName));
+	        }
         }
     }
 
@@ -155,10 +146,8 @@ public final class BlockSaverInfoManager extends InfoManager {
     }
 
     public boolean isReinforced(final Location location) {
-        final String worldName = location.getWorld().getName();
-
         // Confirm that the reinforcement list is already tracking the chunk and location.
-        if (!isWorldLoaded(worldName)) {
+        if (!isWorldLoaded(location.getWorld().getName())) {
             return false;
         }
 
@@ -171,7 +160,6 @@ public final class BlockSaverInfoManager extends InfoManager {
         return reinforcementMap.containsKey(location);
     }
 
-    // package private
     void setReinforcementManager(ReinforcementManager reinforcementManager) {
         this.reinforcementManager = reinforcementManager;
     }

@@ -42,8 +42,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public final class ReinforcementManager {
-    private static final byte NO_REINFORCEMENT_VALUE = -1;
-
     private final FeedbackManager feedbackManager;
     private final BlockSaverInfoManager infoManager;
 
@@ -52,12 +50,10 @@ public final class ReinforcementManager {
     private final boolean fireDamagesReinforcedBlocks;
     private final boolean extinguishReinforcementFire;
     private final boolean allowReinforcementGracePeriod;
-    private final boolean allowReinforcementHealing;
     private final boolean leaveBlockAfterDeinforce;
     private final boolean mobsInteractWithReinforcedBlocks;
     private final boolean enderdragonInteractWithReinforcedBlocks;
     private final double extinguishChance;
-    private final int reinforcementHealingTime;
 
     private final TypeSafeMap<Material, Integer> reinforceableBlocks;
     private final TypeSafeMap<Material, Integer> reinforcementBlocks;
@@ -78,12 +74,10 @@ public final class ReinforcementManager {
         this.fireDamagesReinforcedBlocks = configurationContext.fireDamagesReinforcedBlocks;
         this.extinguishReinforcementFire = configurationContext.extinguishReinforcementFire;
         this.allowReinforcementGracePeriod = configurationContext.allowReinforcementGracePeriod;
-        this.allowReinforcementHealing = configurationContext.allowReinforcementHealing;
         this.leaveBlockAfterDeinforce = configurationContext.leaveBlockAfterDeinforce;
         this.mobsInteractWithReinforcedBlocks = configurationContext.mobsInteractWithReinforcedBlocks;
         this.enderdragonInteractWithReinforcedBlocks = configurationContext.enderdragonInteractWithReinforcedBlocks;
         this.extinguishChance = configurationContext.extinguishChance;
-        this.reinforcementHealingTime = configurationContext.reinforcementHealingTime;
 
         this.reinforceableBlocks = configurationContext.reinforceableBlocks;
         this.reinforcementBlocks = configurationContext.reinforcementBlocks;

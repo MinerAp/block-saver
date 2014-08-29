@@ -22,6 +22,6 @@ public final class BlockReinforceListener implements Listener {
     public void listen(BlockReinforceEvent event) {
         Block block = event.getBlock();
 
-        infoManager.reinforce(block.getLocation(), event.getPlayerName(), true);
+        infoManager.reinforce(block.getLocation(), event.getPlayerName(), false);
     }
 }

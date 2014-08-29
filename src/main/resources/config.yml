@@ -6,14 +6,6 @@
 
 #======== Feedback ==========#
 
-## Which feedback mode the plugin should use to represent damage being done to a reinforced block.
-# Notes:
-#   "visual" mode makes the plugin attempt to use color-changing particle effects (dependant on the health of the reinforcement).
-#   "auditory" mode makes the plugin use auditory feedback (which changes based on the block's RV).
-#   "off" mode uses the feedback defined below for damage events.
-# Default: visual
-primaryFeedback: visual
-
 ## The name of the effect to be played when a player fails to damage a reinforced block.
 # Note: please use an effect contained within the Effect class.
 # Default: EXTINGUISH
@@ -81,11 +73,6 @@ allowBlockFading: false
 # Note: must be an integer value greater than zero. The value is measured in seconds.
 # Default: 3
 gracePeriodTime: 3
-
-## Whether or not reinforcements should "heal" to their maximum reinforcement after a period of time.
-# Note: this does not mean the maximum reinforcement as described in the Reinforceable Blocks List, but rather the last highest reinforcement the block was raised to, prior to attack.
-# Default: true
-allowReinforcementHealing: true
 
 ## The amount of time before a block "heals" its reinforcement, if allowReinforcementHealing is set to true.
 # Note: must be a value greater than zero. The value is measured in seconds.

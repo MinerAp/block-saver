@@ -19,7 +19,6 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 public final class BlockSaverAction extends BlockAction {
-    private static BlockSaverInfoManager infoManager;
     private static ReinforcementManager reinforcementManager;
 
     public class ReinforcementActionData extends BlockActionData {
@@ -43,8 +42,7 @@ public final class BlockSaverAction extends BlockAction {
         setReinforcement(location, reinforcement);
     }
 
-    public static void initialize(ReinforcementManager reinforcementManager, BlockSaverInfoManager infoManager) {
-        BlockSaverAction.infoManager = infoManager;
+    public static void initialize(ReinforcementManager reinforcementManager) {
         BlockSaverAction.reinforcementManager = reinforcementManager;
     }
 
@@ -138,7 +136,7 @@ public final class BlockSaverAction extends BlockAction {
             // If the block is reinforced, then we must confirm that this is the reinforcement to be removed before we continue.
             // If the current reinforcement belongs to the person whose enforcement is being rolled back, then it is removed.
             // Otherwise it remains because it must not be the reinforcement intended to be removed.
-            if (getPlayerName().equals(infoManager.getReinforcement(getLoc()).getCreatorName())) {
+            if (getPlayerName().equals(reinforcementManager.getReinforcement(getLoc()).getCreatorName())) {
                 Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block));
                 return ChangeResultType.APPLIED;
             }
@@ -147,12 +145,12 @@ public final class BlockSaverAction extends BlockAction {
             if (!reinforcementManager.isReinforced(getLoc())) {
                 Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, actionData.owner, false));
                 // The restored block must have the same creation time as the destroyed one.
-                infoManager.getReinforcement(getLoc()).setCreationTime(actionData.creationTime);
+                reinforcementManager.getReinforcement(getLoc()).setCreationTime(actionData.creationTime);
                 return ChangeResultType.APPLIED;
             }
 
             // If the same person owns the reinforcement now as the one who did when it was broken, then the damage event probably occurred on this block, and so must be rolled back.
-            if (actionData.owner.equals(infoManager.getReinforcement(getLoc()).getCreatorName())) {
+            if (actionData.owner.equals(reinforcementManager.getReinforcement(getLoc()).getCreatorName())) {
                 Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, actionData.owner, false));
                 return ChangeResultType.APPLIED;
             }

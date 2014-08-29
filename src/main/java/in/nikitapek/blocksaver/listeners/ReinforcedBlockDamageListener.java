@@ -16,6 +16,6 @@ public final class ReinforcedBlockDamageListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void listen(ReinforcedBlockDamageEvent event) {
-        infoManager.reinforce(event.getBlock().getLocation(), event.getPlayerName(), false);
+        infoManager.reinforce(event.getBlock().getLocation(), event.getPlayerName(), true);
     }
 }

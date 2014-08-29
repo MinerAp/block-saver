@@ -1,9 +1,7 @@
 package in.nikitapek.blocksaver.management;
 
-import in.nikitapek.blocksaver.serialization.Reinforcement;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverFeedback;
-import in.nikitapek.blocksaver.util.BlockSaverUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -20,8 +18,6 @@ public class FeedbackManager {
     private final Sound reinforceFailSound;
     private final Sound hitFailSound;
 
-    private final String primaryFeedback;
-
     public FeedbackManager(final BlockSaverConfigurationContext configurationContext) {
         this.infoManager = configurationContext.infoManager;
 
@@ -29,7 +25,6 @@ public class FeedbackManager {
         this.reinforceSuccessSound = configurationContext.reinforceSuccessSound;
         this.reinforceFailSound = configurationContext.reinforceFailSound;
         this.hitFailSound = configurationContext.hitFailSound;
-        this.primaryFeedback = configurationContext.primaryFeedback;
 
         if (!configurationContext.prismLogging && !configurationContext.insightLogging) {
             return;
@@ -37,8 +32,6 @@ public class FeedbackManager {
     }
 
     public void sendFeedback(final Location location, final BlockSaverFeedback feedback, final Player player) {
-        final Reinforcement reinforcement = infoManager.getReinforcement(location);
-
         switch (feedback) {
             case REINFORCE_SUCCESS:
                 location.getWorld().playSound(location, reinforceSuccessSound, 1.0f, PITCH_SHIFT);
@@ -62,14 +55,6 @@ public class FeedbackManager {
                 if (infoManager.getPlayerInfo(player).isReceivingTextFeedback && player.hasPermission("blocksaver.feedback.damage.success")) {
                     player.sendMessage(ChatColor.GRAY + "Damaged a reinforced block.");
                 }
-
-                // TODO: Remove this
-                /*float coefficient = infoManager.getReinforcementManager().getMaterialReinforcementCoefficient(location.getBlock().getType());
-                if ("visual".equals(primaryFeedback)) {
-                    BlockSaverUtil.sendParticleEffect(location, (int) reinforcement.getReinforcementValue(coefficient), (int) coefficient);
-                } else if ("auditory".equals(primaryFeedback)) {
-                    BlockSaverUtil.playMusicalEffect(location, (int) reinforcement.getReinforcementValue(coefficient));
-                }*/
                 break;
             case DAMAGE_FAIL:
                 location.getWorld().playEffect(location, reinforcementDamageFailEffect, 0);

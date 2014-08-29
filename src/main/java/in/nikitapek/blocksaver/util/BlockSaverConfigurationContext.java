@@ -48,7 +48,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean pistonsMoveReinforcedBlocks;
     public final boolean allowBlockFading;
     public final boolean allowReinforcementGracePeriod;
-    public final boolean allowReinforcementHealing;
     public final boolean leaveBlockAfterDeinforce;
     public final boolean mobsInteractWithReinforcedBlocks;
     public final boolean enderdragonInteractWithReinforcedBlocks;
@@ -57,8 +56,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean integrateWorldEdit;
     public final double extinguishChance;
     public final int gracePeriodTime;
-    public final int reinforcementHealingTime;
-    public final String primaryFeedback;
 
     public final BlockSaverInfoManager infoManager;
     public final FeedbackManager feedbackManager;
@@ -108,21 +105,12 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         pistonsMoveReinforcedBlocks = plugin.getConfig().getBoolean("pistonsMoveReinforcedBlocks", true);
         allowBlockFading = plugin.getConfig().getBoolean("allowBlockFading", false);
         allowReinforcementGracePeriod = plugin.getConfig().getBoolean("allowReinforcementGracePeriod", true);
-        allowReinforcementHealing = plugin.getConfig().getBoolean("allowReinforcementHealing", true);
         leaveBlockAfterDeinforce = plugin.getConfig().getBoolean("leaveBlockAfterDeinforce", false);
         mobsInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("mobsInteractWithReinforcedBlocks", false);
         enderdragonInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("enderdragonInteractWithReinforcedBlocks", false);
         prismLogging = plugin.getConfig().getBoolean("prismLogging", true);
         insightLogging = plugin.getConfig().getBoolean("insightLogging", true);
         integrateWorldEdit = plugin.getConfig().getBoolean("integrateWorldEdit", true);
-
-        // Loads the primary feedback form, ensuring that the provided type of feedback is valid.
-        String primaryFeedback = plugin.getConfig().getString("primaryFeedback", "visual");
-        if ("auditory".equals(primaryFeedback) || "visual".equals(primaryFeedback) || "off".equals(primaryFeedback)) {
-            this.primaryFeedback = primaryFeedback;
-        } else {
-            this.primaryFeedback = "visual";
-        }
 
         // Validates that the extinguish chance is a value from 0.0 to 1.0.
         double extinguishChance = plugin.getConfig().getDouble("extinguishChance", EXTINGUISH_CHANCE);
@@ -131,10 +119,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         // Validates that the grace period for reinforcement removal is not less than zero.
         int gracePeriodTime = plugin.getConfig().getInt("gracePeriodTime", 3);
         this.gracePeriodTime = (gracePeriodTime < 0) ? 3 : gracePeriodTime;
-
-        // Validates that the reinforcement healing time is not less than zero.
-        int reinforcementHealingTime = plugin.getConfig().getInt("reinforcementHealingTime", 5);
-        this.reinforcementHealingTime = (reinforcementHealingTime < 0) ? 5 : reinforcementHealingTime;
 
         ConfigurationSection configSection;
 
