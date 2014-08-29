@@ -92,10 +92,6 @@ public final class ReinforcementManager {
         return infoManager.getReinforcement(block.getLocation()) == null;
     }
 
-    private boolean isMaterialReinforceable(final Material material) {
-        return reinforceableBlocks.containsKey(material);
-    }
-
     public boolean canMaterialReinforce(final Material material) {
         return reinforcementBlocks.containsKey(material);
     }
@@ -325,7 +321,7 @@ public final class ReinforcementManager {
         }
 
         // Removes the reinforcement from the un-reinforceable block.
-        if (!isMaterialReinforceable(block.getType())) {
+        if (!reinforceableBlocks.containsKey(block.getType())) {
             Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
             return false;
         }
