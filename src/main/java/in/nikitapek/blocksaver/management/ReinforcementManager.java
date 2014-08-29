@@ -90,53 +90,6 @@ public final class ReinforcementManager {
         return reinforcementBlocks.containsKey(material);
     }
 
-    private boolean canToolDamageBlock(final Location location, final ItemStack tool) {
-        final Material blockMaterial = location.getBlock().getType();
-
-        // If the location does not contain a reinforcement, there is nothing stopping the tool from damaging the block.
-        if (!isReinforced(location)) {
-            return true;
-        }
-
-        // If the tool can be used for reinforcement, then it cannot be used to break a reinforced block.
-        if (canMaterialReinforce(tool.getType())) {
-            return false;
-        }
-
-        // If the block does not contain a valid tool for use, the block is not breakable by the tool provided.
-        if (!toolRequirements.containsKey(blockMaterial)) {
-            return false;
-        }
-
-        for (final Entry<Material, List<Integer>> blockTools : toolRequirements.entrySet()) {
-            // If the material is not the same as the block being broken, the loop continues.
-            if (!blockTools.getKey().equals(blockMaterial)) {
-                continue;
-            }
-
-            // Gets the list of tools which can be used on blockMaterial.
-            final List<Integer> toolList = blockTools.getValue();
-
-            // If any tool is allowed for this material, the tool can break the block.
-            if (toolList.contains(BlockSaverUtil.ALL_TOOL_CODE)) {
-                return true;
-            }
-            // If the ItemStack is empty or the type is 0, then the player is using their hand.
-            // A check for whether or not hands are allowed to be used is done.
-            else if (tool.getTypeId() == 0) {
-                return toolList.contains(BlockSaverUtil.HANDS_TOOL_CODE);
-            }
-            // Finally, a check is performed to see if the tool is valid.
-            else if (toolList.contains(tool.getTypeId())) {
-                return true;
-            }
-
-            return false;
-        }
-
-        return false;
-    }
-
     public boolean canPlayerDamageBlock(final Location location, final Player player, final boolean feedback) {
         Location properLocation = getProperLocation(location);
 
@@ -152,14 +105,48 @@ public final class ReinforcementManager {
             return false;
         }
 
-        if (!canToolDamageBlock(properLocation, player.getItemInHand())) {
-            if (feedback) {
-                feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.HIT_FAIL, player);
-            }
-            return false;
+        Material blockMaterial = location.getBlock().getType();
+        ItemStack tool = player.getItemInHand();
+
+        // If the location does not contain a reinforcement, there is nothing stopping the tool from damaging the block.
+        if (!isReinforced(location)) {
+            return true;
         }
 
-        return true;
+        // If the tool can be used for reinforcement, then it cannot be used to break a reinforced block.
+        // Also, if the block does not contain a valid tool for use, the block is not breakable by the tool provided.
+        if (!canMaterialReinforce(tool.getType()) && toolRequirements.containsKey(blockMaterial)) {
+            for (final Entry<Material, List<Integer>> blockTools : toolRequirements.entrySet()) {
+                // If the material is not the same as the block being broken, the loop continues.
+                if (!blockTools.getKey().equals(blockMaterial)) {
+                    continue;
+                }
+
+                // Gets the list of tools which can be used on blockMaterial.
+                final List<Integer> toolList = blockTools.getValue();
+
+                // If any tool is allowed for this material, the tool can break the block.
+                if (toolList.contains(BlockSaverUtil.ALL_TOOL_CODE)) {
+                    return true;
+                }
+                // If the ItemStack is empty or the type is 0, then the player is using their hand.
+                // A check for whether or not hands are allowed to be used is done.
+                else if (tool.getTypeId() == 0) {
+                    return toolList.contains(BlockSaverUtil.HANDS_TOOL_CODE);
+                }
+                // Finally, a check is performed to see if the tool is valid.
+                else if (toolList.contains(tool.getTypeId())) {
+                    return true;
+                }
+                
+                break;
+            }
+        }
+
+        if (feedback) {
+            feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.HIT_FAIL, player);
+        }
+        return false;
     }
 
     public void attemptReinforcement(Location location, Player player) {
