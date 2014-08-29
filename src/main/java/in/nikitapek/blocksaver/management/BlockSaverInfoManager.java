@@ -72,7 +72,7 @@ public final class BlockSaverInfoManager extends InfoManager {
         }
     }
 
-    Reinforcement getReinforcement(final Location location) {
+    public Reinforcement getReinforcement(final Location location) {
         if (!isWorldLoaded(location.getWorld().getName())) {
             return null;
         }

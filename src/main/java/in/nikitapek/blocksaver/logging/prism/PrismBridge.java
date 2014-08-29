@@ -33,11 +33,11 @@ public final class PrismBridge {
             e.printStackTrace();
         }
 
-        plugin.registerEventHandler(new PrismBlockDeinforceListener(configurationContext));
-        plugin.registerEventHandler(new PrismBlockReinforceListener(configurationContext));
-        plugin.registerEventHandler(new PrismReinforcedBlockDamageListener(configurationContext));
-        plugin.registerEventHandler(new PrismReinforcedBlockExplodeListener(configurationContext));
+        plugin.registerEventHandler(new PrismBlockDeinforceListener(configurationContext.infoManager));
+        plugin.registerEventHandler(new PrismBlockReinforceListener(configurationContext.infoManager));
+        plugin.registerEventHandler(new PrismReinforcedBlockDamageListener(configurationContext.infoManager));
+        plugin.registerEventHandler(new PrismReinforcedBlockExplodeListener(configurationContext.infoManager));
 
-        BlockSaverAction.initialize(configurationContext.getReinforcementManager());
+        BlockSaverAction.initialize(configurationContext.getReinforcementManager(), configurationContext.infoManager);
     }
 }

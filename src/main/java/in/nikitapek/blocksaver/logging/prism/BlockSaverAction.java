@@ -2,6 +2,7 @@ package in.nikitapek.blocksaver.logging.prism;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import in.nikitapek.blocksaver.events.BlockDeinforceEvent;
 import in.nikitapek.blocksaver.events.BlockReinforceEvent;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
@@ -13,6 +14,7 @@ import me.botsko.prism.actions.BlockAction;
 import me.botsko.prism.appliers.ChangeResult;
 import me.botsko.prism.appliers.ChangeResultType;
 import me.botsko.prism.appliers.PrismProcessType;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -20,6 +22,7 @@ import org.bukkit.entity.Player;
 
 public final class BlockSaverAction extends BlockAction {
     private static ReinforcementManager reinforcementManager;
+    private static BlockSaverInfoManager infoManager;
 
     public class ReinforcementActionData extends BlockActionData {
         public String owner;
@@ -42,8 +45,9 @@ public final class BlockSaverAction extends BlockAction {
         setReinforcement(location, reinforcement);
     }
 
-    public static void initialize(ReinforcementManager reinforcementManager) {
+    public static void initialize(ReinforcementManager reinforcementManager, BlockSaverInfoManager infoManager) {
         BlockSaverAction.reinforcementManager = reinforcementManager;
+        BlockSaverAction.infoManager = infoManager;
     }
 
     public void setReinforcement(Location location, Reinforcement reinforcement) {
@@ -136,7 +140,7 @@ public final class BlockSaverAction extends BlockAction {
             // If the block is reinforced, then we must confirm that this is the reinforcement to be removed before we continue.
             // If the current reinforcement belongs to the person whose enforcement is being rolled back, then it is removed.
             // Otherwise it remains because it must not be the reinforcement intended to be removed.
-            if (getPlayerName().equals(reinforcementManager.getReinforcement(getLoc()).getCreatorName())) {
+            if (getPlayerName().equals(infoManager.getReinforcement(getLoc()).getCreatorName())) {
                 Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block));
                 return ChangeResultType.APPLIED;
             }
@@ -145,12 +149,12 @@ public final class BlockSaverAction extends BlockAction {
             if (!reinforcementManager.isReinforced(getLoc())) {
                 Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, actionData.owner, false));
                 // The restored block must have the same creation time as the destroyed one.
-                reinforcementManager.getReinforcement(getLoc()).setCreationTime(actionData.creationTime);
+                infoManager.getReinforcement(getLoc()).setCreationTime(actionData.creationTime);
                 return ChangeResultType.APPLIED;
             }
 
             // If the same person owns the reinforcement now as the one who did when it was broken, then the damage event probably occurred on this block, and so must be rolled back.
-            if (actionData.owner.equals(reinforcementManager.getReinforcement(getLoc()).getCreatorName())) {
+            if (actionData.owner.equals(infoManager.getReinforcement(getLoc()).getCreatorName())) {
                 Bukkit.getServer().getPluginManager().callEvent(new BlockReinforceEvent(block, actionData.owner, false));
                 return ChangeResultType.APPLIED;
             }

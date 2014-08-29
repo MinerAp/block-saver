@@ -1,8 +1,7 @@
 package in.nikitapek.blocksaver.logging.prism;
 
 import in.nikitapek.blocksaver.events.ReinforcedBlockExplodeEvent;
-import in.nikitapek.blocksaver.management.ReinforcementManager;
-import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
+import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import me.botsko.prism.Prism;
 
 import org.bukkit.Location;
@@ -11,10 +10,10 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 public final class PrismReinforcedBlockExplodeListener implements Listener {
-    private final ReinforcementManager reinforcementManager;
+    private final BlockSaverInfoManager infoManager;
 
-    public PrismReinforcedBlockExplodeListener(BlockSaverConfigurationContext configurationContext) {
-        this.reinforcementManager = configurationContext.getReinforcementManager();
+    public PrismReinforcedBlockExplodeListener(BlockSaverInfoManager infoManager) {
+        this.infoManager = infoManager;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -22,7 +21,7 @@ public final class PrismReinforcedBlockExplodeListener implements Listener {
         Location location = event.getBlock().getLocation();
 
         if (event.isLogged()) {
-            Prism.actionsRecorder.addToQueue(new BlockSaverAction(location, event.getPlayerName(), PrismBridge.DAMAGE_EVENT, reinforcementManager.getReinforcement(location)));
+            Prism.actionsRecorder.addToQueue(new BlockSaverAction(location, event.getPlayerName(), PrismBridge.DAMAGE_EVENT, infoManager.getReinforcement(location)));
         }
     }
 }

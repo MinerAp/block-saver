@@ -92,10 +92,6 @@ public final class ReinforcementManager {
         return infoManager.getReinforcement(block.getLocation()) == null;
     }
 
-    public Reinforcement getReinforcement(final Location location) {
-        return infoManager.getReinforcement(location);
-    }
-
     private boolean isMaterialReinforceable(final Material material) {
         return reinforceableBlocks.containsKey(material);
     }
