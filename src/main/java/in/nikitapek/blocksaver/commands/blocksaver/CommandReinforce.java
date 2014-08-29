@@ -12,7 +12,6 @@ import com.sk89q.worldedit.regions.Polygonal2DRegion;
 import in.nikitapek.blocksaver.commands.CommandBlockSaver.BlockSaverCommands;
 import in.nikitapek.blocksaver.events.BlockReinforceEvent;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
-import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.serialization.PlayerInfo;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import org.bukkit.Bukkit;
@@ -23,12 +22,10 @@ import org.bukkit.entity.Player;
 
 public final class CommandReinforce extends PlayerOnlyCommand {
     private final BlockSaverInfoManager infoManager;
-    private final ReinforcementManager reinforcementManager;
 
     public CommandReinforce(final BlockSaverConfigurationContext configurationContext) {
         super(configurationContext, BlockSaverCommands.REINFORCE, 0, 0);
         infoManager = configurationContext.infoManager;
-        reinforcementManager = configurationContext.getReinforcementManager();
     }
 
     @Override
@@ -64,7 +61,8 @@ public final class CommandReinforce extends PlayerOnlyCommand {
         for (BlockVector blockVector : selector) {
             Block block = selection.getWorld().getBlockAt(blockVector.getBlockX(), blockVector.getBlockY(), blockVector.getBlockZ());
 
-            if (!reinforcementManager.isReinforceable(block)) {
+            // If the block is already reinforced, it cannot be reinforced further.
+            if (infoManager.getReinforcement(block.getLocation()) != null) {
                 continue;
             }
 

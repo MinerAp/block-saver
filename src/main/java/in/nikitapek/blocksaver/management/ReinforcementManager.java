@@ -86,12 +86,6 @@ public final class ReinforcementManager {
         fallingEntities = new TypeSafeSetImpl<>(new HashSet<FallingBlock>(), SupplementaryTypes.FALLING_BLOCK);
     }
 
-    public boolean isReinforceable(Block block) {
-        // Retrieves the reinforcement on the block, if the reinforcement exists.
-        // If the block is not reinforced, it can be reinforced further.
-        return infoManager.getReinforcement(block.getLocation()) == null;
-    }
-
     public boolean canMaterialReinforce(final Material material) {
         return reinforcementBlocks.containsKey(material);
     }
@@ -218,7 +212,8 @@ public final class ReinforcementManager {
             return;
         }
 
-        if (!isReinforceable(block)) {
+        // If the block is already reinforced, it cannot be reinforced further.
+        if (infoManager.getReinforcement(block.getLocation()) != null) {
             feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.REINFORCE_FAIL, player);
             return;
         }
