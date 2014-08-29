@@ -87,33 +87,26 @@ public final class BlockSaverInfoManager extends InfoManager {
         return reinforcementMap.get(location);
     }
 
-    public void reinforce(final Location location, final String playerName, float value) {
+    public void reinforce(final Location location, final String playerName, boolean value) {
         String worldName = location.getWorld().getName();
         if (!isWorldLoaded(worldName)) {
             return;
         }
 
-        float coefficient = reinforcementManager.getMaterialReinforcementCoefficient(location.getBlock().getType());
-        if (reinforcementManager.isReinforced(location)) {
-            value += getReinforcement(location).getReinforcementValue(coefficient);
-        }
-
-        setReinforcement(location, playerName, value, coefficient);
+        setReinforcement(location, playerName, value);
     }
 
-    public void setReinforcement(final Location location, final String playerName, final float value, final float coefficient) {
+    public void setReinforcement(final Location location, final String playerName, final boolean value) {
         // If the reinforcement is being set a value of 0, then it is just deleted.
-        if (value <= 0) {
+        if (!value) {
             removeReinforcement(location);
             return;
         }
 
-        if (isReinforced(location)) {
-            getReinforcement(location).setReinforcementValue(value, coefficient);
-        } else {
+        if (!isReinforced(location)) {
             ensureMapExists(location);
             TypeSafeUnifiedStorageMap<Location, Reinforcement> reinforcementMap = getReinforcementMap(location);
-            reinforcementMap.put(location, new Reinforcement(playerName, value));
+            reinforcementMap.put(location, new Reinforcement(playerName));
         }
     }
 

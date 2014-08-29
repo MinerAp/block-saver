@@ -21,18 +21,22 @@ public class PacketListener extends PacketAdapter {
 
 	@Override
     public void onPacketReceiving(PacketEvent event) {
+		// TODO: Remove this.
         System.out.println(event.getPacketType());
-        if (event.getPacketType() == PacketType.Play.Client.BLOCK_DIG) {
-            final StructureModifier<Integer> ints = event.getPacket().getIntegers();
 
-            final int x = ints.read(0);
-            final int y = ints.read(1);
-            final int z = ints.read(2);
-            int digStatus = ints.read(4);
- 
-            final Player player = event.getPlayer();
-
-            reinforcementManager.damageBlockNew(plugin, digStatus, player, x, y, z);
+        if (!PacketType.Play.Client.BLOCK_DIG.equals(event.getPacketType())) {
+        	return;
         }
+
+        final StructureModifier<Integer> ints = event.getPacket().getIntegers();
+
+        final int x = ints.read(0);
+        final int y = ints.read(1);
+        final int z = ints.read(2);
+        int digStatus = ints.read(4);
+
+        final Player player = event.getPlayer();
+
+        reinforcementManager.damageBlockNew(plugin, digStatus, player, x, y, z);
     }
 }

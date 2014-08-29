@@ -21,8 +21,9 @@ public final class ReinforcedBlockExplodeListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void listen(ReinforcedBlockExplodeEvent event) {
         Block block = event.getBlock();
-        float value = -((float) Math.pow(reinforcementManager.getMaterialReinforcementCoefficient(block.getType()), 2) / 100);
+        // TODO: Find a way to replace this functionality.
+        //float value = -((float) Math.pow(reinforcementManager.getMaterialReinforcementCoefficient(block.getType()), 2) / 100);
 
-        infoManager.reinforce(block.getLocation(), event.getPlayerName(), value);
+        infoManager.reinforce(block.getLocation(), event.getPlayerName(), false);
     }
 }

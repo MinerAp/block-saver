@@ -3,6 +3,7 @@ package in.nikitapek.blocksaver.events;
 import org.bukkit.block.Block;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.block.BlockEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class BlockDeinforceEvent extends BlockEvent {
     private static final HandlerList handlers = new HandlerList();

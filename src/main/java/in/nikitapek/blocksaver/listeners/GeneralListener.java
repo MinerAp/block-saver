@@ -88,7 +88,7 @@ public final class GeneralListener implements Listener {
         }
 
         // If the block is not successfully broken (e.g. the RV is not 0), then the event is cancelled.
-        event.setCancelled(!reinforcementManager.attemptToBreakBlock(location, event.getPlayer()));
+        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

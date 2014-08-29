@@ -13,14 +13,14 @@ import java.lang.reflect.Method;
 
 public final class BlockSaverUtil {
     public static final short MILLISECONDS_PER_SECOND = 1000;
-    public static final byte REINFORCEMENT_MAXIMIZING_COEFFICIENT = -2;
+    //public static final byte REINFORCEMENT_MAXIMIZING_COEFFICIENT = -2;
     public static final int HANDS_TOOL_CODE = -1;
     public static final int ALL_TOOL_CODE = -2;
 
     private BlockSaverUtil() {
     }
 
-    public static void sendParticleEffect(final Location location, final int reinforcementValue, final int reinforcementValueCoefficient) {
+    /*public static void sendParticleEffect(final Location location, final int reinforcementValue, final int reinforcementValueCoefficient) {
         World world = location.getWorld();
 
         Firework firework = world.spawn(new Location(world, location.getBlockX() + 0.5d, location.getBlockY() + 0.5d, location.getBlockZ() + 0.5d), Firework.class);
@@ -88,5 +88,5 @@ public final class BlockSaverUtil {
         }
 
         location.getWorld().playSound(location, Sound.NOTE_PIANO, 1.0f, pitch);
-    }
+    }*/
 }

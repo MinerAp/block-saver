@@ -92,39 +92,14 @@ public final class ReinforcementManager {
         fallingEntities = new TypeSafeSetImpl<>(new HashSet<FallingBlock>(), SupplementaryTypes.FALLING_BLOCK);
     }
 
-    public boolean isReinforceable(final Block block) {
-        final int coefficient = getMaterialReinforcementCoefficient(block.getType());
-
-        // If the block's material cannot be reinforced, the reinforcement fails.
-        if (coefficient == NO_REINFORCEMENT_VALUE) {
-            return false;
-        }
-
+    public boolean isReinforceable(Block block) {
         // Retrieves the reinforcement on the block, if the reinforcement exists.
-        final Reinforcement reinforcement = infoManager.getReinforcement(block.getLocation());
-
         // If the block is not reinforced, it can be reinforced further.
-        if (reinforcement == null) {
-            return true;
-        }
-
-        final float reinforcementValue = reinforcement.getReinforcementValue(coefficient);
-
-        // If the RV of the block has not been set to RVC after being deserialized, it is not reinforceable.
-        if (reinforcementValue == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
-            return false;
-        }
-
-        // If reinforcement values are being capped, and the RV is already at RVC, the block cannot be reinforced further.
-        return reinforcementValue < coefficient;
+        return infoManager.getReinforcement(block.getLocation()) == null;
     }
 
     public Reinforcement getReinforcement(final Location location) {
         return infoManager.getReinforcement(location);
-    }
-
-    public int getMaterialReinforcementCoefficient(final Material material) {
-        return isMaterialReinforceable(material) ? reinforceableBlocks.get(material) : NO_REINFORCEMENT_VALUE;
     }
 
     private boolean isMaterialReinforceable(final Material material) {
@@ -304,32 +279,6 @@ public final class ReinforcementManager {
         infoManager.moveReinforcement(location, location.getBlock().getRelative(direction).getLocation());
     }
 
-    public void damageBlockNew(Plugin plugin, int digStatus, final Player player, final int x, final int y, final int z) {
-        if (digStatus == 0) {
-            if (canBreak(player.getItemInHand())) {
-                futureBreaks.put(player, Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        if (player.hasPotionEffect(PotionEffectType.SLOW_DIGGING)) {
-                            player.getWorld().getBlockAt(x, y, z).breakNaturally(player.getItemInHand());
-                        }
-                    }
-                }, 200));
-            }
-
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, Short.MAX_VALUE, Byte.MAX_VALUE), true);
-        } else if (digStatus == 1) {
-            player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
-            if (futureBreaks.containsKey(player)) {
-                futureBreaks.remove(player).cancel();
-            }
-        }
-    }
-
-    public boolean canBreak(ItemStack inHand) {
-        return true;
-    }
-
     public void damageBlock(final Location location, final Player player, final BlockSaverDamageCause damageCause) {
         Location properLocation = getProperLocation(location);
         Reinforcement reinforcement = infoManager.getReinforcement(properLocation);
@@ -338,15 +287,6 @@ public final class ReinforcementManager {
 
         if (reinforcement == null) {
             return;
-        }
-
-        // Heals the block if the plugin is configured to do so and the required amount of time has elapsed.
-        float coefficient = getMaterialReinforcementCoefficient(location.getBlock().getType());
-        if (allowReinforcementHealing) {
-            if ((System.currentTimeMillis() - reinforcement.getTimeStamp()) >= (reinforcementHealingTime * BlockSaverUtil.MILLISECONDS_PER_SECOND)) {
-                // This calls the infoManager.reinforce() method because there is no need to log reinforcement healing.
-                infoManager.reinforce(properLocation, reinforcement.getCreatorName(), coefficient);
-            }
         }
 
         if (BlockSaverDamageCause.FIRE.equals(damageCause)) {
@@ -379,9 +319,10 @@ public final class ReinforcementManager {
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
         // This uses less than 1 in case TNT sets the RV to a number which would typically ceil to 1 (e.g. 0.97).
-        if (reinforcement.getReinforcementValue(coefficient) < 1 || (player != null && !isFortified(reinforcement, playerName))) {
+        // TODO: Remove this
+        /*if (reinforcement.getReinforcementValue(coefficient) < 1 || (player != null && !isFortified(reinforcement, playerName))) {
             Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, playerName, true));
-        }
+        }*/
     }
 
     public boolean isReinforced(final Location location) {
@@ -476,6 +417,47 @@ public final class ReinforcementManager {
             return false;
         }
 
+        return true;
+    }
+
+    public void damageBlockNew(Plugin plugin, int digStatus, final Player player, final int x, final int y, final int z) {
+    	final Block block = player.getWorld().getBlockAt(x, y, z);
+    	Location location = block.getLocation();
+
+    	if (digStatus == 1) {
+            player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
+            if (futureBreaks.containsKey(player)) {
+                futureBreaks.remove(player).cancel();
+            }
+            
+            return;
+    	}
+
+        if (!isWorldActive(block.getWorld().getName())) {
+            return;
+        }
+
+        // If the block is not reinforced, this plugin does not stop the block break event.
+        if (!isReinforced(location)) {
+            return;
+        }
+
+        if (canPlayerDamageBlock(location, player, false)) {
+            futureBreaks.put(player, Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    if (player.hasPotionEffect(PotionEffectType.SLOW_DIGGING)) {
+                    	block.breakNaturally(player.getItemInHand());
+                    	Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, player.getName(), true));
+                    }
+                }
+            }, 200));
+
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, Short.MAX_VALUE, Byte.MAX_VALUE), true);
+        }
+    }
+
+    public boolean canBreak(ItemStack inHand) {
         return true;
     }
 
