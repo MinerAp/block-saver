@@ -382,12 +382,7 @@ public final class ReinforcementManager {
         }
     }
 
-    public boolean canBreak(ItemStack inHand) {
-        return true;
-    }
-
     public void explodeBlocks(final List<Block> blockList, final EntityType entityType) {
-
         for (final Iterator<Block> iter = blockList.iterator(); iter.hasNext(); ) {
             final Block block = iter.next();
             final Location location = block.getLocation();
