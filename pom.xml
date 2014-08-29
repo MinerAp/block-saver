@@ -60,6 +60,12 @@
             <version>0.1</version>
             <scope>provided</scope>
         </dependency>
+        <!-- ProtocolLib -->
+        <dependency>
+            <groupId>com.comphenix.protocol</groupId>
+            <artifactId>ProtocolLib</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- Tests -->
         <dependency>
             <groupId>junit</groupId>

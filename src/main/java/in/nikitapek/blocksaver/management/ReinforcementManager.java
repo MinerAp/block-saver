@@ -29,10 +29,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Bed;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonExtensionMaterial;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitTask;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 public final class ReinforcementManager {
@@ -58,6 +64,8 @@ public final class ReinforcementManager {
     private final TypeSafeMap<Material, List<Integer>> toolRequirements;
 
     private final TypeSafeSet<FallingBlock> fallingEntities;
+
+    private final Map<Player, BukkitTask> futureBreaks = new HashMap<>();
 
     public ReinforcementManager(BlockSaverConfigurationContext configurationContext) {
         this.feedbackManager = configurationContext.feedbackManager;
@@ -294,6 +302,32 @@ public final class ReinforcementManager {
      */
     public void moveReinforcement(Location location, BlockFace direction) {
         infoManager.moveReinforcement(location, location.getBlock().getRelative(direction).getLocation());
+    }
+
+    public void damageBlockNew(Plugin plugin, int digStatus, final Player player, final int x, final int y, final int z) {
+        if (digStatus == 0) {
+            if (canBreak(player.getItemInHand())) {
+                futureBreaks.put(player, Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+                    @Override
+                    public void run() {
+                        if (player.hasPotionEffect(PotionEffectType.SLOW_DIGGING)) {
+                            player.getWorld().getBlockAt(x, y, z).breakNaturally(player.getItemInHand());
+                        }
+                    }
+                }, 200));
+            }
+
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, Short.MAX_VALUE, Byte.MAX_VALUE), true);
+        } else if (digStatus == 1) {
+            player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
+            if (futureBreaks.containsKey(player)) {
+                futureBreaks.remove(player).cancel();
+            }
+        }
+    }
+
+    public boolean canBreak(ItemStack inHand) {
+        return true;
     }
 
     public void damageBlock(final Location location, final Player player, final BlockSaverDamageCause damageCause) {
