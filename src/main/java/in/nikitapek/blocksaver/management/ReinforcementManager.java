@@ -110,7 +110,7 @@ public final class ReinforcementManager {
 
         final float reinforcementValue = reinforcement.getReinforcementValue(coefficient);
 
-        // If the RV of the block has not beed set to RVC after being deserialized, it is not reinforceable.
+        // If the RV of the block has not been set to RVC after being deserialized, it is not reinforceable.
         if (reinforcementValue == BlockSaverUtil.REINFORCEMENT_MAXIMIZING_COEFFICIENT) {
             return false;
         }
