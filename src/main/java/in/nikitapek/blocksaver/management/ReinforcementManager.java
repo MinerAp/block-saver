@@ -90,37 +90,6 @@ public final class ReinforcementManager {
         return reinforcementBlocks.containsKey(material);
     }
 
-    private Material getReinforcingMaterial(final Player player) {
-        // If the player is not in reinforcement mode, then we only check the item in their hand.
-        if (!infoManager.getPlayerInfo(player).isInReinforcementMode) {
-            Material itemInHandMaterial = player.getItemInHand().getType();
-            if (canMaterialReinforce(itemInHandMaterial)) {
-                return itemInHandMaterial;
-            } else {
-                return Material.AIR;
-            }
-        }
-
-        // Otherwise, loop through all the reinforcement items and check if the player has one of these.
-        for (Material material : reinforcementBlocks.keySet()) {
-            int index = player.getInventory().first(material);
-
-            if (index != -1) {
-                // If the player has a reinforcing material, then a check is made to see if this is the item being placed.
-                // If there is, and there is only 1 left, then it is not used as the reinforcing item is being used up by being placed on the ground.
-                if (index == 0) {
-                    if (player.getItemInHand().getAmount() == 1) {
-                        continue;
-                    }
-                }
-
-                return material;
-            }
-        }
-
-        return Material.AIR;
-    }
-
     private boolean canToolDamageBlock(final Location location, final ItemStack tool) {
         final Material blockMaterial = location.getBlock().getType();
 
@@ -196,14 +165,44 @@ public final class ReinforcementManager {
     public void attemptReinforcement(Location location, Player player) {
         Location properLocation = getProperLocation(location);
         Block block = properLocation.getBlock();
-        Material material = getReinforcingMaterial(player);
-        if (Material.AIR.equals(material)) {
+        Material reinforcingMaterial = Material.AIR;
+
+        // If the player is not in reinforcement mode, then we only check the item in their hand.
+        if (!infoManager.getPlayerInfo(player).isInReinforcementMode) {
+            Material itemInHandMaterial = player.getItemInHand().getType();
+            if (canMaterialReinforce(itemInHandMaterial)) {
+            	reinforcingMaterial = itemInHandMaterial;
+            } else {
+                return;
+            }
+        }
+
+        // Otherwise, loop through all the reinforcement items and check if the player has one of these.
+        // TODO: Simplify this
+        for (Material material : reinforcementBlocks.keySet()) {
+            int index = player.getInventory().first(material);
+
+            if (index != -1) {
+                // If the player has a reinforcing material, then a check is made to see if this is the item being placed.
+                // If there is, and there is only 1 left, then it is not used as the reinforcing item is being used up by being placed on the ground.
+                if (index == 0) {
+                    if (player.getItemInHand().getAmount() == 1) {
+                        continue;
+                    }
+                }
+
+                reinforcingMaterial = material;
+            }
+        }        
+        
+        if (Material.AIR.equals(reinforcingMaterial)) {
             return;
         }
-        ItemStack item = player.getInventory().getItem(player.getInventory().first(material));
+
+        ItemStack item = player.getInventory().getItem(player.getInventory().first(reinforcingMaterial));
 
         // If the material cannot be used for reinforcement, the reinforcement fails.
-        if (!canMaterialReinforce(material)) {
+        if (!canMaterialReinforce(reinforcingMaterial)) {
             feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.REINFORCE_FAIL, player);
             return;
         }
@@ -228,7 +227,7 @@ public final class ReinforcementManager {
             PlayerInfo playerInfo = infoManager.getPlayerInfo(player);
 
             // If the player has already reinforced with this material, retrieves the number of remaining uses for the player; otherwise, use the default value for the material.
-            int usesLeft = playerInfo.hasUsed(material) ? playerInfo.getRemainingUses(material) : reinforcementBlocks.get(material);
+            int usesLeft = playerInfo.hasUsed(reinforcingMaterial) ? playerInfo.getRemainingUses(reinforcingMaterial) : reinforcementBlocks.get(reinforcingMaterial);
 
             if (usesLeft == 1) {
                 if (item.getAmount() > 1) {
@@ -239,9 +238,9 @@ public final class ReinforcementManager {
                 player.updateInventory();
 
                 // Reset the number of uses.
-                playerInfo.setRemainingUses(material, reinforcementBlocks.get(material));
+                playerInfo.setRemainingUses(reinforcingMaterial, reinforcementBlocks.get(reinforcingMaterial));
             } else {
-                playerInfo.setRemainingUses(material, usesLeft - 1);
+                playerInfo.setRemainingUses(reinforcingMaterial, usesLeft - 1);
             }
         }
     }
