@@ -150,6 +150,10 @@ public final class ReinforcementManager {
         Location properLocation = BlockSaverUtil.getProperLocation(location);
         Block block = properLocation.getBlock();
         Material reinforcingMaterial = Material.AIR;
+        
+        if (isReinforced(properLocation)) {
+        	return;
+        }
 
         // If the player is not in reinforcement mode, then we only check the item in their hand.
         if (!infoManager.getPlayerInfo(player).isInReinforcementMode) {
@@ -290,17 +294,14 @@ public final class ReinforcementManager {
         final Location properLocation = BlockSaverUtil.getProperLocation(location);
         final Block block = properLocation.getBlock();
 
-        if (!infoManager.isReinforced(properLocation)) {
-            return false;
-        }
+    	// Remove the field, if it exists.
+    	if (infoManager.isReinforced(block.getLocation())) {
+    		if (Material.AIR.equals(block.getType()) || !reinforceableBlocks.containsKey(block.getType())) {
+                Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
+    		}
+    	}
 
-        // Removes the reinforcement from the un-reinforceable block.
-        if (!reinforceableBlocks.containsKey(block.getType())) {
-            Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
-            return false;
-        }
-
-        return true;
+        return infoManager.isReinforced(properLocation);
     }
 
     private boolean isFortified(final Reinforcement reinforcement, final String playerName) {

@@ -58,18 +58,13 @@ public final class GeneralListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockPlace(final BlockPlaceEvent event) {
-        // If a block is being placed somewhere where there is already a reinforcement value, the reinforcement value is removed.
-        // This is to prevent "reinforcement transfers" to blocks which could not normally obtain reinforcements.
         Block block = event.getBlock();
         Location location = block.getLocation();
         Player player = event.getPlayer();
 
+        // If the world isn't handled by BlockSaver, ignore it.
         if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
-        }
-
-        if (Material.AIR.equals(block.getType()) && reinforcementManager.isReinforced(location)) {
-            Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, "Environment", true));
         }
 
         // If the player has placed a block and is currently in auto-reinforce mode, an attempt is made to reinforce the newly placed block.
@@ -82,6 +77,7 @@ public final class GeneralListener implements Listener {
     public void onBlockBreak(final BlockBreakEvent event) {
         final Location location = event.getBlock().getLocation();
 
+        // If the world isn't handled by BlockSaver, ignore it.
         if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
@@ -107,6 +103,7 @@ public final class GeneralListener implements Listener {
 
         final Location location = block.getLocation();
 
+        // If the world isn't handled by BlockSaver, ignore it.
         if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
@@ -135,6 +132,7 @@ public final class GeneralListener implements Listener {
     public void onBlockBurn(final BlockBurnEvent event) {
         final Location location = event.getBlock().getLocation();
 
+        // If the world isn't handled by BlockSaver, ignore it.
         if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
@@ -155,6 +153,7 @@ public final class GeneralListener implements Listener {
     public void onBlockIgnite(BlockIgniteEvent event) {
         final Location location = event.getBlock().getLocation();
 
+        // If the world isn't handled by BlockSaver, ignore it.
         if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
@@ -179,6 +178,7 @@ public final class GeneralListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockExplode(final EntityExplodeEvent event) {
+        // If the world isn't handled by BlockSaver, ignore it.
         if (!infoManager.isWorldLoaded(event.getLocation().getWorld().getName())) {
             return;
         }
@@ -199,37 +199,9 @@ public final class GeneralListener implements Listener {
         reinforcementManager.explodeBlocks(event.blockList(), entity.getType());
     }
 
-    /*
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onBlockPhysics(final BlockPhysicsEvent event) {
-        final Block block = event.getBlock();
-        final Location location = block.getLocation();
-        final Material material = block.getType();
-
-        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
-            return;
-        }
-
-        // This is to ensure TNT-based physics events are not processed.
-        if (!Material.SAND.equals(material) && !Material.GRAVEL.equals(material)) {
-            return;
-        }
-
-        if (!reinforcementManager.isReinforced(location)) {
-            return;
-        }
-
-        if (!allowReinforcedBlockPhysics) {
-            event.setCancelled(true);
-            return;
-        }
-
-        reinforcementManager.removeReinforcement(location);
-    }
-    */
-
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
+        // If the world isn't handled by BlockSaver, ignore it.
         if (!infoManager.isWorldLoaded(event.getBlock().getLocation().getWorld().getName())) {
             return;
         }
@@ -264,6 +236,7 @@ public final class GeneralListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPistonRetract(final BlockPistonRetractEvent event) {
+        // If the world isn't handled by BlockSaver, ignore it.
         if (!infoManager.isWorldLoaded(event.getBlock().getLocation().getWorld().getName())) {
             return;
         }
@@ -294,6 +267,7 @@ public final class GeneralListener implements Listener {
         final Location location = block.getLocation();
         final Material material = block.getType();
 
+        // If the world isn't handled by BlockSaver, ignore it.
         if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
@@ -319,6 +293,7 @@ public final class GeneralListener implements Listener {
         Block block = event.getToBlock();
         Location location = block.getLocation();
 
+        // If the world isn't handled by BlockSaver, ignore it.
         if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
@@ -348,6 +323,7 @@ public final class GeneralListener implements Listener {
         final EntityType entityType = event.getEntityType();
         final Material toMaterial = event.getTo();
 
+        // If the world isn't handled by BlockSaver, ignore it.
         if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
@@ -410,6 +386,7 @@ public final class GeneralListener implements Listener {
 
         final Location location = block.getLocation();
 
+        // If the world isn't handled by BlockSaver, ignore it.
         if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }

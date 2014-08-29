@@ -145,7 +145,7 @@ public final class BlockSaverInfoManager extends InfoManager {
         reinforcementMap.remove(location);
     }
 
-    public boolean isReinforced(final Location location) {
+    boolean isReinforced(final Location location) {
         // Confirm that the reinforcement list is already tracking the chunk and location.
         if (!isWorldLoaded(location.getWorld().getName())) {
             return false;
