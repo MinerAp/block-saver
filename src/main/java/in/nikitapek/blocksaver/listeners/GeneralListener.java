@@ -1,9 +1,11 @@
 package in.nikitapek.blocksaver.listeners;
 
 import in.nikitapek.blocksaver.events.BlockDeinforceEvent;
+import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
 import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import in.nikitapek.blocksaver.util.BlockSaverDamageCause;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -34,6 +36,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import java.util.ListIterator;
 
 public final class GeneralListener implements Listener {
+    private final BlockSaverInfoManager infoManager;
     private final ReinforcementManager reinforcementManager;
 
     private final boolean liquidsDestroyReinforcedBlocks;
@@ -43,6 +46,7 @@ public final class GeneralListener implements Listener {
     private final boolean mobsInteractWithReinforcedBlocks;
 
     public GeneralListener(final BlockSaverConfigurationContext configurationContext) {
+    	this.infoManager = configurationContext.infoManager;
         this.reinforcementManager = configurationContext.getReinforcementManager();
 
         this.liquidsDestroyReinforcedBlocks = configurationContext.liquidsDestroyReinforcedBlocks;
@@ -69,7 +73,7 @@ public final class GeneralListener implements Listener {
         }
 
         // If the player has placed a block and is currently in auto-reinforce mode, an attempt is made to reinforce the newly placed block.
-        if (reinforcementManager.isPlayerInReinforcementMode(player)) {
+        if (infoManager.getPlayerInfo(player).isInReinforcementMode) {
             reinforcementManager.attemptReinforcement(location, player);
         }
     }
