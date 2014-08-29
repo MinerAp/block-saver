@@ -64,7 +64,7 @@ public final class GeneralListener implements Listener {
         Location location = block.getLocation();
         Player player = event.getPlayer();
 
-        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
 
@@ -82,7 +82,7 @@ public final class GeneralListener implements Listener {
     public void onBlockBreak(final BlockBreakEvent event) {
         final Location location = event.getBlock().getLocation();
 
-        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
 
@@ -107,7 +107,7 @@ public final class GeneralListener implements Listener {
 
         final Location location = block.getLocation();
 
-        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
 
@@ -135,7 +135,7 @@ public final class GeneralListener implements Listener {
     public void onBlockBurn(final BlockBurnEvent event) {
         final Location location = event.getBlock().getLocation();
 
-        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
 
@@ -155,7 +155,7 @@ public final class GeneralListener implements Listener {
     public void onBlockIgnite(BlockIgniteEvent event) {
         final Location location = event.getBlock().getLocation();
 
-        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
 
@@ -179,7 +179,7 @@ public final class GeneralListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockExplode(final EntityExplodeEvent event) {
-        if (!reinforcementManager.isWorldActive(event.getLocation().getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(event.getLocation().getWorld().getName())) {
             return;
         }
 
@@ -230,7 +230,7 @@ public final class GeneralListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
-        if (!reinforcementManager.isWorldActive(event.getBlock().getLocation().getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(event.getBlock().getLocation().getWorld().getName())) {
             return;
         }
 
@@ -264,7 +264,7 @@ public final class GeneralListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPistonRetract(final BlockPistonRetractEvent event) {
-        if (!reinforcementManager.isWorldActive(event.getBlock().getLocation().getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(event.getBlock().getLocation().getWorld().getName())) {
             return;
         }
 
@@ -294,7 +294,7 @@ public final class GeneralListener implements Listener {
         final Location location = block.getLocation();
         final Material material = block.getType();
 
-        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
 
@@ -319,7 +319,7 @@ public final class GeneralListener implements Listener {
         Block block = event.getToBlock();
         Location location = block.getLocation();
 
-        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
 
@@ -348,7 +348,7 @@ public final class GeneralListener implements Listener {
         final EntityType entityType = event.getEntityType();
         final Material toMaterial = event.getTo();
 
-        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
 
@@ -410,7 +410,7 @@ public final class GeneralListener implements Listener {
 
         final Location location = block.getLocation();
 
-        if (!reinforcementManager.isWorldActive(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
             return;
         }
 

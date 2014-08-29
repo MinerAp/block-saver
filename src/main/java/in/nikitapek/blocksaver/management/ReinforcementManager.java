@@ -91,7 +91,7 @@ public final class ReinforcementManager {
     }
 
     public boolean canPlayerDamageBlock(final Location location, final Player player, final boolean feedback) {
-        Location properLocation = getProperLocation(location);
+        Location properLocation = BlockSaverUtil.getProperLocation(location);
 
         if (player.hasPermission("blocksaver.exempt")) {
             return true;
@@ -150,7 +150,7 @@ public final class ReinforcementManager {
     }
 
     public void attemptReinforcement(Location location, Player player) {
-        Location properLocation = getProperLocation(location);
+        Location properLocation = BlockSaverUtil.getProperLocation(location);
         Block block = properLocation.getBlock();
         Material reinforcingMaterial = Material.AIR;
 
@@ -243,7 +243,7 @@ public final class ReinforcementManager {
     }
 
     public void damageBlock(final Location location, final Player player, final BlockSaverDamageCause damageCause) {
-        Location properLocation = getProperLocation(location);
+        Location properLocation = BlockSaverUtil.getProperLocation(location);
         Reinforcement reinforcement = infoManager.getReinforcement(properLocation);
         Block block = properLocation.getBlock();
         String playerName = player == null ? null : player.getName();
@@ -290,7 +290,7 @@ public final class ReinforcementManager {
 
     public boolean isReinforced(final Location location) {
         // If a part of a piston was damaged, retrieves the base of the piston.
-        final Location properLocation = getProperLocation(location);
+        final Location properLocation = BlockSaverUtil.getProperLocation(location);
         final Block block = properLocation.getBlock();
 
         if (!infoManager.isReinforced(properLocation)) {
@@ -304,44 +304,6 @@ public final class ReinforcementManager {
         }
 
         return true;
-    }
-
-    public Location getProperLocation(final Location location) {
-        Block block = location.getBlock();
-        Material blockType = block.getType();
-
-        // Select the base of the piston.
-        if (blockType.equals(Material.PISTON_EXTENSION)) {
-            MaterialData data = block.getState().getData();
-            BlockFace direction = null;
-
-            // Check the block it pushed directly
-            if (data instanceof PistonExtensionMaterial) {
-                direction = ((PistonExtensionMaterial) data).getFacing();
-            }
-
-            if (direction != null) {
-                return block.getRelative(direction.getOppositeFace()).getLocation();
-            }
-        } else if (blockType.equals(Material.WOODEN_DOOR) || blockType.equals(Material.IRON_DOOR)) {
-            // If the user selected the top of a door, return the bottom.
-            Block blockBelow = block.getRelative(BlockFace.DOWN);
-            if (blockBelow.getType().equals(Material.WOODEN_DOOR) || blockBelow.getType().equals(Material.IRON_DOOR)) {
-                return blockBelow.getLocation();
-            }
-        } else if (blockType.equals(Material.BED_BLOCK)) {
-            Bed data = (Bed) block.getState().getData();
-
-            // If the selected block is the head of the bed, return the selected block's location.
-            if (data.isHeadOfBed()) {
-                return location;
-            }
-
-            // Otherwise, return the location of the head of the bed.
-            return block.getRelative(data.getFacing()).getLocation();
-        }
-
-        return location;
     }
 
     private boolean isFortified(final Reinforcement reinforcement, final String playerName) {
@@ -396,7 +358,7 @@ public final class ReinforcementManager {
             return;
     	}
 
-        if (!isWorldActive(block.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(block.getWorld().getName())) {
             return;
         }
 
@@ -459,10 +421,6 @@ public final class ReinforcementManager {
             feedbackManager.sendFeedback(location, BlockSaverFeedback.DAMAGE_SUCCESS, null);
             iter.remove();
         }
-    }
-
-    public boolean isWorldActive(String worldName) {
-        return infoManager.isWorldLoaded(worldName);
     }
 
     public void storeFallingEntity(FallingBlock entity) {
