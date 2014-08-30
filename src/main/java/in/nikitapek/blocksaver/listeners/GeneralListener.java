@@ -91,7 +91,7 @@ public final class GeneralListener implements Listener {
         event.setCancelled(!reinforcementManager.attemptToBreakBlock(location, event.getPlayer()));
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockInteract(final PlayerInteractEvent event) {
         final Player player = event.getPlayer();
         final Block block = event.getClickedBlock();
