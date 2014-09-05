@@ -35,7 +35,6 @@ public final class PrismBridge {
 
         plugin.registerEventHandler(new PrismBlockDeinforceListener(configurationContext.infoManager));
         plugin.registerEventHandler(new PrismBlockReinforceListener(configurationContext.infoManager));
-        plugin.registerEventHandler(new PrismReinforcedBlockDamageListener(configurationContext.infoManager));
         plugin.registerEventHandler(new PrismReinforcedBlockExplodeListener(configurationContext.infoManager));
 
         BlockSaverAction.initialize(configurationContext.getReinforcementManager(), configurationContext.infoManager);

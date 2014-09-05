@@ -44,7 +44,6 @@ public final class InsightBridge {
 
         plugin.registerEventHandler(new InsightBlockDeinforceListener());
         plugin.registerEventHandler(new InsightBlockReinforceListener());
-        plugin.registerEventHandler(new InsightReinforcedBlockDamageListener());
         plugin.registerEventHandler(new InsightReinforcedBlockExplodeListener());
     }
 }

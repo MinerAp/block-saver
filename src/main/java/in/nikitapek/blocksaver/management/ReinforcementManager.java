@@ -6,7 +6,6 @@ import com.amshulman.typesafety.impl.TypeSafeSetImpl;
 
 import in.nikitapek.blocksaver.events.BlockDeinforceEvent;
 import in.nikitapek.blocksaver.events.BlockReinforceEvent;
-import in.nikitapek.blocksaver.events.ReinforcedBlockDamageEvent;
 import in.nikitapek.blocksaver.events.ReinforcedBlockExplodeEvent;
 import in.nikitapek.blocksaver.serialization.PlayerInfo;
 import in.nikitapek.blocksaver.serialization.Reinforcement;
@@ -278,7 +277,8 @@ public final class ReinforcementManager {
         if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
             Bukkit.getServer().getPluginManager().callEvent(new ReinforcedBlockExplodeEvent(block, playerName, true));
         } else {
-            Bukkit.getServer().getPluginManager().callEvent(new ReinforcedBlockDamageEvent(block, playerName, true));
+		// TODO: Find a way to replace this.
+            //Bukkit.getServer().getPluginManager().callEvent(new ReinforcedBlockDamageEvent(block, playerName, true));
         }
 
         // The reinforcement is removed if the reinforcement value has reached zero, or if the reinforcement is not yet fully active for the player (grace period).
