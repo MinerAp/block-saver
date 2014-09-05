@@ -16,12 +16,18 @@ public final class BlockSaverPlugin extends MbapiPlugin {
     public void onEnable() {
         final BlockSaverConfigurationContext configurationContext = new BlockSaverConfigurationContext(this);
 
+        // Register all blocksaver commands.
         registerCommandExecutor(new CommandBlockSaver(configurationContext));
+
+        // Register the listener for all non-blocksaver events.
         registerEventHandler(new GeneralListener(configurationContext));
+
+        // Register the listeners for all blocksaver events.
         registerEventHandler(new BlockReinforceListener(configurationContext));
         registerEventHandler(new BlockDeinforceListener(configurationContext));
         registerEventHandler(new ReinforcedBlockExplodeListener(configurationContext));
 
+        // Add a PacketListener to listen for the Client.BLOCK_DIG packet (for slowing down digging.
         ProtocolLibrary.getProtocolManager().addPacketListener(new PacketListener(configurationContext));
 
         super.onEnable();
