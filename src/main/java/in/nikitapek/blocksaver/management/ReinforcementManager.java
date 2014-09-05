@@ -277,7 +277,7 @@ public final class ReinforcementManager {
         if (BlockSaverDamageCause.EXPLOSION.equals(damageCause)) {
             Bukkit.getServer().getPluginManager().callEvent(new ReinforcedBlockExplodeEvent(block, playerName, true));
         } else {
-		// TODO: Find a way to replace this.
+            // TODO: Find a way to replace this.
             //Bukkit.getServer().getPluginManager().callEvent(new ReinforcedBlockDamageEvent(block, playerName, true));
         }
 

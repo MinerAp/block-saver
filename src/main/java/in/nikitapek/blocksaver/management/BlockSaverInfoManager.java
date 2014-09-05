@@ -92,7 +92,7 @@ public final class BlockSaverInfoManager extends InfoManager {
         }
 
         if (isReinforced(location)) {
-		return;
+            return;
         }
 
         ensureMapExists(location);
