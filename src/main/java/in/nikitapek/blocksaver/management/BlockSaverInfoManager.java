@@ -86,19 +86,17 @@ public final class BlockSaverInfoManager extends InfoManager {
         return reinforcementMap.get(location);
     }
 
-    public void reinforce(final Location location, final String playerName, boolean removing) {
+    public void reinforce(final Location location, final String playerName) {
         if (!isWorldLoaded(location.getWorld().getName())) {
             return;
         }
 
-        if (removing) {
-            removeReinforcement(location);
-        } else {
-	        if (!isReinforced(location)) {
-	            ensureMapExists(location);
-	            getReinforcementMap(location).put(location, new Reinforcement(playerName));
-	        }
+        if (isReinforced(location)) {
+		return;
         }
+
+        ensureMapExists(location);
+        getReinforcementMap(location).put(location, new Reinforcement(playerName));
     }
 
     public PlayerInfo getPlayerInfo(final Player player) {

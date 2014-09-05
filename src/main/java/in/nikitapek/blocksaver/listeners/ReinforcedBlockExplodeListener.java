@@ -21,6 +21,6 @@ public final class ReinforcedBlockExplodeListener implements Listener {
         // TODO: Find a way to replace this functionality.
         //float value = -((float) Math.pow(reinforcementManager.getMaterialReinforcementCoefficient(block.getType()), 2) / 100);
 
-        infoManager.reinforce(block.getLocation(), event.getPlayerName(), true);
+        infoManager.removeReinforcement(block.getLocation());
     }
 }
