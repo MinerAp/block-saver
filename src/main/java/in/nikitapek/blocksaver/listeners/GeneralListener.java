@@ -19,7 +19,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockFadeEvent;
@@ -56,14 +55,21 @@ public final class GeneralListener implements Listener {
         this.mobsInteractWithReinforcedBlocks = configurationContext.mobsInteractWithReinforcedBlocks;
     }
 
+    /**
+     * Listen for block place events by the player.
+     * If the player is placing blocks while in reinforcement mode, automatically
+     * reinforce placed blocks using reinforcement materials from the player's
+     * inventory.
+     * @param event
+     */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockPlace(final BlockPlaceEvent event) {
-        Block block = event.getBlock();
-        Location location = block.getLocation();
-        Player player = event.getPlayer();
+        final Location location = event.getBlock().getLocation();
+        final String worldName = location.getWorld().getName();
+        final Player player = event.getPlayer();
 
         // If the world isn't handled by BlockSaver, ignore it.
-        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(worldName)) {
             return;
         }
 
@@ -73,12 +79,20 @@ public final class GeneralListener implements Listener {
         }
     }
 
+    /**
+     * Listen for block break events.
+     * If the block break event occurs for a block in a reinforcement-active world,
+     * and the block itself is reinforced, then the event is cancelled and the
+     * block is not broken.
+     * @param event
+     */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockBreak(final BlockBreakEvent event) {
         final Location location = event.getBlock().getLocation();
+        final String worldName = location.getWorld().getName();
 
         // If the world isn't handled by BlockSaver, ignore it.
-        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(worldName)) {
             return;
         }
 
@@ -91,6 +105,19 @@ public final class GeneralListener implements Listener {
         event.setCancelled(true);
     }
 
+    /**
+     * Listens for block interact events.
+     * If a player is left clicking a block, and the material in the player's hand is
+     * reinforcing material, then the event is cancelled, and an attempt is made
+     * to reinforce the block being clicked.
+     * If a player is left clicking a block, but the player is not holding
+     * reinforcing material in their hand, then the player is attempting to break
+     * the block, and the event is cancelled if the tool in the user's hand is
+     * incapable of destroying the reinforced block.
+     * If a PHYSICAL action is being performed (e.g. a player is stepping on
+     * reinforced soil), then the event is cancelled.
+     * @param event
+     */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockInteract(final PlayerInteractEvent event) {
         final Player player = event.getPlayer();
@@ -108,32 +135,40 @@ public final class GeneralListener implements Listener {
             return;
         }
 
-        // If the player is not left-clicking, then the player is not attempting to reinforce or damage a block.
-        if (Action.LEFT_CLICK_BLOCK.equals(event.getAction())) {
-            // If the player is not attempting a reinforcement, they may be trying to damage a reinforced block, and so a check is performed.
-            if (!reinforcementManager.canMaterialReinforce(player.getItemInHand().getType())) {
-                if (!reinforcementManager.canPlayerDamageBlock(location, player, true)) {
-                    event.setCancelled(true);
+        switch (event.getAction()) {
+            case LEFT_CLICK_BLOCK:
+                // If the player cannot reinforce with the material in their hand, then they are attempting to damage the block.
+                if (!reinforcementManager.canMaterialReinforce(player.getItemInHand().getType())) {
+                    if (!reinforcementManager.canPlayerDamageBlock(location, player, true)) {
+                        event.setCancelled(true);
+                    }
+                    return;
                 }
-                return;
-            }
 
-            // The event is cancelled because if the reinforcement fails, we do not want left click actions registering with reinforcement blocks anyways.
-            event.setCancelled(true);
+                // The event is cancelled because if the reinforcement fails, we do not want left click actions registering with reinforcement blocks anyways.
+                event.setCancelled(true);
 
-            // An attempt is made to reinforce the block the player clicks, which, if not successful, exits the event.
-            reinforcementManager.attemptReinforcement(location, player);
-        } else if (Action.PHYSICAL.equals(event.getAction()) && Material.SOIL.equals(block.getType()) && reinforcementManager.isReinforced(location)) {
-            event.setCancelled(true);
+                // An attempt is made to reinforce the block the player clicks, which, if not successful, exits the event.
+                reinforcementManager.attemptReinforcement(location, player);
+                break;
+            case PHYSICAL:
+                // A player or other entity is performing a PHYSICAL (e.g. stepping/jumping) action on the block.
+                if (Material.SOIL.equals(block.getType()) && reinforcementManager.isReinforced(location)) {
+                    event.setCancelled(true);
+                    break;
+                }
+        	default:
+        		break;
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockBurn(final BlockBurnEvent event) {
         final Location location = event.getBlock().getLocation();
+        final String worldName = location.getWorld().getName();
 
         // If the world isn't handled by BlockSaver, ignore it.
-        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(worldName)) {
             return;
         }
 
@@ -152,9 +187,10 @@ public final class GeneralListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockIgnite(BlockIgniteEvent event) {
         final Location location = event.getBlock().getLocation();
+        final String worldName = location.getWorld().getName();
 
         // If the world isn't handled by BlockSaver, ignore it.
-        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(worldName)) {
             return;
         }
 
@@ -178,8 +214,10 @@ public final class GeneralListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockExplode(final EntityExplodeEvent event) {
+        final String worldName = event.getLocation().getWorld().getName();
+
         // If the world isn't handled by BlockSaver, ignore it.
-        if (!infoManager.isWorldLoaded(event.getLocation().getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(worldName)) {
             return;
         }
 
@@ -201,8 +239,10 @@ public final class GeneralListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPistonExtend(final BlockPistonExtendEvent event) {
+    	final String worldName = event.getBlock().getLocation().getWorld().getName();
+
         // If the world isn't handled by BlockSaver, ignore it.
-        if (!infoManager.isWorldLoaded(event.getBlock().getLocation().getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(worldName)) {
             return;
         }
 
@@ -236,8 +276,10 @@ public final class GeneralListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPistonRetract(final BlockPistonRetractEvent event) {
+    	final String worldName = event.getBlock().getLocation().getWorld().getName();
+
         // If the world isn't handled by BlockSaver, ignore it.
-        if (!infoManager.isWorldLoaded(event.getBlock().getLocation().getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(worldName)) {
             return;
         }
 
@@ -265,10 +307,11 @@ public final class GeneralListener implements Listener {
     public void onBlockFade(final BlockFadeEvent event) {
         final Block block = event.getBlock();
         final Location location = block.getLocation();
+        final String worldName = location.getWorld().getName();
         final Material material = block.getType();
 
         // If the world isn't handled by BlockSaver, ignore it.
-        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(worldName)) {
             return;
         }
 
@@ -290,11 +333,12 @@ public final class GeneralListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onWaterPassThrough(final BlockFromToEvent event) {
-        Block block = event.getToBlock();
-        Location location = block.getLocation();
+        final Block block = event.getToBlock();
+        final Location location = block.getLocation();
+        final String worldName = location.getWorld().getName();
 
         // If the world isn't handled by BlockSaver, ignore it.
-        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(worldName)) {
             return;
         }
 
@@ -318,13 +362,14 @@ public final class GeneralListener implements Listener {
     public void onEntityChangeBlock(final EntityChangeBlockEvent event) {
         final Block block = event.getBlock();
         final Location location = block.getLocation();
+        final String worldName = location.getWorld().getName();
         final Material fromMaterial = block.getType();
         final Entity entity = event.getEntity();
         final EntityType entityType = event.getEntityType();
         final Material toMaterial = event.getTo();
 
         // If the world isn't handled by BlockSaver, ignore it.
-        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(worldName)) {
             return;
         }
 
@@ -385,9 +430,10 @@ public final class GeneralListener implements Listener {
         }
 
         final Location location = block.getLocation();
+        final String worldName = location.getWorld().getName();
 
         // If the world isn't handled by BlockSaver, ignore it.
-        if (!infoManager.isWorldLoaded(location.getWorld().getName())) {
+        if (!infoManager.isWorldLoaded(worldName)) {
             return;
         }
 

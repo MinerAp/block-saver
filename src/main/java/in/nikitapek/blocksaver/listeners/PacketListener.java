@@ -21,15 +21,13 @@ public class PacketListener extends PacketAdapter {
 
 	@Override
     public void onPacketReceiving(PacketEvent event) {
-		// TODO: Remove this.
-        System.out.println(event.getPacketType());
-
+        // Only monitor for Client.BLOCK_DIG events.
         if (!PacketType.Play.Client.BLOCK_DIG.equals(event.getPacketType())) {
         	return;
         }
 
+        // Retrieve the position and digStatus information from the packet.
         final StructureModifier<Integer> ints = event.getPacket().getIntegers();
-
         final int x = ints.read(0);
         final int y = ints.read(1);
         final int z = ints.read(2);
@@ -37,6 +35,7 @@ public class PacketListener extends PacketAdapter {
 
         final Player player = event.getPlayer();
 
+        // Begin slowly damaging the block the player is targetting.
         reinforcementManager.damageBlockNew(plugin, digStatus, player, x, y, z);
     }
 }
