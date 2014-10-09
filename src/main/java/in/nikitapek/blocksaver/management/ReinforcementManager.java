@@ -149,9 +149,11 @@ public final class ReinforcementManager {
         Location properLocation = BlockSaverUtil.getProperLocation(location);
         Block block = properLocation.getBlock();
         Material reinforcingMaterial = Material.AIR;
-        
+
+        // If the block is already reinforced, it cannot be reinforced further.
         if (isReinforced(properLocation)) {
-        	return;
+            feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.REINFORCE_FAIL, player);
+            return;
         }
 
         // If the player is not in reinforcement mode, then we only check the item in their hand.
@@ -190,12 +192,6 @@ public final class ReinforcementManager {
 
         // If the material cannot be used for reinforcement, the reinforcement fails.
         if (!canMaterialReinforce(reinforcingMaterial)) {
-            feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.REINFORCE_FAIL, player);
-            return;
-        }
-
-        // If the block is already reinforced, it cannot be reinforced further.
-        if (infoManager.getReinforcement(block.getLocation()) != null) {
             feedbackManager.sendFeedback(properLocation, BlockSaverFeedback.REINFORCE_FAIL, player);
             return;
         }
@@ -347,6 +343,7 @@ public final class ReinforcementManager {
     	final Block block = player.getWorld().getBlockAt(x, y, z);
     	Location location = block.getLocation();
 
+	System.out.println("Digstatus: " + digStatus);
     	if (digStatus == 1) {
             player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
             if (futureBreaks.containsKey(player)) {
@@ -360,23 +357,35 @@ public final class ReinforcementManager {
             return;
         }
 
+        // If the player cannot damage the block, don't display the breaking action.
+        if (!canPlayerDamageBlock(location, player, true)) {
+            return;
+        }
+
         // If the block is not reinforced, this plugin does not stop the block break event.
         if (!isReinforced(location)) {
             return;
         }
 
         if (canPlayerDamageBlock(location, player, false)) {
+		long delay = 200;
+		// If the player is in creative mode, avoid the delay completely.
+		if (GameMode.CREATIVE.equals(player.getGameMode())) {
+		delay = 0;
+		} else {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, Short.MAX_VALUE, Byte.MAX_VALUE), true);
+		}
+
             futureBreaks.put(player, Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
                 @Override
                 public void run() {
                     if (player.hasPotionEffect(PotionEffectType.SLOW_DIGGING)) {
-                    	block.breakNaturally(player.getItemInHand());
-                    	Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, player.getName(), true));
+                        block.breakNaturally(player.getItemInHand());
+			    Bukkit.getServer().getPluginManager().callEvent(new BlockDeinforceEvent(block, player.getName(), true));
+                        player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
                     }
                 }
-            }, 200));
-
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, Short.MAX_VALUE, Byte.MAX_VALUE), true);
+            }, delay));
         }
     }
 
