@@ -6,7 +6,7 @@
     <groupId>in.nikitapek</groupId>
     <artifactId>block-saver</artifactId>
     <name>BlockSaver</name>
-    <version>${mbapi.version}.1</version>
+    <version>${mbapi.version}.0</version>
     <description>A plugin to provide block reinforcement for the purposes of block protection.</description>
     <url>http://dev.bukkit.org/server-mods/blocksaver/</url>
 
