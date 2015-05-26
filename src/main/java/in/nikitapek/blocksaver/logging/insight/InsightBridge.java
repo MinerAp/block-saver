@@ -8,12 +8,10 @@ import in.nikitapek.blocksaver.util.BlockSaverConfigurationContext;
 import org.bukkit.plugin.Plugin;
 
 public final class InsightBridge {
-    public static final String ENFORCE_EVENT_NAME = "bs-block-enforce";
-    public static final String DAMAGE_EVENT_NAME = "bs-block-damage";
     public static final BlockAction ENFORCE_EVENT = new BlockAction() {
         @Override
         public String getName() {
-            return ENFORCE_EVENT_NAME;
+            return "bs-block-enforce";
         }
 
         @Override
@@ -24,7 +22,7 @@ public final class InsightBridge {
     public static final BlockAction DAMAGE_EVENT = new BlockAction() {
         @Override
         public String getName() {
-            return DAMAGE_EVENT_NAME;
+            return "bs-block-damage";
         }
 
         @Override
