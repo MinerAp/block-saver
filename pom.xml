@@ -13,11 +13,11 @@
     <parent>
         <groupId>com.amshulman</groupId>
         <artifactId>bukkit-parent</artifactId>
-        <version>0.22</version>
+        <version>0.25</version>
     </parent>
 
     <properties>
-        <prism.version>1.6.8-minerap</prism.version>
+        <insight.version>0.8</insight.version>
         <worldedit.version>5.6.2</worldedit.version>
     </properties>
 
@@ -33,19 +33,6 @@
             <artifactId>mbapi</artifactId>
             <scope>compile</scope>
         </dependency>
-        <!-- Prism -->
-        <dependency>
-            <groupId>me.botsko</groupId>
-            <artifactId>prism</artifactId>
-            <version>${prism.version}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.dthielke</groupId>
-                    <artifactId>Herochat</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <!-- WorldEdit -->
         <dependency>
             <groupId>com.sk89q</groupId>
@@ -57,7 +44,7 @@
         <dependency>
             <groupId>com.amshulman</groupId>
             <artifactId>insight-api</artifactId>
-            <version>0.7</version>
+            <version>${insight.version}</version>
             <scope>provided</scope>
         </dependency>
         <!-- Tests -->

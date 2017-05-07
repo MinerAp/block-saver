@@ -11,7 +11,6 @@ import com.amshulman.typesafety.impl.TypeSafeMapImpl;
 import com.amshulman.typesafety.impl.TypeSafeSetImpl;
 
 import in.nikitapek.blocksaver.logging.insight.InsightBridge;
-import in.nikitapek.blocksaver.logging.prism.PrismBridge;
 import in.nikitapek.blocksaver.management.BlockSaverInfoManager;
 import in.nikitapek.blocksaver.management.FeedbackManager;
 import in.nikitapek.blocksaver.management.ReinforcementManager;
@@ -52,7 +51,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
     public final boolean leaveBlockAfterDeinforce;
     public final boolean mobsInteractWithReinforcedBlocks;
     public final boolean enderdragonInteractWithReinforcedBlocks;
-    public final boolean prismLogging;
     public final boolean insightLogging;
     public final boolean integrateWorldEdit;
     public final double extinguishChance;
@@ -87,16 +85,16 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         try {
             // Note: setting the default values here might be unnecessary because if the config values fail to load and it defaults to these, they will never result in an exception.
             reinforcementDamageFailEffect = Effect.valueOf(plugin.getConfig().getString("reinforcementDamageFailEffect", Effect.EXTINGUISH.toString()));
-            reinforceSuccessSound = Sound.valueOf(plugin.getConfig().getString("reinforceSuccessSound", Sound.ANVIL_USE.toString()));
-            reinforceFailSound = Sound.valueOf(plugin.getConfig().getString("reinforceFailSound", Sound.BLAZE_HIT.toString()));
-            hitFailSound = Sound.valueOf(plugin.getConfig().getString("hitFailSound", Sound.CREEPER_DEATH.toString()));
+            reinforceSuccessSound = Sound.valueOf(plugin.getConfig().getString("reinforceSuccessSound", Sound.BLOCK_ANVIL_USE.toString()));
+            reinforceFailSound = Sound.valueOf(plugin.getConfig().getString("reinforceFailSound", Sound.ENTITY_BLAZE_HURT.toString()));
+            hitFailSound = Sound.valueOf(plugin.getConfig().getString("hitFailSound", Sound.ENTITY_CREEPER_DEATH.toString()));
         } catch (final IllegalArgumentException ex) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load one or more Effect values. Reverting to defaults.");
 
             reinforcementDamageFailEffect = Effect.EXTINGUISH;
-            reinforceSuccessSound = Sound.ANVIL_USE;
-            reinforceFailSound = Sound.BLAZE_HIT;
-            hitFailSound = Sound.CREEPER_DEATH;
+            reinforceSuccessSound = Sound.BLOCK_ANVIL_USE;
+            reinforceFailSound = Sound.ENTITY_BLAZE_HURT;
+            hitFailSound = Sound.ENTITY_CREEPER_DEATH;
         }
 
         tntDamagesReinforcedBlocks = plugin.getConfig().getBoolean("tntDamagesReinforcedBlocks", true);
@@ -112,7 +110,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         leaveBlockAfterDeinforce = plugin.getConfig().getBoolean("leaveBlockAfterDeinforce", false);
         mobsInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("mobsInteractWithReinforcedBlocks", false);
         enderdragonInteractWithReinforcedBlocks = plugin.getConfig().getBoolean("enderdragonInteractWithReinforcedBlocks", false);
-        prismLogging = plugin.getConfig().getBoolean("prismLogging", true);
         insightLogging = plugin.getConfig().getBoolean("insightLogging", true);
         integrateWorldEdit = plugin.getConfig().getBoolean("integrateWorldEdit", true);
 
@@ -228,15 +225,6 @@ public final class BlockSaverConfigurationContext extends ConfigurationContext {
         infoManager = new BlockSaverInfoManager(this);
         feedbackManager = new FeedbackManager(this);
         reinforcementManager = new ReinforcementManager(this);
-
-
-        if (prismLogging) {
-            try {
-                new PrismBridge(this);
-            } catch (final NoClassDefFoundError ex) {
-                plugin.getLogger().log(Level.WARNING, "\"prismLogging\" true but Prism not found or not enabled. Prism logging will not be enabled.");
-            }
-        }
 
         if (insightLogging) {
             try {

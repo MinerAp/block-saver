@@ -87,6 +87,6 @@ public final class BlockSaverUtil {
             pitch = 0.5f;
         }
 
-        location.getWorld().playSound(location, Sound.NOTE_PIANO, 1.0f, pitch);
+        location.getWorld().playSound(location, Sound.BLOCK_NOTE_HARP, 1.0f, pitch);
     }
 }

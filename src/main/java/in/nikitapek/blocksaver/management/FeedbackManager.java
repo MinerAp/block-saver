@@ -30,10 +30,6 @@ public class FeedbackManager {
         this.reinforceFailSound = configurationContext.reinforceFailSound;
         this.hitFailSound = configurationContext.hitFailSound;
         this.primaryFeedback = configurationContext.primaryFeedback;
-
-        if (!configurationContext.prismLogging && !configurationContext.insightLogging) {
-            return;
-        }
     }
 
     public void sendFeedback(final Location location, final BlockSaverFeedback feedback, final Player player) {

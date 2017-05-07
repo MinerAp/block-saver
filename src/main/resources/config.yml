@@ -121,10 +121,6 @@ worlds:
 
 #======== Advanced ========#
 
-## Whether or not to log BlockSaver events into Prism.
-# Default: true
-prismLogging: true
-
 ## Whether or not to log BlockSaver events into Insight.
 # Default: true
 insightLogging: true
